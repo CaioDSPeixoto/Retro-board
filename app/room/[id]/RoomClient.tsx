@@ -13,9 +13,10 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Board from "@/components/Board";
-import { Card } from "@/types/card";
 import Toast from "@/components/Toast";
+import { Card } from "@/types/card";
 import { FaWhatsapp, FaCopy } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 type RoomData = {
   requireName: boolean;
@@ -27,27 +28,12 @@ type Props = {
   roomId: string;
 };
 
-const MessageModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-xl w-full max-w-sm text-center shadow-lg">
-      <h2 className="text-xl font-bold mb-4">Atenção!</h2>
-      <p className="mb-4">{message}</p>
-      <button
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition"
-        onClick={onClose}
-      >
-        Fechar
-      </button>
-    </div>
-  </div>
-);
-
 export default function RoomClient({ roomId }: Props) {
+  const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [userName, setUserName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
   const [nameError, setNameError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -60,7 +46,7 @@ export default function RoomClient({ roomId }: Props) {
         const docSnap = await getDoc(roomDoc);
 
         if (!docSnap.exists()) {
-          setAlertMessage("A sala não existe ou expirou!");
+          router.push("/"); // redireciona imediatamente se a sala não existir
           return;
         }
 
@@ -82,13 +68,12 @@ export default function RoomClient({ roomId }: Props) {
           setUserName(storedName);
         }
       } catch (error) {
-        console.error("Erro ao carregar dados da sala:", error);
-        setAlertMessage("Ocorreu um erro ao carregar a sala. Tente novamente.");
+        router.push("/"); // redireciona em caso de erro
       }
     };
 
     fetchRoom();
-  }, [roomId]);
+  }, [roomId, router]);
 
   useEffect(() => {
     const q = query(roomCardsRef);
@@ -101,22 +86,18 @@ export default function RoomClient({ roomId }: Props) {
     return () => unsub();
   }, [roomId]);
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setToastMessage(`ID da sala: ${roomId}.\n Você pode encontrá-lo no botão ao final da página para copiá-lo.`);
-        
-        setShowToast(true);
-      }, 2000); // 2 segundos de delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setToastMessage(`ID da sala: ${roomId}.\n Você pode encontrá-lo no botão ao final da página para copiá-lo.`);
+      setShowToast(true);
+    }, 2000);
 
-      return () => clearTimeout(timer);
-    }, []);
+    return () => clearTimeout(timer);
+  }, [roomId]);
 
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
-    if (roomData?.requireName && !userName.trim()) {
-      setAlertMessage("Por favor, informe seu nome antes de adicionar um card!");
-      return;
-    }
+    if (roomData?.requireName && !userName.trim()) return;
 
     const author = roomData?.requireName ? userName.trim() || "Anônimo" : "Anônimo";
 
@@ -131,7 +112,6 @@ export default function RoomClient({ roomId }: Props) {
       });
     } catch (error) {
       console.error("Erro ao adicionar card:", error);
-      setAlertMessage("Erro ao adicionar card. Tente novamente.");
     }
   };
 
@@ -141,7 +121,6 @@ export default function RoomClient({ roomId }: Props) {
       await updateDoc(cardDoc, { [type]: increment(1) });
     } catch (error) {
       console.error("Erro ao votar:", error);
-      setAlertMessage("Não foi possível registrar o voto. Tente novamente.");
     }
   };
 
@@ -166,11 +145,7 @@ export default function RoomClient({ roomId }: Props) {
   };
 
   if (!roomData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-300 font-semibold">
-        Carregando sala...
-      </div>
-    );
+    return null; // não travar no "Carregando"
   }
 
   return (
@@ -182,7 +157,6 @@ export default function RoomClient({ roomId }: Props) {
           onClose={() => setShowToast(false)}
         />
       )}
-      {/* Botão flutuante WhatsApp ou Copiar */}
       <button
         onClick={shareRoom}
         className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition flex items-center justify-center"
@@ -223,13 +197,6 @@ export default function RoomClient({ roomId }: Props) {
               </button>
             </div>
           </div>
-        )}
-
-        {alertMessage && (
-          <MessageModal
-            message={alertMessage}
-            onClose={() => setAlertMessage("")}
-          />
         )}
 
         <Board cards={cards} addCard={addCard} vote={vote} />
