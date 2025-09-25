@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function HomePage() {
   const router = useRouter();
   const [requireName, setRequireName] = useState(false);
-  const [duration, setDuration] = useState(24);
+  const [duration, setDuration] = useState(720);
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [customNameEnabled, setCustomNameEnabled] = useState(false);
@@ -49,6 +49,7 @@ export default function HomePage() {
       console.error("Erro ao criar sala:", error);
       alert("Erro ao criar a sala. Tente novamente.");
     } finally {
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setIsLoading(false);
     }
   };
@@ -74,7 +75,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100 text-gray-900 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100 text-gray-900 p-6 relative">
       {/* Slogan */}
       <div className="text-center mb-8">
         <h1 className="text-5xl font-extrabold text-blue-600">RetroBoard</h1>
@@ -111,25 +112,27 @@ export default function HomePage() {
 
         {activeTab === "create" && (
           <>
-            {/* Toggle nome personalizado */}
-            <div className="flex flex-col items-start w-full mb-4">
-              <label className="flex items-center cursor-pointer select-none">
-                <span className="mr-3 text-gray-700 font-medium">Criar nome personalizado para a sala?</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={customNameEnabled}
-                    onChange={(e) => setCustomNameEnabled(e.target.checked)}
-                  />
-                  <div className="w-12 h-6 bg-gray-300 rounded-full shadow-inner transition-colors duration-300"></div>
-                  <div
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full shadow transform transition-transform duration-300 ${
-                      customNameEnabled ? "translate-x-6 bg-green-500" : "bg-white"
-                    }`}
-                  ></div>
-                </div>
-              </label>
+            {/* Seção: Nome das Salas */}
+            <div className="w-full mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">Nome das salas</label>
+              <div className="flex gap-4 w-full justify-center">
+                <button
+                  onClick={() => setCustomNameEnabled(false)}
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                    !customNameEnabled ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Padrão
+                </button>
+                <button
+                  onClick={() => setCustomNameEnabled(true)}
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                    customNameEnabled ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Personalizado
+                </button>
+              </div>
 
               {customNameEnabled && (
                 <input
@@ -142,59 +145,45 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Botões Nome Obrigatório / Anônimo */}
-            <div className="flex gap-4 w-full justify-center">
-              <button
-                onClick={() => setRequireName(false)}
-                className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
-                  !requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                Permitido Anônimo
-              </button>
-              <button
-                onClick={() => setRequireName(true)}
-                className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
-                  requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                Nome Obrigatório
-              </button>
-            </div>
+            {/* Seção: Nome dos Usuários */}
+            <div className="w-full mb-4">
+              <label className="block mb-2 font-semibold text-gray-700">Nome dos usuários</label>
+              <div className="flex gap-4 w-full justify-center">
+                <button
+                  onClick={() => setRequireName(false)}
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                    !requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Permitido Anônimo
+                </button>
+                <button
+                  onClick={() => setRequireName(true)}
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                    requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  Nome Obrigatório
+                </button>
+              </div>
 
-            {requireName && (
-              <input
-                type="text"
-                placeholder="Digite seu nome..."
-                className="w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 mt-2"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-              />
-            )}
-
-            {/* Duração da sala */}
-            <div className="flex flex-col items-center mt-4 w-full">
-              <label className="mb-1 font-semibold text-gray-700">Duração da sala (horas):</label>
-              <select
-                className="w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-              >
-                <option value={1}>1 hora</option>
-                <option value={24}>24 horas</option>
-                <option value={720}>30 dias</option>
-              </select>
-              <p className="text-sm text-gray-600 mt-1 text-center">
-                Após o tempo definido, a sala será removida automaticamente.
-              </p>
+              {requireName && (
+                <input
+                  type="text"
+                  placeholder="Digite seu nome..."
+                  className="mt-2 w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              )}
             </div>
 
             <button
               onClick={handleCreateRoom}
-              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition"
+              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition disabled:opacity-70"
               disabled={isLoading}
             >
-              {isLoading ? "Criando..." : "Criar Sala"}
+              Criar Sala
             </button>
           </>
         )}
@@ -217,6 +206,13 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Overlay de carregamento */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="text-blue-600 font-bold text-xl animate-pulse">Criando sala...</div>
+        </div>
+      )}
     </div>
   );
 }
