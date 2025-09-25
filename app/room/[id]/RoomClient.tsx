@@ -14,7 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import Board from "@/components/Board";
 import { Card } from "@/types/card";
-import { FaWhatsapp, FaArrowLeft, FaCopy } from "react-icons/fa";
+import { FaWhatsapp, FaCopy } from "react-icons/fa";
 
 type RoomData = {
   requireName: boolean;
@@ -162,15 +162,7 @@ export default function RoomClient({ roomId }: Props) {
 
   return (
     <div className="min-h-screen p-6 bg-blue-100 font-sans text-gray-900 relative">
-      {/* Botão voltar para Home */}
-      <button
-        onClick={() => (window.location.href = "/")}
-        className="absolute top-4 left-4 p-3 bg-white rounded-full shadow hover:bg-gray-100 transition"
-        title="Voltar"
-      >
-        <FaArrowLeft className="text-blue-600 text-lg" />
-      </button>
-
+      
       {/* Botão flutuante WhatsApp ou Copiar */}
       <button
         onClick={shareRoom}
