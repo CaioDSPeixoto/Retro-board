@@ -1,5 +1,5 @@
 import Column from "./Column";
-import { Card } from "@/types";
+import { Card } from "@/types/card";
 
 type BoardProps = {
   cards: Card[];

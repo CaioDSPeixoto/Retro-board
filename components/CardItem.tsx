@@ -1,5 +1,4 @@
-import { Card } from "@/types";
-import { useState } from "react";
+import { Card } from "@/types/card";
 
 type Props = {
   card: Card;
@@ -8,13 +7,20 @@ type Props = {
 
 export default function CardItem({ card, vote }: Props) {
   return (
-    <div className="p-2 bg-white rounded-xl shadow-md flex flex-col gap-2 transition-shadow hover:shadow-lg">
-      <p className="break-words text-gray-800">{card.text}</p>
+    <div className="p-2 bg-white rounded-xl shadow-md flex flex-col gap-2 transition-shadow hover:shadow-lg w-full min-w-0">
+      {/* Texto do card */}
+      <p className="text-gray-800 break-words whitespace-pre-wrap word-break break-all">
+        {card.text}
+      </p>
+
+      {/* Autor */}
       {card.author && (
         <span className="text-xs text-gray-500">
           Autor: {card.author}
         </span>
       )}
+
+      {/* Votos */}
       <div className="flex gap-2 text-sm mt-auto">
         <button
           onClick={() => vote(card.id, "likes")}
