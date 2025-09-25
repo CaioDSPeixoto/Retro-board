@@ -1,5 +1,5 @@
 import Column from "./Column";
-import { Card } from "@/types/card";
+import { Card, CATEGORIES } from "@/types/card";
 
 type BoardProps = {
   cards: Card[];
@@ -8,11 +8,9 @@ type BoardProps = {
 };
 
 export default function Board({ cards, addCard, vote }: BoardProps) {
-  const categories: Card["category"][] = ["bom", "ruim", "melhorar"];
-
   return (
     <div className="flex flex-col md:flex-row gap-6">
-      {categories.map((cat) => (
+      {CATEGORIES.map((cat) => (
         <Column
           key={cat}
           category={cat}

@@ -180,9 +180,6 @@ export default function RoomClient({ roomId }: Props) {
           <h1 className="text-4xl font-extrabold text-blue-600">
             {roomData.roomName}
           </h1>
-          <p className="text-gray-800 text-lg">
-            Revise o que foi bom, ruim e a melhorar!
-          </p>
         </header>
 
         {showNameModal && (

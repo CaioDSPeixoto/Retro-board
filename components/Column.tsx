@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CardItem from "./CardItem";
-import { Card } from "@/types/card";
+import { Card, CATEGORY_INFO } from "@/types/card";
 import { FiSend } from "react-icons/fi";
 
 type ColumnProps = {
@@ -10,16 +10,11 @@ type ColumnProps = {
   vote: (cardId: string, type: "likes" | "dislikes") => void;
 };
 
-const colors: Record<Card["category"], string> = {
-  bom: "bg-green-200",
-  ruim: "bg-red-200",
-  melhorar: "bg-yellow-200",
-};
-
-const MAX_LENGTH = 150;
+const MAX_LENGTH = 200;
 
 export default function Column({ category, cards, addCard, vote }: ColumnProps) {
   const [newText, setNewText] = useState("");
+  const info = CATEGORY_INFO[category]; // nome e cor da categoria
 
   const handleAdd = () => {
     if (!newText.trim()) return;
@@ -35,8 +30,8 @@ export default function Column({ category, cards, addCard, vote }: ColumnProps) 
   };
 
   return (
-    <div className={`flex-1 p-4 rounded-xl ${colors[category]} flex flex-col shadow-md`}>
-      <h2 className="font-extrabold text-2xl mb-4 capitalize text-gray-800">{category}</h2>
+    <div className={`flex-1 p-4 rounded-xl ${info.color} flex flex-col shadow-md`}>
+      <h2 className="font-extrabold text-2xl mb-4 capitalize text-gray-800">{info.name}</h2>
 
       {/* Textarea com ícone de envio */}
       <div className="mb-4 flex items-start gap-2">
@@ -65,11 +60,7 @@ export default function Column({ category, cards, addCard, vote }: ColumnProps) 
       {/* Cards */}
       <div className="flex flex-col gap-4 overflow-y-auto">
         {cards.map((c) => (
-          <CardItem
-            key={c.id}
-            card={c}
-            vote={vote}
-          />
+          <CardItem key={c.id} card={c} vote={vote} />
         ))}
       </div>
     </div>
