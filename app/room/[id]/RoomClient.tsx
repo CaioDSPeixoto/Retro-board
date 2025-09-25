@@ -14,6 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import Board from "@/components/Board";
 import { Card } from "@/types/card";
+import Toast from "@/components/Toast";
 import { FaWhatsapp, FaCopy } from "react-icons/fa";
 
 type RoomData = {
@@ -48,7 +49,8 @@ export default function RoomClient({ roomId }: Props) {
   const [showNameModal, setShowNameModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [nameError, setNameError] = useState("");
-
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const roomCardsRef = collection(db, "rooms", roomId, "cards");
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function RoomClient({ roomId }: Props) {
       const roomDoc = doc(db, "rooms", roomId);
       try {
         const docSnap = await getDoc(roomDoc);
+
         if (!docSnap.exists()) {
           setAlertMessage("A sala não existe ou expirou!");
           return;
@@ -97,6 +100,16 @@ export default function RoomClient({ roomId }: Props) {
     });
     return () => unsub();
   }, [roomId]);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setToastMessage(`ID da sala: ${roomId}.\n Você pode encontrá-lo no botão ao final da página para copiá-lo.`);
+        
+        setShowToast(true);
+      }, 2000); // 2 segundos de delay
+
+      return () => clearTimeout(timer);
+    }, []);
 
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
@@ -162,7 +175,13 @@ export default function RoomClient({ roomId }: Props) {
 
   return (
     <div className="min-h-screen p-6 bg-blue-100 font-sans text-gray-900 relative">
-      
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type="info"
+          onClose={() => setShowToast(false)}
+        />
+      )}
       {/* Botão flutuante WhatsApp ou Copiar */}
       <button
         onClick={shareRoom}
