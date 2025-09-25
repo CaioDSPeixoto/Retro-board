@@ -1,103 +1,114 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { v4 as uuidv4 } from "uuid";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [requireName, setRequireName] = useState(false);
+  const [duration, setDuration] = useState(24);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) setUserName(storedName);
+  }, []);
+
+  const handleCreateRoom = async () => {
+    if (requireName && !userName.trim()) {
+      alert("Por favor, digite seu nome antes de criar a sala!");
+      return;
+    }
+
+    const roomId = uuidv4();
+    const expiresAt = new Date(Date.now() + duration * 60 * 60 * 1000);
+
+    try {
+      await setDoc(doc(db, "rooms", roomId), {
+        requireName,
+        createdAt: serverTimestamp(),
+        expiresAt,
+      });
+
+      if (userName.trim()) localStorage.setItem("userName", userName.trim());
+
+      router.push(`/room/${roomId}`);
+    } catch (error) {
+      console.error("Erro ao criar sala:", error);
+      alert("Erro ao criar a sala. Tente novamente.");
+    }
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100 text-gray-900 p-6">
+      <div className="p-8 rounded-xl shadow-lg bg-white border border-blue-300 flex flex-col items-center gap-4 w-full max-w-md">
+        <h1 className="text-4xl font-extrabold text-blue-600 text-center">
+          RetroBoard
+        </h1>
+        <p className="text-gray-800 text-center">
+          Revise o que foi bom, ruim e a melhorar!
+        </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Botão de obrigatoriedade do nome */}
+        <div className="flex gap-4">
+          <button
+            onClick={() => setRequireName(false)}
+            className={`px-4 py-2 rounded-lg font-semibold ${
+              !requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Sim (Anônimo permitido)
+          </button>
+          <button
+            onClick={() => setRequireName(true)}
+            className={`px-4 py-2 rounded-lg font-semibold ${
+              requireName ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+            }`}
           >
-            Read our docs
-          </a>
+            Não (Nome obrigatório)
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Input do nome apenas se obrigatório */}
+        {requireName && (
+          <input
+            type="text"
+            placeholder="Digite seu nome..."
+            className="w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        )}
+
+        {/* Duração da sala */}
+        <div className="flex flex-col items-center mt-4 w-full">
+          <label className="mb-1 font-semibold text-gray-700">
+            Duração da sala (horas):
+          </label>
+          <select
+            className="w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+          >
+            <option value={1}>1 hora</option>
+            <option value={24}>24 horas</option>
+            <option value={720}>30 dias</option>
+          </select>
+          <p className="text-sm text-gray-600 mt-1 text-center">
+            Após o tempo definido, a sala será removida automaticamente.
+          </p>
+        </div>
+
+        <button
+          onClick={handleCreateRoom}
+          className="mt-4 px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Criar Sala
+        </button>
+      </div>
     </div>
   );
 }
