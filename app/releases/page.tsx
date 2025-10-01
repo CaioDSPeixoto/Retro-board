@@ -3,6 +3,13 @@
 export default function ReleasesPage() {
   const releases = [
     {
+      version: "0.3.1",
+      date: "01/10/2025",
+      changes: [
+        "FEAT: Ajuste documentação de versões",
+      ],
+    },
+    {
       version: "0.3.0",
       date: "01/10/2025",
       changes: [
@@ -27,7 +34,7 @@ export default function ReleasesPage() {
       version: "0.1.0",
       date: "24/09/2025",
       changes: [
-        "Criação do projeto"
+        "FEAT: Criação do projeto"
       ],
     },
   ];
@@ -36,7 +43,7 @@ export default function ReleasesPage() {
     <main className="min-h-screen bg-blue-100 py-10 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-blue-600 mb-8 flex items-center gap-2">
-          📌 <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">Releases & Versões</span>
+          📌 <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">Versões & Lançamentos</span>
         </h1>
 
         {releases.map((release) => (
