@@ -78,7 +78,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100 text-gray-900 p-6 relative">
       {/* Slogan */}
       <div className="text-center mb-8">
-        <h1 className="text-5xl font-extrabold text-blue-600">RetroBoard</h1>
+        <h1 className="text-5xl font-extrabold text-blue-600">
+          <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">RetroBoard</span>
+        </h1>
         <p className="text-lg text-gray-700 mt-2">Feedbacks que impulsionam o futuro!</p>
       </div>
 
@@ -114,7 +116,9 @@ export default function HomePage() {
           <>
             {/* Seção: Nome das Salas */}
             <div className="w-full mb-4">
-              <label className="block mb-2 font-semibold text-gray-700">Nome das salas</label>
+              <label className="block mb-2 font-semibold text-gray-700">
+                Como deseja o <span className="bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">nome da sala</span>?
+              </label>
               <div className="flex gap-4 w-full justify-center">
                 <button
                   onClick={() => setCustomNameEnabled(false)}
@@ -147,7 +151,9 @@ export default function HomePage() {
 
             {/* Seção: Nome dos Usuários */}
             <div className="w-full mb-4">
-              <label className="block mb-2 font-semibold text-gray-700">Nome dos usuários</label>
+              <label className="block mb-2 font-semibold text-gray-700">
+                Como deseja o <span className="bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">nome dos usuários</span>?
+              </label>
               <div className="flex gap-4 w-full justify-center">
                 <button
                   onClick={() => setRequireName(false)}
