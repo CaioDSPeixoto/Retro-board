@@ -1,0 +1,93 @@
+{
+  "Release": {
+    "title": "📌 版本与发布",
+    "version": "版本"
+  },
+  "CardItem": {
+    "author": "作者"
+  },
+  "CreateCard": {
+    "new": "新建卡片..."
+  },
+  "Navbar": {
+    "home": "首页",
+    "versionTitle": "版本：v{version}"
+  },
+  "Column": {
+    "new": "添加新卡片..."
+  },
+  "Room": {
+    "defaults": {
+      "roomName": "回顾会议",
+      "anonymous": "匿名"
+    },
+    "categories": {
+      "bom": "优点",
+      "ruim": "缺点",
+      "melhorar": "需要改进"
+    },
+    "alerts": {
+      "requireName": "请先输入您的名字再创建卡片！",
+      "addCardError": "添加卡片时出错，请重试。",
+      "voteError": "投票失败。",
+      "roomNotFound": "未找到房间！",
+      "fetchRoomError": "加载房间时出错。"
+    },
+    "logs": {
+      "fetchRoomError": "获取房间时出错：",
+      "addCardError": "添加卡片时出错：",
+      "voteError": "投票时出错："
+    },
+    "errors": {
+      "noId": "未找到房间ID",
+      "enterName": "请输入您的名字。"
+    },
+    "toast": {
+      "roomId": "房间ID：{roomId}。您可以在页面底部的按钮中找到并复制它。"
+    },
+    "modal": {
+      "enterName": "请输入您的名字",
+      "namePlaceholder": "您的名字...",
+      "save": "保存"
+    },
+    "share": {
+      "copied": "链接已复制到剪贴板！",
+      "whatsappUrl": "https://api.whatsapp.com/send?text=进入房间：{url}"
+    }
+  },
+  "Home": {
+    "slogan": "推动未来的反馈！",
+    "tabs": {
+      "create": "创建房间",
+      "enter": "进入房间"
+    },
+    "roomName": {
+      "label": "您希望房间的名字是什么？",
+      "default": "默认",
+      "custom": "自定义",
+      "placeholder": "请输入房间名称",
+      "defaultName": "回顾会议"
+    },
+    "userName": {
+      "label": "您希望用户如何命名？",
+      "allowAnonymous": "允许匿名",
+      "requireName": "必须输入姓名",
+      "placeholder": "请输入您的名字..."
+    },
+    "createButton": "创建房间",
+    "enterRoom": {
+      "placeholder": "请输入房间ID",
+      "button": "进入"
+    },
+    "loading": "正在创建房间...",
+    "alerts": {
+      "requireName": "请先输入您的名字再创建房间！",
+      "createError": "创建房间时出错，请重试。",
+      "roomNotFound": "未找到房间！"
+    },
+    "logs": {
+      "createError": "创建房间时出错：",
+      "checkRoomError": "检查房间时出错："
+    }
+  }
+}

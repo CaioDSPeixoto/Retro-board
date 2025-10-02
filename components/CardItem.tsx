@@ -1,4 +1,5 @@
 import { Card } from "@/types/card";
+import { useTranslations } from "next-intl";
 
 type Props = {
   card: Card;
@@ -6,6 +7,8 @@ type Props = {
 };
 
 export default function CardItem({ card, vote }: Props) {
+  const t = useTranslations("CardItem");
+
   return (
     <div className="p-2 bg-white rounded-xl shadow-md flex flex-col gap-2 transition-shadow hover:shadow-lg w-full min-w-0">
       {/* Texto do card */}
@@ -16,7 +19,7 @@ export default function CardItem({ card, vote }: Props) {
       {/* Autor */}
       {card.author && (
         <span className="text-xs text-gray-500">
-          Autor: {card.author}
+          {t("author")}: {card.author}
         </span>
       )}
 

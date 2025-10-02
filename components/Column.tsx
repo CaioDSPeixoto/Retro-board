@@ -1,10 +1,13 @@
 import { useState } from "react";
 import CardItem from "./CardItem";
-import { Card, CATEGORY_INFO } from "@/types/card";
+import { Card } from "@/types/card";
 import { FiSend } from "react-icons/fi";
+import { useTranslations } from "next-intl";
 
 type ColumnProps = {
   category: Card["category"];
+  categoryLabel: string;  // nova prop com nome traduzido
+  categoryColor: string;  // cor do card
   cards: Card[];
   addCard: (category: Card["category"], text: string) => void;
   vote: (cardId: string, type: "likes" | "dislikes") => void;
@@ -12,9 +15,17 @@ type ColumnProps = {
 
 const MAX_LENGTH = 200;
 
-export default function Column({ category, cards, addCard, vote }: ColumnProps) {
+export default function Column({
+  category,
+  categoryLabel,
+  categoryColor,
+  cards,
+  addCard,
+  vote,
+}: ColumnProps) {
+  
+  const t = useTranslations("Column");
   const [newText, setNewText] = useState("");
-  const info = CATEGORY_INFO[category]; // nome e cor da categoria
 
   const handleAdd = () => {
     if (!newText.trim()) return;
@@ -30,13 +41,15 @@ export default function Column({ category, cards, addCard, vote }: ColumnProps) 
   };
 
   return (
-    <div className={`flex-1 p-4 rounded-xl ${info.color} flex flex-col shadow-md`}>
-      <h2 className="font-extrabold text-2xl mb-4 capitalize text-gray-800">{info.name}</h2>
+    <div className={`flex-1 p-4 rounded-xl ${categoryColor} flex flex-col shadow-md`}>
+      <h2 className="font-extrabold text-2xl mb-4 capitalize text-gray-800">
+        {categoryLabel}
+      </h2>
 
       {/* Textarea com ícone de envio */}
       <div className="mb-4 flex items-start gap-2">
         <textarea
-          placeholder="Adicionar um novo card..."
+          placeholder={t(`new`)}
           className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
