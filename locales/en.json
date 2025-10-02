@@ -1,0 +1,93 @@
+{
+  "Release": {
+    "title": "📌 Versions & Releases",
+    "version": "Version"
+  },
+  "CardItem":{
+    "author": "Author"
+  },
+  "CreateCard":{
+    "new": "New card..."
+  },
+  "Navbar":{
+    "home": "Home",
+    "versionTitle": "Version: v{version}"
+  },
+  "Column":{
+    "new": "Add a new card..."
+  },
+  "Room": {
+    "defaults": {
+      "roomName": "Retrospective",
+      "anonymous": "Anonymous"
+    },
+    "categories": {
+      "bom": "Good",
+      "ruim": "Bad",
+      "melhorar": "Improve"
+    },
+    "alerts": {
+      "requireName": "Please enter your name before creating the card!",
+      "addCardError": "Error adding card. Try again.",
+      "voteError": "Error registering vote.",
+      "roomNotFound": "Room not found!",
+      "fetchRoomError": "Error loading the room."
+    },
+    "logs": {
+      "fetchRoomError": "Error fetching room:",
+      "addCardError": "Error adding card:",
+      "voteError": "Error voting:"
+    },
+    "errors": {
+      "noId": "Room ID not found",
+      "enterName": "Please enter your name."
+    },
+    "toast": {
+      "roomId": "Room ID: {roomId}. You can find it in the button at the bottom of the page to copy it."
+    },
+    "modal": {
+      "enterName": "Enter your name",
+      "namePlaceholder": "Your name...",
+      "save": "Save"
+    },
+    "share": {
+      "copied": "Link copied to clipboard!",
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}"
+    }
+  },
+  "Home": {
+    "slogan": "Feedbacks that drive the future!",
+    "tabs": {
+      "create": "Create Room",
+      "enter": "Join Room"
+    },
+    "roomName": {
+      "label": "How do you want the room name?",
+      "default": "Default",
+      "custom": "Custom",
+      "placeholder": "Enter the room name",
+      "defaultName": "Retrospective"
+    },
+    "userName": {
+      "label": "How do you want the users' names?",
+      "allowAnonymous": "Allow Anonymous",
+      "requireName": "Name Required",
+      "placeholder": "Enter your name..."
+    },
+    "createButton": "Create Room",
+    "enterRoom": {
+      "placeholder": "Enter the room ID",
+      "button": "Join"
+    },
+    "loading": "Creating room...",
+    "alerts": {
+      "requireName": "Please enter your name before creating the room!",
+      "createError": "Error creating the room. Try again.",
+      "roomNotFound": "Room not found!"
+    },
+    "logs": {
+      "createError": "Error creating room:",
+      "checkRoomError": "Error checking room:"
+    }
+  }
+}

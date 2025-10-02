@@ -1,0 +1,93 @@
+{
+  "Release": {
+    "title": "📌 Versões & Lançamentos",
+    "version": "Versão"
+  },
+  "CardItem":{
+    "author": "Autor"
+  },
+  "CreateCard":{
+    "new": "Novo card..."
+  },
+  "Navbar":{
+    "home": "Início",
+    "versionTitle": "Versão: v{version}"
+  },
+  "Column":{
+    "new": "Adicionar um novo card..."
+  },
+  "Room": {
+    "defaults": {
+      "roomName": "Retrospectiva",
+      "anonymous": "Anônimo"
+    },
+    "categories": {
+      "bom": "Bom",
+      "ruim": "Ruim",
+      "melhorar": "Melhorar"
+    },
+    "alerts": {
+      "requireName": "Por favor, digite seu nome antes de criar o card!",
+      "addCardError": "Erro ao adicionar card. Tente novamente.",
+      "voteError": "Erro ao registrar voto.",
+      "roomNotFound": "Sala não encontrada!",
+      "fetchRoomError": "Erro ao carregar a sala."
+    },
+    "logs": {
+      "fetchRoomError": "Erro ao buscar sala:",
+      "addCardError": "Erro ao adicionar card:",
+      "voteError": "Erro ao votar:"
+    },
+    "errors": {
+      "noId": "ID da sala não encontrado",
+      "enterName": "Por favor, digite seu nome."
+    },
+    "toast": {
+      "roomId": "ID da sala: {roomId}. Você pode encontrá-lo no botão ao final da página para copiá-lo."
+    },
+    "modal": {
+      "enterName": "Digite seu nome",
+      "namePlaceholder": "Seu nome...",
+      "save": "Salvar"
+    },
+    "share": {
+      "copied": "Link copiado para a área de transferência!",
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Entre na sala: {url}"
+    }
+  },
+  "Home": {
+    "slogan": "Feedbacks que impulsionam o futuro!",
+    "tabs": {
+      "create": "Criar Sala",
+      "enter": "Entrar em Sala"
+    },
+    "roomName": {
+      "label": "Como deseja o nome da sala?",
+      "default": "Padrão",
+      "custom": "Personalizado",
+      "placeholder": "Digite o nome da sala",
+      "defaultName": "Retrospectiva"
+    },
+    "userName": {
+      "label": "Como deseja o nome dos usuários?",
+      "allowAnonymous": "Permitido Anônimo",
+      "requireName": "Nome Obrigatório",
+      "placeholder": "Digite seu nome..."
+    },
+    "createButton": "Criar Sala",
+    "enterRoom": {
+      "placeholder": "Digite o ID da sala",
+      "button": "Entrar"
+    },
+    "loading": "Criando sala...",
+    "alerts": {
+      "requireName": "Por favor, digite seu nome antes de criar a sala!",
+      "createError": "Erro ao criar a sala. Tente novamente.",
+      "roomNotFound": "Sala não encontrada!"
+    },
+    "logs": {
+      "createError": "Erro ao criar sala:",
+      "checkRoomError": "Erro ao verificar sala:"
+    }
+  }
+}

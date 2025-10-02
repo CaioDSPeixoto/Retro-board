@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   addCard: (text: string) => void;
 };
 
 export default function CreateCard({ addCard }: Props) {
+    const t = useTranslations("CreateCard");
   const [text, setText] = useState("");
 
   const handleAdd = () => {
@@ -19,7 +21,7 @@ export default function CreateCard({ addCard }: Props) {
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Novo card..."
+        placeholder={t("author")}
         className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
       <button

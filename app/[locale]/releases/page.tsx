@@ -1,7 +1,18 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export default function ReleasesPage() {
+  const t = useTranslations("Release");
+
   const releases = [
+    {
+      version: "0.4.1",
+      date: "02/10/2025",
+      changes: [
+        "FEAT: Adicionando suporte a multi idiomas",
+      ],
+    },
     {
       version: "0.3.1",
       date: "01/10/2025",
@@ -43,7 +54,9 @@ export default function ReleasesPage() {
     <main className="min-h-screen bg-blue-100 py-10 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-blue-600 mb-8 flex items-center gap-2">
-          📌 <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">Versões & Lançamentos</span>
+          <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+            {t("title")}
+          </span>
         </h1>
 
         {releases.map((release) => (
@@ -53,7 +66,7 @@ export default function ReleasesPage() {
           >
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-semibold text-gray-800">
-                Versão {release.version}
+                {t("version")} {release.version}
               </h2>
               <span className="text-sm text-gray-500">{release.date}</span>
             </div>
