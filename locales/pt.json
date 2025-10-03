@@ -9,6 +9,17 @@
   "CreateCard":{
     "new": "Novo card..."
   },
+  "Export": {
+    "defaultTitle": "Resultados do Board",
+    "exportPDF": "Exportar PDF",
+    "exportExcel": "Exportar Excel",
+    "author": "Autor",
+    "anonymous": "Anônimo",
+    "likes": "Curtidas",
+    "dislikes": "Descurtidas",
+    "category": "Categoria",
+    "content": "Conteúdo"
+  },
   "Navbar":{
     "home": "Início",
     "versionTitle": "Versão: v{version}"

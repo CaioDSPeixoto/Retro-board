@@ -18,6 +18,7 @@ import { Card } from "@/types/card";
 import { FaWhatsapp, FaCopy } from "react-icons/fa";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import ExportButtons from "@/components/ExportButtons";
 
 type RoomData = {
   requireName: boolean;
@@ -218,6 +219,8 @@ export default function RoomClient({ roomId }: Props) {
         )}
 
         <Board cards={cards} addCard={addCard} vote={vote} />
+
+        <ExportButtons cards={cards} title={roomData.roomName} />
       </div>
     </div>
   );

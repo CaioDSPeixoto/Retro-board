@@ -7,6 +7,13 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.4.2",
+      date: "02/10/2025",
+      changes: [
+        "FIX: Ajuste na tradução dos botões",
+      ],
+    },
+    {
       version: "0.4.1",
       date: "02/10/2025",
       changes: [

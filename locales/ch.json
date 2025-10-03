@@ -9,6 +9,17 @@
   "CreateCard": {
     "new": "新建卡片..."
   },
+  "Export": {
+    "defaultTitle": "看板结果",
+    "exportPDF": "导出 PDF",
+    "exportExcel": "导出 Excel",
+    "author": "作者",
+    "anonymous": "匿名",
+    "likes": "赞",
+    "dislikes": "踩",
+    "category": "类别",
+    "content": "内容"
+  },
   "Navbar": {
     "home": "首页",
     "versionTitle": "版本：v{version}"
