@@ -33,7 +33,7 @@ export default function RoomClient({ roomId }: Props) {
   const t = useTranslations("Room");
   const router = useRouter();
   const pathname = usePathname();
-  const locale = pathname.split("/")[1]; // "pt" ou "en"
+  const locale = pathname.split("/")[1];
 
   const [cards, setCards] = useState<Card[]>([]);
   const [roomData, setRoomData] = useState<RoomData | null>(null);
@@ -97,15 +97,15 @@ export default function RoomClient({ roomId }: Props) {
     return () => unsub();
   }, [roomCardsRef]);
 
-  // Toast with room ID
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setToastMessage(t("toast.roomId", { roomId }));
-      setShowToast(true);
-    }, 2000);
+  // // Toast with room ID
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setToastMessage(t("toast.roomId", { roomId }));
+  //     setShowToast(true);
+  //   }, 2000);
 
-    return () => clearTimeout(timer);
-  }, [roomId, t]);
+  //   return () => clearTimeout(timer);
+  // }, [roomId, t]);
 
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
@@ -188,9 +188,9 @@ export default function RoomClient({ roomId }: Props) {
 
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 text-center">
-          <h1 className="text-4xl font-extrabold text-blue-600">
+          <span className="bg-gradient-to-r text-4xl font-extrabold from-blue-500 to-blue-800 bg-clip-text text-transparent">
             {roomData.roomName}
-          </h1>
+          </span>
         </header>
 
         {showNameModal && (
