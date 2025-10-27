@@ -6,14 +6,20 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Retrospectiva",
   description: "Projeto colaborativo em tempo real",
 };
 
-export default async function RootLayout({ children, params, }: { children: React.ReactNode; params: Promise<{ locale: string }>; }) {
-
+export default async function RootLayout({
+    children,
+    params,
+  }: {
+    children: React.ReactNode;
+    params: Promise<{ locale: string }>;
+  }) {
   const { locale } = await params;
   if (!routing.locales.includes(locale as Locale)) {
     notFound();
@@ -22,14 +28,23 @@ export default async function RootLayout({ children, params, }: { children: Reac
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen bg-gray-50">
-        <NextIntlClientProvider messages={messages}>
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <>
+      <Script
+        id="google-adsense"
+        async
+        strategy="afterInteractive"
+        crossOrigin="anonymous"
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9139888704774684"
+      />
+      <html lang={locale} suppressHydrationWarning>
+        <body className="flex flex-col min-h-screen bg-gray-50">
+          <NextIntlClientProvider messages={messages}>
+            <Navbar />
+            <main className="flex-1 w-full">{children}</main>
+            <Footer />
+          </NextIntlClientProvider>
+        </body>
+      </html>
+    </>
   );
 }
