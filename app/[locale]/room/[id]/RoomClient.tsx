@@ -167,7 +167,7 @@ export default function RoomClient({ roomId }: Props) {
   if (!roomData) return null;
 
   return (
-    <div className="min-h-screen p-6 bg-blue-100 font-sans text-gray-900 relative">
+    <div className="min-h-screen p-6 font-sans text-gray-900 relative">
       {showToast && (
         <Toast
           message={toastMessage}

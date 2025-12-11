@@ -7,6 +7,13 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.5.0",
+      date: "11/12/2025",
+      changes: [
+        "FEAT: Adicionando ferramentas para uso geral (horário de trabalho, tarefas com alarme)",
+      ],
+    },
+    {
       version: "0.4.2",
       date: "02/10/2025",
       changes: [
@@ -58,7 +65,7 @@ export default function ReleasesPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-blue-100 py-10 px-6">
+    <main className="min-h-screen py-10 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-blue-600 mb-8 flex items-center gap-2">
           <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">

@@ -22,7 +22,8 @@
   },
   "Navbar": {
     "home": "Inicio",
-    "versionTitle": "Versión: v{version}"
+    "versionTitle": "Versión: v{version}",
+    "tools": "Herramientas"
   },
   "Column": {
     "new": "Añadir una nueva tarjeta..."
@@ -100,5 +101,22 @@
       "createError": "Error al crear la sala:",
       "checkRoomError": "Error al verificar la sala:"
     }
+  },
+  "ToolsButton": {
+    "tools": "Herramientas"
+  },
+  "ToolsPage": {
+    "title": "Herramientas",
+    "description": "Colección de utilidades para tu día a día.",
+    "timeTracker": "Control de Horas",
+    "timeTrackerDesc": "Calcula automáticamente tus horas trabajadas, hora de salida y horas extra.",
+    "todoListTitle": "Tarefas",
+    "todoListDesc": "Gerencie tarefas com alertas de horário"
+  },
+  "TodoList": {
+    "title": "Lista de Tareas",
+    "add": "Agregar tarea",
+    "delete": "Eliminar",
+    "placeholder": "Descripción de la tarea"
   }
 }

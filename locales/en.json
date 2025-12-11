@@ -22,7 +22,8 @@
   },
   "Navbar":{
     "home": "Home",
-    "versionTitle": "Version: v{version}"
+    "versionTitle": "Version: v{version}",
+    "tools": "Tools"
   },
   "Column":{
     "new": "Add a new card..."
@@ -100,5 +101,24 @@
       "createError": "Error creating room:",
       "checkRoomError": "Error checking room:"
     }
+  },
+  "ToolsButton": {
+  "tools": "Tools"
+  },
+  "ToolsPage": {
+    "title": "Tools",
+    "description": "A collection of utilities to help your daily workflow.",
+    "timeTracker": "Time Tracker",
+    "timeTrackerDesc": "Automatically calculate your worked hours, leaving time and overtime.",
+    "todoListTitle": "Tarefas",
+    "todoListDesc": "Gerencie tarefas com alertas de horário"
+  },
+  "todoListTitle": "Tarefas",
+  "todoListDesc": "Gerencie tarefas com alertas de horário",
+  "TodoList": {
+    "title": "To-Do List",
+    "add": "Add task",
+    "delete": "Delete",
+    "placeholder": "Task description"
   }
 }

@@ -37,7 +37,7 @@ export default async function RootLayout({
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9139888704774684"
       />
       <html lang={locale} suppressHydrationWarning>
-        <body className="flex flex-col min-h-screen bg-gray-50">
+        <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
           <NextIntlClientProvider messages={messages}>
             <Navbar />
             <main className="flex-1 w-full">{children}</main>

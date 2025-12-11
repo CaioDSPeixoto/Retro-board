@@ -22,7 +22,8 @@
   },
   "Navbar": {
     "home": "首页",
-    "versionTitle": "版本：v{version}"
+    "versionTitle": "版本：v{version}",
+    "tools": "工具"
   },
   "Column": {
     "new": "添加新卡片..."
@@ -100,5 +101,24 @@
       "createError": "创建房间时出错：",
       "checkRoomError": "检查房间时出错："
     }
+  },
+  "ToolsButton": {
+  "tools": "工具"
+  },
+  "ToolsPage": {
+    "title": "工具",
+    "description": "日常使用的实用工具集合。",
+    "timeTracker": "工时计算器",
+    "timeTrackerDesc": "自动计算你的工作时长、下班时间和加班时数。",
+    "todoListTitle": "Tarefas",
+    "todoListDesc": "Gerencie tarefas com alertas de horário"
+  },
+  "todoListTitle": "Tarefas",
+  "todoListDesc": "Gerencie tarefas com alertas de horário",
+  "TodoList": {
+    "title": "任务列表",
+    "add": "添加任务",
+    "delete": "删除",
+    "placeholder": "任务描述"
   }
 }

@@ -22,7 +22,8 @@
   },
   "Navbar":{
     "home": "Início",
-    "versionTitle": "Versão: v{version}"
+    "versionTitle": "Versão: v{version}",
+    "tools": "Ferramentas"
   },
   "Column":{
     "new": "Adicionar um novo card..."
@@ -100,5 +101,32 @@
       "createError": "Erro ao criar sala:",
       "checkRoomError": "Erro ao verificar sala:"
     }
+  },
+  "Tools": {
+  "title": "Ferramentas",
+  "description": "Selecione abaixo uma das ferramentas disponíveis.",
+  "timeTrackerTitle": "Controle de Ponto",
+  "timeTrackerDesc": "Registre horários e calcule horas trabalhadas.",
+  "todoListTitle": "Tarefas",
+  "todoListDesc": "Gerencie tarefas com alertas de horário"
+  },
+  "TimeTracker": {
+    "title": "Controle de Ponto",
+    "registerNow": "Registrar horário agora",
+    "addManual": "Adicionar horário manualmente",
+    "delete": "Excluir",
+    "worked": "Horas trabalhadas",
+    "lunch": "Tempo de almoço",
+    "remaining": "Faltam",
+    "extra": "Horas extras",
+    "workload6": "Carga diária: 6h",
+    "workload8": "Carga diária: 8h",
+    "workload848": "Carga diária: 8h48"
+  },
+  "TodoList": {
+    "title": "Lista de Tarefas",
+    "add": "Adicionar tarefa",
+    "delete": "Excluir",
+    "placeholder": "Descrição da tarefa"
   }
 }

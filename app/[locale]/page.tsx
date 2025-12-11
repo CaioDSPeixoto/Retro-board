@@ -82,7 +82,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100 text-gray-900 p-6 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center text-gray-900 p-6 relative">
       {/* Slogan */}
       <div className="text-center mb-8">
         <h1 className="text-5xl font-extrabold text-blue-600">
