@@ -55,7 +55,7 @@
       "enterName": "Please enter your name."
     },
     "toast": {
-      "roomId": "Room ID: {roomId}. You can find it in the button at the bottom of the page to copy it."
+      "roomId": "Room ID: {roomId}. You can find it on the button at the bottom of the page to copy it."
     },
     "modal": {
       "enterName": "Enter your name",
@@ -68,20 +68,20 @@
     }
   },
   "Home": {
-    "slogan": "Feedbacks that drive the future!",
+    "slogan": "Feedback that drives the future!",
     "tabs": {
       "create": "Create Room",
-      "enter": "Join Room"
+      "enter": "Enter Room"
     },
     "roomName": {
-      "label": "How do you want the room name?",
+      "label": "What do you want the room name to be?",
       "default": "Default",
       "custom": "Custom",
       "placeholder": "Enter the room name",
       "defaultName": "Retrospective"
     },
     "userName": {
-      "label": "How do you want the users' names?",
+      "label": "How should users be named?",
       "allowAnonymous": "Allow Anonymous",
       "requireName": "Name Required",
       "placeholder": "Enter your name..."
@@ -89,7 +89,7 @@
     "createButton": "Create Room",
     "enterRoom": {
       "placeholder": "Enter the room ID",
-      "button": "Join"
+      "button": "Enter"
     },
     "loading": "Creating room...",
     "alerts": {
@@ -102,21 +102,29 @@
       "checkRoomError": "Error checking room:"
     }
   },
-  "ToolsButton": {
-  "tools": "Tools"
+  "Tools": {
+  "title": "Tools",
+  "description": "Select one of the available tools below.",
+  "timeTrackerTitle": "Time Tracker",
+  "timeTrackerDesc": "Register times and calculate hours worked.",
+  "todoListTitle": "Todo List",
+  "todoListDesc": "Manage tasks with time alerts"
   },
-  "ToolsPage": {
-    "title": "Tools",
-    "description": "A collection of utilities to help your daily workflow.",
-    "timeTracker": "Time Tracker",
-    "timeTrackerDesc": "Automatically calculate your worked hours, leaving time and overtime.",
-    "todoListTitle": "Tarefas",
-    "todoListDesc": "Gerencie tarefas com alertas de horário"
+  "TimeTracker": {
+    "title": "Time Tracker",
+    "registerNow": "Register time now",
+    "addManual": "Add time manually",
+    "delete": "Delete",
+    "worked": "Hours worked",
+    "lunch": "Lunch time",
+    "remaining": "Remaining",
+    "extra": "Overtime",
+    "workload6": "Daily workload: 6h",
+    "workload8": "Daily workload: 8h",
+    "workload848": "Daily workload: 8h48"
   },
-  "todoListTitle": "Tarefas",
-  "todoListDesc": "Gerencie tarefas com alertas de horário",
   "TodoList": {
-    "title": "To-Do List",
+    "title": "Todo List",
     "add": "Add task",
     "delete": "Delete",
     "placeholder": "Task description"

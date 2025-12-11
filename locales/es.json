@@ -1,16 +1,16 @@
 {
   "Release": {
-    "title": "📌 Versiones & Lanzamientos",
+    "title": "📌 Versiones y Lanzamientos",
     "version": "Versión"
   },
-  "CardItem": {
+  "CardItem":{
     "author": "Autor"
   },
-  "CreateCard": {
+  "CreateCard":{
     "new": "Nueva tarjeta..."
   },
   "Export": {
-    "defaultTitle": "Resultados del Board",
+    "defaultTitle": "Resultados del Tablero",
     "exportPDF": "Exportar PDF",
     "exportExcel": "Exportar Excel",
     "author": "Autor",
@@ -20,12 +20,12 @@
     "category": "Categoría",
     "content": "Contenido"
   },
-  "Navbar": {
+  "Navbar":{
     "home": "Inicio",
     "versionTitle": "Versión: v{version}",
     "tools": "Herramientas"
   },
-  "Column": {
+  "Column":{
     "new": "Añadir una nueva tarjeta..."
   },
   "Room": {
@@ -36,11 +36,11 @@
     "categories": {
       "bom": "Bueno",
       "ruim": "Malo",
-      "melhorar": "A mejorar"
+      "melhorar": "Mejorar"
     },
     "alerts": {
-      "requireName": "Por favor, escribe tu nombre antes de crear la tarjeta.",
-      "addCardError": "Error al añadir la tarjeta. Inténtalo de nuevo.",
+      "requireName": "¡Por favor, escriba su nombre antes de crear la tarjeta!",
+      "addCardError": "Error al añadir la tarjeta. Inténtelo de nuevo.",
       "voteError": "Error al registrar el voto.",
       "roomNotFound": "¡Sala no encontrada!",
       "fetchRoomError": "Error al cargar la sala."
@@ -52,70 +52,80 @@
     },
     "errors": {
       "noId": "ID de la sala no encontrado",
-      "enterName": "Por favor, escribe tu nombre."
+      "enterName": "Por favor, escriba su nombre."
     },
     "toast": {
-      "roomId": "ID de la sala: {roomId}. Puedes encontrarlo en el botón al final de la página para copiarlo."
+      "roomId": "ID de la sala: {roomId}. Puede encontrarlo en el botón al final de la página para copiarlo."
     },
     "modal": {
-      "enterName": "Escribe tu nombre",
-      "namePlaceholder": "Tu nombre...",
+      "enterName": "Escriba su nombre",
+      "namePlaceholder": "Su nombre...",
       "save": "Guardar"
     },
     "share": {
       "copied": "¡Enlace copiado al portapapeles!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Entra en la sala: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Únete a la sala: {url}"
     }
   },
   "Home": {
-    "slogan": "¡Feedbacks que impulsan el futuro!",
+    "slogan": "¡Comentarios que impulsan el futuro!",
     "tabs": {
       "create": "Crear Sala",
-      "enter": "Entrar a Sala"
+      "enter": "Entrar en Sala"
     },
     "roomName": {
-      "label": "¿Cómo quieres nombrar la sala?",
-      "default": "Por defecto",
+      "label": "¿Cómo desea el nombre de la sala?",
+      "default": "Predeterminado",
       "custom": "Personalizado",
-      "placeholder": "Escribe el nombre de la sala",
+      "placeholder": "Escriba el nombre de la sala",
       "defaultName": "Retrospectiva"
     },
     "userName": {
-      "label": "¿Cómo quieres nombrar a los usuarios?",
-      "allowAnonymous": "Permitir Anónimo",
+      "label": "¿Cómo desea el nombre de los usuarios?",
+      "allowAnonymous": "Anónimo Permitido",
       "requireName": "Nombre Obligatorio",
-      "placeholder": "Escribe tu nombre..."
+      "placeholder": "Escriba su nombre..."
     },
     "createButton": "Crear Sala",
     "enterRoom": {
-      "placeholder": "Escribe el ID de la sala",
+      "placeholder": "Escriba el ID de la sala",
       "button": "Entrar"
     },
     "loading": "Creando sala...",
     "alerts": {
-      "requireName": "Por favor, escribe tu nombre antes de crear la sala.",
-      "createError": "Error al crear la sala. Inténtalo de nuevo.",
-      "roomNotFound": "Sala no encontrada."
+      "requireName": "¡Por favor, escriba su nombre antes de crear la sala!",
+      "createError": "Error al crear la sala. Inténtelo de nuevo.",
+      "roomNotFound": "¡Sala no encontrada!"
     },
     "logs": {
       "createError": "Error al crear la sala:",
       "checkRoomError": "Error al verificar la sala:"
     }
   },
-  "ToolsButton": {
-    "tools": "Herramientas"
+  "Tools": {
+  "title": "Herramientas",
+  "description": "Seleccione una de las herramientas disponibles a continuación.",
+  "timeTrackerTitle": "Control de Horario",
+  "timeTrackerDesc": "Registre horarios y calcule horas trabajadas.",
+  "todoListTitle": "Lista de Tareas",
+  "todoListDesc": "Gestione tareas con alertas de horario"
   },
-  "ToolsPage": {
-    "title": "Herramientas",
-    "description": "Colección de utilidades para tu día a día.",
-    "timeTracker": "Control de Horas",
-    "timeTrackerDesc": "Calcula automáticamente tus horas trabajadas, hora de salida y horas extra.",
-    "todoListTitle": "Tarefas",
-    "todoListDesc": "Gerencie tarefas com alertas de horário"
+  "TimeTracker": {
+    "title": "Control de Horario",
+    "registerNow": "Registrar horario ahora",
+    "addManual": "Añadir horario manualmente",
+    "delete": "Eliminar",
+    "worked": "Horas trabajadas",
+    "lunch": "Tiempo de almuerzo",
+    "remaining": "Faltan",
+    "extra": "Horas extras",
+    "workload6": "Carga diaria: 6h",
+    "workload8": "Carga diaria: 8h",
+    "workload848": "Carga diaria: 8h48"
   },
   "TodoList": {
     "title": "Lista de Tareas",
-    "add": "Agregar tarea",
+    "add": "Añadir tarea",
     "delete": "Eliminar",
     "placeholder": "Descripción de la tarea"
   }
