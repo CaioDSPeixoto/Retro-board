@@ -10,13 +10,13 @@ export default function TimeTracker() {
   const [punches, setPunches] = useState<string[]>([]);
   const [workload, setWorkload] = useState("8h48");
 
-  // Carrega punches do localStorage
+  // Load punches
   useEffect(() => {
     const stored = localStorage.getItem("timeTrackerPunches");
     if (stored) setPunches(JSON.parse(stored));
   }, []);
 
-  // Salva punches no localStorage
+  // Save punches
   useEffect(() => {
     localStorage.setItem("timeTrackerPunches", JSON.stringify(punches));
   }, [punches]);
@@ -39,8 +39,7 @@ export default function TimeTracker() {
   };
 
   const removePunch = (index: number) => {
-    const updated = punches.filter((_, i) => i !== index);
-    setPunches(updated);
+    setPunches(punches.filter((_, i) => i !== index));
   };
 
   const convert = (time: string) => {
@@ -52,37 +51,29 @@ export default function TimeTracker() {
     `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 
   const calculate = () => {
-    if (punches.length < 2) {
-      return {
-        worked: "0:00",
-        lunch: "0:00",
-        remaining: 0,
-        suggestedExit: "",
-        extra: "0:00",
-      };
-    }
-
-    let totalMinutes = 0;
+    let workedMinutes = 0;
     let lunchMinutes = 0;
 
-    for (let i = 0; i < punches.length; i += 2) {
+    for (let i = 0; i < punches.length - 1; i++) {
       const start = punches[i];
       const end = punches[i + 1];
       if (!start || !end) continue;
 
-      totalMinutes += convert(end) - convert(start);
-    }
+      const diff = convert(end) - convert(start);
 
-    if (punches.length >= 3 && punches[1] && punches[2]) {
-      lunchMinutes = convert(punches[2]) - convert(punches[1]);
-      totalMinutes -= lunchMinutes;
+      // Índices pares = trabalho | ímpares = pausa
+      if (i % 2 === 0) {
+        workedMinutes += diff;
+      } else {
+        lunchMinutes += diff;
+      }
     }
 
     const daily =
       workload === "6h" ? 360 : workload === "8h" ? 480 : 528;
 
-    const remaining = Math.max(0, daily - totalMinutes);
-    const extra = Math.max(0, totalMinutes - daily);
+    const remaining = Math.max(0, daily - workedMinutes);
+    const extra = Math.max(0, workedMinutes - daily);
 
     let suggestedExit = "";
     if (punches.length % 2 === 1 && remaining > 0) {
@@ -91,16 +82,19 @@ export default function TimeTracker() {
         const total = convert(lastPunch) + remaining;
         const h = Math.floor(total / 60) % 24;
         const m = total % 60;
-        suggestedExit = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        suggestedExit = `${String(h).padStart(2, "0")}:${String(m).padStart(
+          2,
+          "0"
+        )}`;
       }
     }
 
     return {
-      worked: format(totalMinutes),
+      worked: format(workedMinutes),
       lunch: format(lunchMinutes),
       remaining,
-      suggestedExit,
       extra: format(extra),
+      suggestedExit,
     };
   };
 
@@ -147,7 +141,7 @@ export default function TimeTracker() {
             />
             <button
               onClick={() => removePunch(i)}
-              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow-sm flex items-center justify-center"
+              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow-sm"
             >
               <FiTrash2 size={18} />
             </button>
@@ -163,7 +157,6 @@ export default function TimeTracker() {
         <Result label={t("extra")} value={result.extra} />
       </div>
 
-      {/* Sugestão de saída */}
       {result.suggestedExit && (
         <div className="grid grid-cols-2 gap-4 text-sm">
           <Result label="Sugestão de saída" value={result.suggestedExit} />
