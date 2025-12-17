@@ -7,6 +7,13 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.5.2",
+      date: "16/12/2025",
+      changes: [
+        "REFACT: adicionando melhoria de desempenho",
+      ],
+    },
+    {
       version: "0.5.1",
       date: "16/12/2025",
       changes: [
