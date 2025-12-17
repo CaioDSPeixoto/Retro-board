@@ -16,7 +16,7 @@ import Board from "@/components/Board";
 import Toast from "@/components/Toast";
 import { Card } from "@/types/card";
 import { FaWhatsapp, FaCopy } from "react-icons/fa";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
 
@@ -28,13 +28,12 @@ type RoomData = {
 
 type Props = {
   roomId: string;
+  locale: string;
 };
 
-export default function RoomClient({ roomId }: Props) {
+export default function RoomClient({ roomId, locale }: Props) {
   const t = useTranslations("Room");
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1];
 
   const [cards, setCards] = useState<Card[]>([]);
   const [roomData, setRoomData] = useState<RoomData | null>(null);
@@ -44,13 +43,11 @@ export default function RoomClient({ roomId }: Props) {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  const roomCardsRef = collection(db, "rooms", roomId, "cards");
-
-  // Fetch room data
+  // 🔹 Fetch room data (1x)
   useEffect(() => {
     const fetchRoom = async () => {
-      const roomDoc = doc(db, "rooms", roomId);
       try {
+        const roomDoc = doc(db, "rooms", roomId);
         const docSnap = await getDoc(roomDoc);
 
         if (!docSnap.exists()) {
@@ -59,15 +56,12 @@ export default function RoomClient({ roomId }: Props) {
           return;
         }
 
-        const data = docSnap.data() as any;
+        const data = docSnap.data();
+
         setRoomData({
           requireName: data.requireName ?? true,
           roomName: data.roomName || t("defaults.roomName"),
-          expiresAt: data.expiresAt?.toDate
-            ? data.expiresAt.toDate()
-            : data.expiresAt
-            ? new Date(data.expiresAt)
-            : undefined,
+          expiresAt: data.expiresAt?.toDate?.(),
         });
 
         const storedName = localStorage.getItem("userName");
@@ -84,48 +78,42 @@ export default function RoomClient({ roomId }: Props) {
     };
 
     fetchRoom();
-  }, [roomId, router, t, locale]);
+  }, [roomId, locale, router, t]);
 
-  // Listen for cards
+  // 🔹 Realtime cards listener (ESTÁVEL)
   useEffect(() => {
+    if (!roomId) return;
+
+    const roomCardsRef = collection(db, "rooms", roomId, "cards");
     const q = query(roomCardsRef);
+
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Card)
       );
       setCards(data);
     });
+
     return () => unsub();
-  }, [roomCardsRef]);
-
-  // // Toast with room ID
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setToastMessage(t("toast.roomId", { roomId }));
-  //     setShowToast(true);
-  //   }, 2000);
-
-  //   return () => clearTimeout(timer);
-  // }, [roomId, t]);
+  }, [roomId]);
 
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
+
     if (roomData?.requireName && !userName.trim()) {
       alert(t("alerts.requireName"));
       return;
     }
 
-    const author = roomData?.requireName
-      ? userName.trim() || t("defaults.anonymous")
-      : t("defaults.anonymous");
-
     try {
-      await addDoc(roomCardsRef, {
+      await addDoc(collection(db, "rooms", roomId, "cards"), {
         category,
         text,
         likes: 0,
         dislikes: 0,
-        author,
+        author: roomData?.requireName
+          ? userName.trim()
+          : t("defaults.anonymous"),
         createdAt: new Date(),
       });
     } catch (error) {
@@ -167,7 +155,7 @@ export default function RoomClient({ roomId }: Props) {
   if (!roomData) return null;
 
   return (
-    <div className="min-h-screen p-6 font-sans text-gray-900 relative">
+    <div className="min-h-screen p-6 text-gray-900 relative">
       {showToast && (
         <Toast
           message={toastMessage}
@@ -178,7 +166,7 @@ export default function RoomClient({ roomId }: Props) {
 
       <button
         onClick={shareRoom}
-        className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition flex items-center justify-center"
+        className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition"
       >
         {/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? (
           <FaWhatsapp className="text-2xl" />
@@ -189,7 +177,7 @@ export default function RoomClient({ roomId }: Props) {
 
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 text-center">
-          <span className="bg-gradient-to-r text-4xl font-extrabold from-blue-500 to-blue-800 bg-clip-text text-transparent">
+          <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
             {roomData.roomName}
           </span>
         </header>
@@ -197,20 +185,20 @@ export default function RoomClient({ roomId }: Props) {
         {showNameModal && (
           <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl w-full max-w-sm text-center shadow-lg">
-              <h2 className="text-xl font-bold mb-4">{t("modal.enterName")}</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {t("modal.enterName")}
+              </h2>
               <input
-                type="text"
-                placeholder={t("modal.namePlaceholder")}
-                className="w-full p-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
+                className="w-full p-2 border rounded-lg mb-2"
               />
               {nameError && (
                 <p className="text-sm text-red-600 mb-2">{nameError}</p>
               )}
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition"
                 onClick={handleSaveName}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg font-bold"
               >
                 {t("modal.save")}
               </button>
@@ -219,7 +207,6 @@ export default function RoomClient({ roomId }: Props) {
         )}
 
         <Board cards={cards} addCard={addCard} vote={vote} />
-
         <ExportButtons cards={cards} title={roomData.roomName} />
       </div>
     </div>

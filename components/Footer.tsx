@@ -29,7 +29,7 @@ export default function Footer() {
             </a>
           )}
 
-          {projectUrl && (
+          {/* {projectUrl && (
             <a
               href={projectUrl}
               target="_blank"
@@ -39,7 +39,7 @@ export default function Footer() {
             >
               <FiExternalLink size={18} />
             </a>
-          )}
+          )} */}
 
           {linkedinUrl && (
             <a

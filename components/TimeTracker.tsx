@@ -43,8 +43,16 @@ export default function TimeTracker() {
     setPunches(updated);
   };
 
+  const convert = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const format = (m: number) =>
+    `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+
   const calculate = () => {
-    if (punches.length < 2)
+    if (punches.length < 2) {
       return {
         worked: "0:00",
         lunch: "0:00",
@@ -52,6 +60,7 @@ export default function TimeTracker() {
         suggestedExit: "",
         extra: "0:00",
       };
+    }
 
     let totalMinutes = 0;
     let lunchMinutes = 0;
@@ -61,11 +70,12 @@ export default function TimeTracker() {
       const end = punches[i + 1];
       if (!start || !end) continue;
 
-      const s = convert(start);
-      const e = convert(end);
-      const diff = e - s;
-      if (i === 1) lunchMinutes = diff;
-      else totalMinutes += diff;
+      totalMinutes += convert(end) - convert(start);
+    }
+
+    if (punches.length >= 3 && punches[1] && punches[2]) {
+      lunchMinutes = convert(punches[2]) - convert(punches[1]);
+      totalMinutes -= lunchMinutes;
     }
 
     const daily =
@@ -74,16 +84,14 @@ export default function TimeTracker() {
     const remaining = Math.max(0, daily - totalMinutes);
     const extra = Math.max(0, totalMinutes - daily);
 
-    // Sugestão de saída se houver >=3 punches e número ímpar
     let suggestedExit = "";
-    if (punches.length >= 3 && punches.length % 2 === 1 && remaining > 0) {
+    if (punches.length % 2 === 1 && remaining > 0) {
       const lastPunch = punches[punches.length - 1];
       if (lastPunch) {
-        const [h, m] = lastPunch.split(":").map(Number);
-        const totalMinutesExit = h * 60 + m + remaining;
-        const hours = Math.floor(totalMinutesExit / 60) % 24;
-        const minutes = totalMinutesExit % 60;
-        suggestedExit = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+        const total = convert(lastPunch) + remaining;
+        const h = Math.floor(total / 60) % 24;
+        const m = total % 60;
+        suggestedExit = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
       }
     }
 
@@ -95,14 +103,6 @@ export default function TimeTracker() {
       extra: format(extra),
     };
   };
-
-  const convert = (time: string) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
-  };
-
-  const format = (m: number) =>
-    `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 
   const result = calculate();
 
@@ -135,7 +135,7 @@ export default function TimeTracker() {
         </select>
       </div>
 
-      {/* Punch list em duas colunas */}
+      {/* Punch list */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
         {punches.map((p, i) => (
           <div key={i} className="flex items-center gap-3">
@@ -159,15 +159,14 @@ export default function TimeTracker() {
       <div className="grid grid-cols-2 gap-4 text-sm mb-4">
         <Result label={t("worked")} value={result.worked} />
         <Result label={t("lunch")} value={result.lunch} />
-        {result.remaining > 0 && <Result label={t("remaining")} value={format(result.remaining)} />}
+        <Result label={t("remaining")} value={format(result.remaining)} />
         <Result label={t("extra")} value={result.extra} />
       </div>
 
-      {/* Sugestão de saída separada */}
-      {result.remaining > 0 && result.suggestedExit && (
-        <div className="border border-blue-200 rounded-xl p-4 bg-blue-50 w-max">
-          <p className="text-gray-600 font-medium text-sm">Sugestão de saída</p>
-          <p className="text-blue-700 font-semibold text-lg">{result.suggestedExit}</p>
+      {/* Sugestão de saída */}
+      {result.suggestedExit && (
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <Result label="Sugestão de saída" value={result.suggestedExit} />
         </div>
       )}
     </div>

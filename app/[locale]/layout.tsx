@@ -14,13 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({
-    children,
-    params,
-  }: {
-    children: React.ReactNode;
-    params: Promise<{ locale: string }>;
-  }) {
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
+
   if (!routing.locales.includes(locale as Locale)) {
     notFound();
   }
@@ -28,23 +29,23 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <>
-      <Script
-        id="google-adsense"
-        async
-        strategy="afterInteractive"
-        crossOrigin="anonymous"
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9139888704774684"
-      />
-      <html lang={locale} suppressHydrationWarning>
-        <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
-          <NextIntlClientProvider messages={messages}>
-            <Navbar />
-            <main className="flex-1 w-full">{children}</main>
-            <Footer />
-          </NextIntlClientProvider>
-        </body>
-      </html>
-    </>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <Script
+          id="google-adsense"
+          async
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9139888704774684"
+        />
+      </head>
+      <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
+        <NextIntlClientProvider messages={messages}>
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

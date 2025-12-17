@@ -7,6 +7,13 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.5.1",
+      date: "16/12/2025",
+      changes: [
+        "FIX: Correção do app router, loop request e listener firestore",
+      ],
+    },
+    {
       version: "0.5.0",
       date: "11/12/2025",
       changes: [
