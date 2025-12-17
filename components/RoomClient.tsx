@@ -14,7 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import Board from "@/components/Board";
 import { Card } from "@/types/card";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaCopy } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
@@ -38,9 +38,6 @@ export default function RoomClient({ roomId, locale }: Props) {
   const [userName, setUserName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
 
-  /* ----------------------------------
-   * ROOM DATA (1 read)
-   ---------------------------------- */
   useEffect(() => {
     const fetchRoom = async () => {
       const snap = await getDoc(doc(db, "rooms", roomId));
@@ -54,7 +51,7 @@ export default function RoomClient({ roomId, locale }: Props) {
 
       setRoomData({
         requireName: data.requireName ?? true,
-        roomName: data.roomName,
+        roomName: data.roomName || t("defaults.roomName"),
       });
 
       const storedName = localStorage.getItem("userName");
@@ -65,9 +62,6 @@ export default function RoomClient({ roomId, locale }: Props) {
     fetchRoom();
   }, [roomId, locale, router]);
 
-  /* ----------------------------------
-   * CACHE LOCAL (instantâneo)
-   ---------------------------------- */
   useEffect(() => {
     const cached = localStorage.getItem(`room:${roomId}:cards`);
     if (cached) {
@@ -75,9 +69,6 @@ export default function RoomClient({ roomId, locale }: Props) {
     }
   }, [roomId]);
 
-  /* ----------------------------------
-   * REALTIME (1 listener apenas)
-   ---------------------------------- */
   useEffect(() => {
     const q = query(collection(db, "rooms", roomId, "cards"));
 
@@ -93,9 +84,6 @@ export default function RoomClient({ roomId, locale }: Props) {
     return () => unsubscribe();
   }, [roomId]);
 
-  /* ----------------------------------
-   * ACTIONS
-   ---------------------------------- */
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
 
@@ -104,7 +92,7 @@ export default function RoomClient({ roomId, locale }: Props) {
       text,
       likes: 0,
       dislikes: 0,
-      author: userName || "anonymous",
+      author: userName || t("defaults.anonymous"),
       createdAt: new Date(),
     });
   };
@@ -116,25 +104,34 @@ export default function RoomClient({ roomId, locale }: Props) {
   };
 
   const shareRoom = () => {
-    const url = `${window.location.origin}/${locale}/room/${roomId}`;
-    navigator.clipboard.writeText(url);
-    alert(t("share.copied"));
+    const roomUrl = `${window.location.origin}/${locale}/room/${roomId}`;
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      window.open(t("share.whatsappUrl", { url: roomUrl }));
+    } else {
+      navigator.clipboard.writeText(roomUrl);
+      alert(t("share.copied"));
+    }
   };
 
   if (!roomData) return null;
 
   return (
-    <div className="min-h-screen p-6 relative">
+    <div className="min-h-screen p-6 text-gray-900 relative">
       <button
         onClick={shareRoom}
-        className="fixed bottom-6 right-6 p-4 bg-green-500 text-white rounded-full shadow-lg"
-      >
-        <FaWhatsapp />
+        className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition">
+        {/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? (
+          <FaWhatsapp className="text-2xl" />
+        ) : (
+          <FaCopy className="text-2xl" />
+        )}
       </button>
 
       <div className="max-w-7xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-4xl font-bold">{roomData.roomName}</h1>
+        <header className="mb-6 text-center">
+          <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+            {roomData.roomName}
+          </span>
         </header>
 
         <Board cards={cards} addCard={addCard} vote={vote} />
