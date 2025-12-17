@@ -7,6 +7,13 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.5.3",
+      date: "16/12/2025",
+      changes: [
+        "REFACT: removendo componente nao utilizado (toast)",
+      ],
+    },
+    {
       version: "0.5.2",
       date: "16/12/2025",
       changes: [

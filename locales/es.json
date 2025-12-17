@@ -54,9 +54,6 @@
       "noId": "ID de la sala no encontrado",
       "enterName": "Por favor, escriba su nombre."
     },
-    "toast": {
-      "roomId": "ID de la sala: {roomId}. Puede encontrarlo en el botón al final de la página para copiarlo."
-    },
     "modal": {
       "enterName": "Escriba su nombre",
       "namePlaceholder": "Su nombre...",

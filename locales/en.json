@@ -54,9 +54,6 @@
       "noId": "Room ID not found",
       "enterName": "Please enter your name."
     },
-    "toast": {
-      "roomId": "Room ID: {roomId}. You can find it on the button at the bottom of the page to copy it."
-    },
     "modal": {
       "enterName": "Enter your name",
       "namePlaceholder": "Your name...",
