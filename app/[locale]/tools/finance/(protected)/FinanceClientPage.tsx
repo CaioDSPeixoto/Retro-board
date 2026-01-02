@@ -62,19 +62,8 @@ export default function FinanceClientPage({ initialItems, currentMonth, locale }
 
     const balance = totals.incomes - totals.expenses;
 
-    // DEBUG UI (Temporary)
-    const debugConfig = {
-        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "Present" : "MISSING",
-        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "Present" : "MISSING",
-    };
-
     return (
         <div className="pb-24">
-            {/* DEBUGGER */}
-            <div className="bg-yellow-100 p-2 text-xs text-center border-b border-yellow-300 text-yellow-900">
-                <strong>DEBUG:</strong> API Key: {debugConfig.apiKey} | Auth Domain: {debugConfig.authDomain} | User: {userName}
-            </div>
-
             {/* HEADER / RESUMO */}
             <div className="bg-blue-600 pt-8 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
                 {/* Background Decorative */}

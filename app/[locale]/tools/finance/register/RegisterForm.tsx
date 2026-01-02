@@ -15,8 +15,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // DEBUG: Validate Key availability
-    console.log("Register Using Key:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.slice(0, 5) + "...");
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
