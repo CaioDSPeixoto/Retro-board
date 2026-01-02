@@ -25,21 +25,19 @@ export default function LoginForm({ locale }: Props) {
         setLoading(true);
         setError("");
 
+        let userId = "";
+
         try {
-            // 1. Check Admin Bypass
             // 1. Check Admin Bypass
             if (email === "admin@gmail.com" && password === "admin") {
                 await loginAction("admin@gmail.com", locale);
-                return; // Server action redirects
+                return;
             }
 
             // 2. Firebase Auth
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // 3. Create Session with Firebase UID
-                await loginAction(user.uid, locale);
+                userId = userCredential.user.uid;
             } catch (firebaseError: any) {
                 console.error("Firebase Login Error", firebaseError);
                 if (firebaseError.code === 'auth/invalid-credential' || firebaseError.code === 'auth/user-not-found' || firebaseError.code === 'auth/wrong-password') {
@@ -48,12 +46,19 @@ export default function LoginForm({ locale }: Props) {
                     setError(t("errors.general"));
                 }
                 setLoading(false);
+                return; // Stop if firebase login fails
             }
 
         } catch (e) {
             console.error("Login unexpected error", e);
             setError(t("errors.general"));
             setLoading(false);
+            return;
+        }
+
+        // 3. Server Action (outside try/catch to allow redirect)
+        if (userId) {
+            await loginAction(userId, locale);
         }
     };
 

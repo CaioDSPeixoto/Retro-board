@@ -1,13 +1,16 @@
 "use client";
 
 import { FinanceItem } from "@/types/finance";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FiChevronLeft, FiChevronRight, FiPlus, FiFilter } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { useTranslations } from "next-intl";
 
 type Props = {
     initialItems: FinanceItem[];
@@ -16,8 +19,21 @@ type Props = {
 };
 
 export default function FinanceClientPage({ initialItems, currentMonth, locale }: Props) {
+    const t = useTranslations();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userName, setUserName] = useState("Gestor");
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user?.displayName) {
+                setUserName(user.displayName.split(" ")[0]); // First name
+            } else if (user?.email) {
+                setUserName(user.email.split("@")[0]);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     const currentDate = parseISO(currentMonth + "-01");
 
@@ -54,7 +70,7 @@ export default function FinanceClientPage({ initialItems, currentMonth, locale }
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none"></div>
 
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-lg font-medium opacity-90">Olá, Gestor!</h1>
+                    <h1 className="text-lg font-medium opacity-90">{t("Finance.hello")}, {userName}!</h1>
                     <div className="flex gap-4 items-center bg-blue-700/50 p-1 rounded-full px-4">
                         <button onClick={handlePrevMonth}><FiChevronLeft /></button>
                         <span className="text-sm font-semibold capitalize min-w-[100px] text-center">

@@ -124,6 +124,7 @@
     "workload848": "Carga diária: 8h48"
   },
   "Finance": {
+    "hello": "Olá",
     "title": "Financeiro",
     "expenses": "Despesas",
     "incomes": "Receitas",

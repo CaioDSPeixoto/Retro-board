@@ -32,12 +32,11 @@ export default function RegisterForm({ locale }: { locale: string }) {
             return;
         }
 
+        let userId = "";
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Auto login after register
-            await loginAction(user.uid, locale);
+            userId = userCredential.user.uid;
 
         } catch (firebaseError: any) {
             console.error("Firebase Register Error", firebaseError);
@@ -49,6 +48,12 @@ export default function RegisterForm({ locale }: { locale: string }) {
                 setError(t("errors.general"));
             }
             setLoading(false);
+            return;
+        }
+
+        // Auto login after register (outside try/catch)
+        if (userId) {
+            await loginAction(userId, locale);
         }
     };
 

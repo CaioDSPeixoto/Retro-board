@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 
 export default function AdBanner() {
-  const adClient = process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT || "ca-pub-9139888704774684";
-  const adSlot = process.env.NEXT_PUBLIC_GOOGLE_AD_SLOT || "1234567890";
+  const adClient = process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT;
+  const adSlot = process.env.NEXT_PUBLIC_GOOGLE_AD_SLOT;
 
   useEffect(() => {
+    if (!adClient || !adSlot) return;
+
     try {
       // @ts-ignore
       (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -14,7 +16,9 @@ export default function AdBanner() {
       if (e.message?.includes("already have ads")) return;
       console.error("AdSense error:", e);
     }
-  }, []);
+  }, [adClient, adSlot]);
+
+  if (!adClient || !adSlot) return null;
 
   return (
     <ins

@@ -32,13 +32,15 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <Script
-          id="google-adsense"
-          async
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT || "ca-pub-9139888704774684"}`}
-        />
+        {process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT && (
+          <Script
+            id="google-adsense"
+            async
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT}`}
+          />
+        )}
       </head>
       <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
         <NextIntlClientProvider messages={messages}>

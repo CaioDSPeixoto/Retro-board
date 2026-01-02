@@ -124,6 +124,7 @@
     "workload848": "Daily workload: 8h48"
   },
   "Finance": {
+    "hello": "Hello",
     "title": "Finance",
     "expenses": "Expenses",
     "incomes": "Incomes",
