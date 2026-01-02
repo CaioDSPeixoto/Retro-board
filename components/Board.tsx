@@ -1,7 +1,7 @@
 "use client";
 
 import Column from "./Column";
-import { Card, CATEGORIES } from "@/types/card";
+import { Card, CATEGORIES, CATEGORY_COLORS } from "@/types/card";
 import { useTranslations } from "next-intl";
 
 type BoardProps = {
@@ -10,12 +10,6 @@ type BoardProps = {
   vote: (cardId: string, type: "likes" | "dislikes") => void;
 };
 
-// Mapa de cores para cada categoria
-const CATEGORY_COLORS: Record<Card["category"], string> = {
-  bom: "bg-green-200",
-  ruim: "bg-red-200",
-  melhorar: "bg-yellow-200",
-};
 
 export default function Board({ cards, addCard, vote }: BoardProps) {
   const t = useTranslations("Room");

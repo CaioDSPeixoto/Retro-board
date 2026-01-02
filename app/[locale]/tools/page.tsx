@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { FiClock } from "react-icons/fi";
+import { FiDollarSign, FiList, FiUsers, FiWatch } from "react-icons/fi";
 
 export default function ToolsPage() {
   const t = useTranslations("Tools");
@@ -23,7 +23,7 @@ export default function ToolsPage() {
           href="tools/time-tracker"
           className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
         >
-          <FiClock size={28} className="text-blue-700" />
+          <FiWatch  size={28} className="text-blue-700" />
           <div>
             <h2 className="font-semibold text-lg text-gray-800">
               {t("timeTrackerTitle")}
@@ -39,7 +39,7 @@ export default function ToolsPage() {
             href="tools/todo"
             className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
             >
-            <FiClock size={28} className="text-blue-700" />
+            <FiList size={28} className="text-blue-700" />
             <div>
                 <h2 className="font-semibold text-lg text-gray-800">
                 {t("todoListTitle")}
@@ -48,7 +48,39 @@ export default function ToolsPage() {
                 {t("todoListDesc")}
                 </p>
             </div>
-            </Link>
+        </Link>
+
+        {/* Finance */}
+        <Link
+            href="tools/finance"
+            className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
+            >
+            <FiDollarSign size={28} className="text-blue-700" />
+            <div>
+                <h2 className="font-semibold text-lg text-gray-800">
+                {t("financeTitle")}
+                </h2>
+                <p className="text-sm text-gray-600">
+                {t("financeDesc")}
+                </p>
+            </div>
+        </Link>
+
+        {/* Chat */}
+        <Link
+            href="tools"
+            className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
+            >
+            <FiUsers size={28} className="text-blue-700" />
+            <div>
+                <h2 className="font-semibold text-lg text-gray-800">
+                {t("toolSoon")}
+                </h2>
+                <p className="text-sm text-gray-600">
+                {t("toolSoon")}
+                </p>
+            </div>
+        </Link>
       </div>
     </div>
   );

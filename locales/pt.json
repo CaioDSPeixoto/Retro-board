@@ -3,10 +3,10 @@
     "title": "📌 Versões & Lançamentos",
     "version": "Versão"
   },
-  "CardItem":{
+  "CardItem": {
     "author": "Autor"
   },
-  "CreateCard":{
+  "CreateCard": {
     "new": "Novo card..."
   },
   "Export": {
@@ -20,12 +20,12 @@
     "category": "Categoria",
     "content": "Conteúdo"
   },
-  "Navbar":{
+  "Navbar": {
     "home": "Início",
     "versionTitle": "Versão: v{version}",
     "tools": "Ferramentas"
   },
-  "Column":{
+  "Column": {
     "new": "Adicionar um novo card..."
   },
   "Room": {
@@ -100,12 +100,15 @@
     }
   },
   "Tools": {
-  "title": "Ferramentas",
-  "description": "Selecione abaixo uma das ferramentas disponíveis.",
-  "timeTrackerTitle": "Controle de Ponto",
-  "timeTrackerDesc": "Registre horários e calcule horas trabalhadas.",
-  "todoListTitle": "Tarefas",
-  "todoListDesc": "Gerencie tarefas com alertas de horário"
+    "title": "Ferramentas",
+    "description": "Selecione abaixo uma das ferramentas disponíveis.",
+    "timeTrackerTitle": "Controle de Ponto",
+    "timeTrackerDesc": "Registre horários e calcule horas trabalhadas.",
+    "todoListTitle": "Tarefas",
+    "todoListDesc": "Gerencie tarefas com alertas de horário",
+    "financeTitle": "Financeiro",
+    "financeDesc": "Gerencie suas contas e seus gastos",
+    "toolSoon": "Em construção..."
   },
   "TimeTracker": {
     "title": "Controle de Ponto",
@@ -120,10 +123,56 @@
     "workload8": "Carga diária: 8h",
     "workload848": "Carga diária: 8h48"
   },
+  "Finance": {
+    "title": "Financeiro",
+    "expenses": "Despesas",
+    "incomes": "Receitas",
+    "groups": "Grupos"
+  },
+  "UserMenu": {
+    "account": "Conta",
+    "logout": "Sair",
+    "versionTitle": "Ver notas da versão {version}"
+  },
   "TodoList": {
     "title": "Lista de Tarefas",
     "add": "Adicionar tarefa",
     "delete": "Excluir",
-    "placeholder": "Descrição da tarefa"
+    "placeholder": "Descrição da tarefa",
+    "clearAll": "Limpar tudo",
+    "remaining": "restantes",
+    "empty": "Nenhuma tarefa por enquanto..."
+  },
+  "FinanceLogin": {
+    "title": "Minhas Finanças",
+    "description": "Faça login para gerenciar suas contas",
+    "emailUserLabel": "Email ou Usuário",
+    "passwordLabel": "Senha",
+    "submitButton": "Acessar",
+    "loading": "Entrando...",
+    "noAccount": "Ainda não tem conta?",
+    "registerLink": "Cadastre-se",
+    "errors": {
+      "invalid": "Email ou senha inválidos.",
+      "general": "Erro ao autenticar. Tente novamente."
+    }
+  },
+  "FinanceRegister": {
+    "title": "Nova Conta",
+    "description": "Crie sua conta para começar",
+    "emailLabel": "Email",
+    "passwordLabel": "Senha",
+    "confirmPasswordLabel": "Confirmar Senha",
+    "submitButton": "Criar Conta",
+    "loading": "Criando conta...",
+    "hasAccount": "Já tem conta?",
+    "loginLink": "Entrar",
+    "errors": {
+      "match": "As senhas não coincidem.",
+      "length": "A senha deve ter pelo menos 6 caracteres.",
+      "inUse": "Este email já está em uso.",
+      "invalid": "Email inválido.",
+      "general": "Erro ao criar conta. Tente novamente."
+    }
   }
 }

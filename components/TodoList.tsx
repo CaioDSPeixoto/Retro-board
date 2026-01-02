@@ -1,146 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { useTodos } from "@/hooks/useTodos";
+import TodoItem from "./todo/TodoItem";
 
 export default function TodoList() {
   const t = useTranslations("TodoList");
-
-  const [tasks, setTasks] = useState<
-    { text: string; done: boolean; time?: string }[]
-  >([]);
+  const { tasks, addTask, toggleDone, removeTask, clearAll } = useTodos();
   const [newTask, setNewTask] = useState("");
   const [newTime, setNewTime] = useState("");
 
-  // Som de notificação
-  const alarmSound = typeof Audio !== "undefined" && new Audio(
-    "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"
-  );
-
-  // Carregar tasks do localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("todoTasks");
-    if (saved) setTasks(JSON.parse(saved));
-  }, []);
-
-  // Salvar tasks no localStorage
-  useEffect(() => {
-    localStorage.setItem("todoTasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  // Verificar alertas
-  useEffect(() => {
-    const interval = setInterval(checkAlerts, 1000);
-    return () => clearInterval(interval);
-  }, [tasks]);
-
-  const checkAlerts = () => {
-    const now = new Date();
-    const current = now.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    tasks.forEach((task) => {
-      if (task.time && task.time === current && !task.done) {
-        // Toca som
-        if (alarmSound) alarmSound.play().catch(() => {});
-      }
-    });
+  const handleAddKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleAdd();
   };
 
-  const addTask = () => {
-    if (!newTask) return;
-    setTasks([...tasks, { text: newTask, done: false, time: newTime }]);
+  const handleAdd = () => {
+    addTask(newTask, newTime);
     setNewTask("");
     setNewTime("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") addTask();
-  };
-
-  const toggleDone = (idx: number, done: boolean) => {
-    const copy = [...tasks];
-    copy[idx].done = done;
-    setTasks(copy);
-  };
-
-  const removeTask = (idx: number) =>
-    setTasks(tasks.filter((_, i) => i !== idx));
-
   return (
-    <div className="max-w-3xl w-full bg-white shadow-lg border border-blue-200 rounded-xl p-6">
-      <h1 className="text-3xl font-extrabold text-blue-600 mb-6">
-        <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
-          {t("title")}
-        </span>
-      </h1>
+    <div className="max-w-xl w-full mx-auto">
+      {/* Clean Design Container */}
+      <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
 
-      {/* Formulário para nova tarefa */}
-      <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t("placeholder")}
-          className="flex-1 border border-gray-300 rounded-xl p-2 shadow-sm text-gray-800"
-        />
-        <input
-          type="time"
-          value={newTime}
-          onChange={(e) => setNewTime(e.target.value)}
-          className="border border-gray-300 rounded-xl p-2 shadow-sm text-gray-800"
-        />
-        <button
-          onClick={addTask}
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium shadow"
-        >
-          {t("add")}
-        </button>
-      </div>
+        {/* Header */}
+        <div className="bg-blue-600 p-6 flex justify-between items-center text-white">
+          <div>
+            <h1 className="text-2xl font-bold">
+              {t("title")}
+            </h1>
+            <p className="text-blue-100 text-sm mt-1">
+              {tasks.filter(t => !t.done).length} {t("remaining")}
+            </p>
+          </div>
+          {tasks.length > 0 && (
+            <button
+              onClick={clearAll}
+              className="text-xs bg-blue-700/50 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition text-blue-100 border border-blue-500/30"
+            >
+              {t("clearAll")}
+            </button>
+          )}
+        </div>
 
-      {/* Lista de tarefas */}
-      <div className="flex flex-col gap-4">
-        {tasks.map((task, i) => (
-          <div
-            key={i}
-            className="flex flex-col md:flex-row items-center gap-4 border border-gray-200 p-4 rounded-xl bg-blue-50"
-          >
-            <input
-              type="checkbox"
-              checked={task.done}
-              onChange={(e) => toggleDone(i, e.target.checked)}
-              className="w-5 h-5"
-            />
-            <div className="flex-1 flex justify-between items-center">
-              <span
-                className={`${
-                  task.done ? "line-through text-gray-400" : "text-gray-800"
-                }`}
-              >
-                {task.text}
-              </span>
-              {task.time && (
-                <span
-                  className={`ml-4 text-sm ${
-                    task.done ? "line-through text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {task.time}
-                </span>
-              )}
+        {/* Content */}
+        <div className="p-6">
+
+          {/* Input Area */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 flex gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 transition">
+              <input
+                type="text"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                onKeyDown={handleAddKey}
+                placeholder={t("placeholder")}
+                className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400 outline-none"
+              />
+              <input
+                type="time"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+                className="w-24 bg-transparent border-l border-gray-200 pl-2 text-xs text-gray-500 focus:ring-0 outline-none"
+              />
             </div>
             <button
-              onClick={() => removeTask(i)}
-              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition shadow-sm text-sm font-bold"
+              onClick={handleAdd}
+              disabled={!newTask}
+              className="bg-blue-600 text-white w-12 h-12 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition shadow-md flex items-center justify-center"
             >
-              <FiTrash2 size={18} />
+              <FiPlus size={24} />
             </button>
           </div>
-        ))}
+
+          {/* Items List */}
+          <div className="flex flex-col gap-2">
+            {tasks.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-400 text-lg font-medium">
+                  {t("empty")}
+                </p>
+              </div>
+            )}
+
+            {tasks.map((task, i) => (
+              <TodoItem
+                key={i}
+                task={task}
+                onToggle={(done) => toggleDone(i, done)}
+                onRemove={() => removeTask(i)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

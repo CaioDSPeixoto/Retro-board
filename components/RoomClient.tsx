@@ -18,6 +18,7 @@ import { FaWhatsapp, FaCopy } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
+import NameModal from "@/components/NameModal";
 
 type RoomData = {
   requireName: boolean;
@@ -38,6 +39,14 @@ export default function RoomClient({ roomId, locale }: Props) {
   const [userName, setUserName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    setOrigin(window.location.origin);
+  }, []);
+
   useEffect(() => {
     const fetchRoom = async () => {
       const snap = await getDoc(doc(db, "rooms", roomId));
@@ -55,12 +64,24 @@ export default function RoomClient({ roomId, locale }: Props) {
       });
 
       const storedName = localStorage.getItem("userName");
-      if (data.requireName && !storedName) setShowNameModal(true);
-      if (storedName) setUserName(storedName);
+
+      // Se a sala exige nome e não temos um salvo, abre modal.
+      // E NÃO seta o userName ainda, para evitar escrita "anônima" prematura.
+      if (data.requireName && !storedName) {
+        setShowNameModal(true);
+      } else if (storedName) {
+        setUserName(storedName);
+      }
     };
 
     fetchRoom();
-  }, [roomId, locale, router]);
+  }, [roomId, locale, router, t]);
+
+  const handleSaveName = (name: string) => {
+    localStorage.setItem("userName", name);
+    setUserName(name);
+    setShowNameModal(false);
+  };
 
   useEffect(() => {
     const cached = localStorage.getItem(`room:${roomId}:cards`);
@@ -104,8 +125,8 @@ export default function RoomClient({ roomId, locale }: Props) {
   };
 
   const shareRoom = () => {
-    const roomUrl = `${window.location.origin}/${locale}/room/${roomId}`;
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const roomUrl = `${origin}/${locale}/room/${roomId}`;
+    if (isMobile) {
       window.open(t("share.whatsappUrl", { url: roomUrl }));
     } else {
       navigator.clipboard.writeText(roomUrl);
@@ -117,17 +138,23 @@ export default function RoomClient({ roomId, locale }: Props) {
 
   return (
     <div className="min-h-screen p-6 text-gray-900 relative">
+      <NameModal
+        isOpen={showNameModal}
+        onSave={handleSaveName}
+      />
+
       <button
         onClick={shareRoom}
-        className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition">
-        {/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? (
+        className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition z-40"
+      >
+        {isMobile ? (
           <FaWhatsapp className="text-2xl" />
         ) : (
           <FaCopy className="text-2xl" />
         )}
       </button>
 
-      <div className="max-w-7xl mx-auto">
+      <div className={`max-w-7xl mx-auto ${showNameModal ? 'blur-sm pointer-events-none' : ''}`}>
         <header className="mb-6 text-center">
           <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
             {roomData.roomName}

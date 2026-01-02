@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "firebase": "^12.3.0",
     "jspdf": "^3.0.3",

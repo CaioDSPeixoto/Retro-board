@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Script from "next/script";
+import AdBanner from "@/components/AdBanner";
 
 export const metadata: Metadata = {
   title: "Retrospectiva",
@@ -36,13 +37,18 @@ export default async function RootLayout({
           async
           strategy="afterInteractive"
           crossOrigin="anonymous"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9139888704774684"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT || "ca-pub-9139888704774684"}`}
         />
       </head>
       <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
         <NextIntlClientProvider messages={messages}>
-          <Navbar />
-          <main className="flex-1 w-full">{children}</main>
+          <Navbar locale={locale} />
+          <main className="flex-1 w-full flex flex-col">
+            {children}
+            <div className="mt-auto">
+              <AdBanner />
+            </div>
+          </main>
           <Footer />
         </NextIntlClientProvider>
       </body>

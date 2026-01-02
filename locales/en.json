@@ -3,10 +3,10 @@
     "title": "📌 Versions & Releases",
     "version": "Version"
   },
-  "CardItem":{
+  "CardItem": {
     "author": "Author"
   },
-  "CreateCard":{
+  "CreateCard": {
     "new": "New card..."
   },
   "Export": {
@@ -20,12 +20,12 @@
     "category": "Category",
     "content": "Content"
   },
-  "Navbar":{
+  "Navbar": {
     "home": "Home",
     "versionTitle": "Version: v{version}",
     "tools": "Tools"
   },
-  "Column":{
+  "Column": {
     "new": "Add a new card..."
   },
   "Room": {
@@ -100,12 +100,15 @@
     }
   },
   "Tools": {
-  "title": "Tools",
-  "description": "Select one of the available tools below.",
-  "timeTrackerTitle": "Time Tracker",
-  "timeTrackerDesc": "Register times and calculate hours worked.",
-  "todoListTitle": "Todo List",
-  "todoListDesc": "Manage tasks with time alerts"
+    "title": "Tools",
+    "description": "Select one of the available tools below.",
+    "timeTrackerTitle": "Time Tracker",
+    "timeTrackerDesc": "Register times and calculate hours worked.",
+    "todoListTitle": "Todo List",
+    "todoListDesc": "Manage tasks with time alerts",
+    "financeTitle": "Finance",
+    "financeDesc": "Manage your accounts and expenses",
+    "toolSoon": "Coming soon..."
   },
   "TimeTracker": {
     "title": "Time Tracker",
@@ -120,10 +123,56 @@
     "workload8": "Daily workload: 8h",
     "workload848": "Daily workload: 8h48"
   },
+  "Finance": {
+    "title": "Finance",
+    "expenses": "Expenses",
+    "incomes": "Incomes",
+    "groups": "Groups"
+  },
+  "UserMenu": {
+    "account": "Account",
+    "logout": "Logout",
+    "versionTitle": "View release notes {version}"
+  },
   "TodoList": {
     "title": "Todo List",
     "add": "Add task",
     "delete": "Delete",
-    "placeholder": "Task description"
+    "placeholder": "Task description",
+    "clearAll": "Clear all",
+    "remaining": "remaining",
+    "empty": "No tasks yet..."
+  },
+  "FinanceLogin": {
+    "title": "My Finance",
+    "description": "Login to manage your accounts",
+    "emailUserLabel": "Email or Username",
+    "passwordLabel": "Password",
+    "submitButton": "Access",
+    "loading": "Logging in...",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up",
+    "errors": {
+      "invalid": "Invalid email or password.",
+      "general": "Authentication error. Try again."
+    }
+  },
+  "FinanceRegister": {
+    "title": "New Account",
+    "description": "Create your account to start",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "submitButton": "Create Account",
+    "loading": "Creating account...",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Login",
+    "errors": {
+      "match": "Passwords do not match.",
+      "length": "Password must be at least 6 characters.",
+      "inUse": "Email already in use.",
+      "invalid": "Invalid email.",
+      "general": "Error creating account. Try again."
+    }
   }
 }
