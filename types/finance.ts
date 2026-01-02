@@ -8,6 +8,8 @@ export type FinanceItem = {
     title: string;
     amount: number;
     date: string; // YYYY-MM-DD
+    category: string;
     status: FinanceStatus;
     createdAt: string; // ISO String
+    isFixed?: boolean;
 };

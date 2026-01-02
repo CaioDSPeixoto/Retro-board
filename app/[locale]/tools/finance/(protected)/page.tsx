@@ -1,11 +1,11 @@
-import { getFinanceItems } from "./actions";
-import { format, subMonths, addMonths } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import FinanceClientPage from "./FinanceClientPage"; // Vamos separar o Client Component
+// app/[locale]/tools/finance/(protected)/page.tsx
+import { getFinanceItems, getCategories } from "./actions";
+import { format } from "date-fns";
+import FinanceClientPage from "./FinanceClientPage";
 
 export default async function FinancePage({
   searchParams,
-  params
+  params,
 }: {
   searchParams: Promise<{ month?: string }>;
   params: Promise<{ locale: string }>;
@@ -13,15 +13,17 @@ export default async function FinancePage({
   const { month } = await searchParams;
   const { locale } = await params;
 
-  // Define mês atual se não vier na URL
   const currentMonth = month || format(new Date(), "yyyy-MM");
 
-  // Busca dados
-  const items = await getFinanceItems(currentMonth);
+  const [items, categories] = await Promise.all([
+    getFinanceItems(currentMonth),
+    getCategories(),
+  ]);
 
   return (
     <FinanceClientPage
       initialItems={items}
+      initialCategories={categories}
       currentMonth={currentMonth}
       locale={locale}
     />
