@@ -1,9 +1,12 @@
 // app/[locale]/tools/finance/(protected)/page.tsx
 export const dynamic = "force-dynamic";
 
-import { getFinanceItems, getCategories } from "./actions";
 import { format } from "date-fns";
 import FinanceClientPage from "./FinanceClientPage";
+import {
+  getFinanceItemsData,
+  getCategoriesData,
+} from "./data";
 
 export default async function FinancePage({
   searchParams,
@@ -18,8 +21,8 @@ export default async function FinancePage({
   const currentMonth = month || format(new Date(), "yyyy-MM");
 
   const [items, categories] = await Promise.all([
-    getFinanceItems(currentMonth),
-    getCategories(),
+    getFinanceItemsData(currentMonth),
+    getCategoriesData(),
   ]);
 
   return (

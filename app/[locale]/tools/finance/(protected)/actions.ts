@@ -1,3 +1,4 @@
+// app/[locale]/tools/finance/(protected)/actions.ts
 "use server";
 
 import { db } from "@/lib/firebase";
@@ -7,50 +8,13 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  query,
-  where,
-  getDocs,
 } from "firebase/firestore";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { FinanceItem } from "@/types/finance";
+import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 
-// categorias padrão (imutáveis pelo usuário)
-export const BUILTIN_CATEGORIES = [
-  "Alimentação",
-  "Transporte",
-  "Contas Fixas",
-];
-
-export async function getCategories(): Promise<string[]> {
-  const sessionUser = await getSession();
-  if (!sessionUser) {
-    // em rotas protegidas em teoria nunca cai aqui, mas fica o fallback
-    return BUILTIN_CATEGORIES;
-  }
-
-  try {
-    const q = query(
-      collection(db, "finance_categories"),
-      where("userId", "==", sessionUser),
-    );
-
-    const snapshot = await getDocs(q);
-    const customNames = snapshot.docs
-      .map((d) => (d.data().name as string) || "")
-      .filter((n) => n.trim().length > 0);
-
-    const unique = Array.from(
-      new Set([...BUILTIN_CATEGORIES, ...customNames]),
-    );
-
-    return unique;
-  } catch (error) {
-    console.error("Erro ao buscar categorias:", error);
-    return BUILTIN_CATEGORIES;
-  }
-}
-
+// Criar categoria customizada
 export async function createCategory(name: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -60,7 +24,6 @@ export async function createCategory(name: string, locale: string) {
     return { error: "Nome de categoria inválido" };
   }
 
-  // não precisa salvar as built-in; só custom
   if (BUILTIN_CATEGORIES.includes(trimmed)) {
     return { error: "Essa categoria já existe" };
   }
@@ -81,6 +44,7 @@ export async function createCategory(name: string, locale: string) {
   }
 }
 
+// Adicionar item
 export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -130,6 +94,7 @@ export async function addFinanceItem(formData: FormData) {
   }
 }
 
+// Atualizar item
 export async function updateFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -164,6 +129,7 @@ export async function updateFinanceItem(formData: FormData) {
   }
 }
 
+// Deletar item
 export async function deleteFinanceItem(id: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -178,6 +144,7 @@ export async function deleteFinanceItem(id: string, locale: string) {
   }
 }
 
+// Alternar status pago/pendente
 export async function toggleStatus(
   id: string,
   currentStatus: "paid" | "pending",
@@ -197,37 +164,5 @@ export async function toggleStatus(
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
     return { error: "Erro ao atualizar status" };
-  }
-}
-
-export async function getFinanceItems(
-  month: string, // "YYYY-MM"
-): Promise<FinanceItem[]> {
-  const sessionUser = await getSession();
-  if (!sessionUser) return [];
-
-  try {
-    const q = query(
-      collection(db, "finance_items"),
-      where("userId", "==", sessionUser),
-    );
-
-    const snapshot = await getDocs(q);
-    const allItems = snapshot.docs.map(
-      (docSnap) => ({ id: docSnap.id, ...docSnap.data() } as FinanceItem),
-    );
-
-    // Filtra pelo mês selecionado
-    const filtered = allItems.filter((item) =>
-      item.date.startsWith(month),
-    );
-
-    // Ordena por data desc (mais recente primeiro)
-    filtered.sort((a, b) => (a.date < b.date ? 1 : -1));
-
-    return filtered;
-  } catch (error) {
-    console.error("Erro ao buscar items:", error);
-    return [];
   }
 }
