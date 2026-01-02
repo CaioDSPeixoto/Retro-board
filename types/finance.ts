@@ -9,4 +9,5 @@ export type FinanceItem = {
   category: string;
   createdAt: string;
   isFixed?: boolean;
+  isSynthetic?: boolean;
 };

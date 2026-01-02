@@ -72,7 +72,7 @@ export default function FinanceClientPage({
       <div className="bg-blue-600 pt-8 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        <div className="flex justify_between items-center mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-lg font-medium opacity-90">
             {t("Finance.hello")}, {userName}!
           </h1>

@@ -25,8 +25,10 @@ export default function FinanceItemCard({ item, locale }: Props) {
   const router = useRouter();
   const isIncome = item.type === "income";
   const isPaid = item.status === "paid";
+  const isSynthetic = item.isSynthetic === true;
 
   const handleDelete = async () => {
+    if (isSynthetic) return; // não tenta deletar sintético
     if (confirm("Tem certeza que deseja apagar?")) {
       const res = await deleteFinanceItem(item.id, locale);
       if (!("error" in res) || !res.error) {
@@ -36,6 +38,7 @@ export default function FinanceItemCard({ item, locale }: Props) {
   };
 
   const handleToggle = async () => {
+    if (isSynthetic) return; // não tenta alterar sintético
     const res = await toggleStatus(item.id, item.status, locale);
     if (!("error" in res) || !res.error) {
       router.refresh();
@@ -53,7 +56,14 @@ export default function FinanceItemCard({ item, locale }: Props) {
       </div>
 
       <div className="flex-1">
-        <h3 className="font-bold text-gray-800">{item.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
+          {item.isFixed && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+              Fixa
+            </span>
+          )}
+        </div>
         <p className="text-xs text-gray-400 capitalize">
           {format(new Date(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
         </p>
@@ -73,22 +83,24 @@ export default function FinanceItemCard({ item, locale }: Props) {
           }).format(item.amount)}
         </span>
 
-        <div className="flex items-center gap-3 mt-1">
-          <button
-            onClick={handleToggle}
-            className={`${
-              isPaid ? "text-green-500" : "text-gray-300"
-            } hover:text-green-600 transition`}
-          >
-            {isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-gray-300 hover:text-red-500 transition"
-          >
-            <FiTrash2 size={16} />
-          </button>
-        </div>
+        {!isSynthetic && (
+          <div className="flex items-center gap-3 mt-1">
+            <button
+              onClick={handleToggle}
+              className={`${
+                isPaid ? "text-green-500" : "text-gray-300"
+              } hover:text-green-600 transition`}
+            >
+              {isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
+            </button>
+            <button
+              onClick={handleDelete}
+              className="text-gray-300 hover:text-red-500 transition"
+            >
+              <FiTrash2 size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

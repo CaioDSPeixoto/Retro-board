@@ -82,7 +82,27 @@ export async function addFinanceItem(formData: FormData) {
   };
 
   try {
+    // 1) salva lançamento do mês atual
     await addDoc(collection(db, "finance_items"), newItem);
+
+    // 2) se for despesa fixa em Contas Fixas, salva um template
+    if (
+      type === "expense" &&
+      category.trim() === "Contas Fixas" &&
+      isFixedFlag
+    ) {
+      const day = parseInt(date.split("-")[2] || "1", 10);
+      await addDoc(collection(db, "finance_fixed_templates"), {
+        userId: sessionUser,
+        title: title.trim(),
+        amount,
+        day,
+        category: category.trim(),
+        createdAt: new Date().toISOString(),
+        active: true,
+      });
+    }
+
     revalidatePath(`/${locale}/tools/finance`);
     return { success: true };
   } catch (error) {
@@ -91,6 +111,7 @@ export async function addFinanceItem(formData: FormData) {
   }
 }
 
+// updateFinanceItem, deleteFinanceItem, toggleStatus permanecem como antes
 export async function updateFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
