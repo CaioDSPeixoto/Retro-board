@@ -66,26 +66,13 @@ export default function FinanceClientPage({
 
   const balance = totals.incomes - totals.expenses;
 
-  const debugConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "Present" : "MISSING",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-      ? "Present"
-      : "MISSING",
-  };
-
   return (
     <div className="pb-24">
-      {/* DEBUGGER */}
-      <div className="bg-yellow-100 p-2 text-xs text-center border-b border-yellow-300 text-yellow-900">
-        <strong>DEBUG:</strong> API Key: {debugConfig.apiKey} | Auth Domain:{" "}
-        {debugConfig.authDomain} | User: {userName}
-      </div>
-
       {/* HEADER */}
       <div className="bg-blue-600 pt-8 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify_between items-center mb-6">
           <h1 className="text-lg font-medium opacity-90">
             {t("Finance.hello")}, {userName}!
           </h1>
@@ -138,7 +125,7 @@ export default function FinanceClientPage({
         </div>
       </div>
 
-      {/* LISTA DE TRANSAÇÕES */}
+      {/* LISTA */}
       <div className="px-6 -mt-6">
         <div className="flex justify-between items-center mb-4 px-2">
           <h3 className="font-bold text-gray-700">Transações</h3>
@@ -166,7 +153,7 @@ export default function FinanceClientPage({
         )}
       </div>
 
-      {/* BOTÃO FLOATING */}
+      {/* BOTÃO FLOAT */}
       <button
         onClick={() => setIsModalOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"

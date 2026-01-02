@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/page.tsx
 export const dynamic = "force-dynamic";
 
 import { format } from "date-fns";

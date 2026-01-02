@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/data.ts
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getSession } from "@/lib/auth/session";
@@ -6,7 +5,7 @@ import { FinanceItem } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 
 export async function getFinanceItemsData(
-  month: string, // "YYYY-MM"
+  month: string,
 ): Promise<FinanceItem[]> {
   const sessionUser = await getSession();
   if (!sessionUser) return [];

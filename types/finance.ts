@@ -1,15 +1,12 @@
-export type FinanceType = "income" | "expense";
-export type FinanceStatus = "paid" | "pending";
-
 export type FinanceItem = {
-    id: string;
-    userId: string;
-    type: FinanceType;
-    title: string;
-    amount: number;
-    date: string; // YYYY-MM-DD
-    category: string;
-    status: FinanceStatus;
-    createdAt: string; // ISO String
-    isFixed?: boolean;
+  id: string;
+  userId: string;
+  title: string;
+  amount: number;
+  date: string; // "YYYY-MM-DD"
+  type: "income" | "expense";
+  status: "paid" | "pending";
+  category: string;
+  createdAt: string;
+  isFixed?: boolean;
 };

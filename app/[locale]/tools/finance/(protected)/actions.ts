@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/actions.ts
 "use server";
 
 import { db } from "@/lib/firebase";
@@ -14,7 +13,6 @@ import { revalidatePath } from "next/cache";
 import { FinanceItem } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 
-// Criar categoria customizada
 export async function createCategory(name: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -44,7 +42,6 @@ export async function createCategory(name: string, locale: string) {
   }
 }
 
-// Adicionar item
 export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -94,7 +91,6 @@ export async function addFinanceItem(formData: FormData) {
   }
 }
 
-// Atualizar item
 export async function updateFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -129,7 +125,6 @@ export async function updateFinanceItem(formData: FormData) {
   }
 }
 
-// Deletar item
 export async function deleteFinanceItem(id: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
@@ -144,7 +139,6 @@ export async function deleteFinanceItem(id: string, locale: string) {
   }
 }
 
-// Alternar status pago/pendente
 export async function toggleStatus(
   id: string,
   currentStatus: "paid" | "pending",

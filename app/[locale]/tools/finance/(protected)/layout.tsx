@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/layout.tsx
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
