@@ -10,7 +10,6 @@ import {
     query,
     where,
     getDocs,
-    orderBy,
 } from "firebase/firestore";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
@@ -20,23 +19,26 @@ export async function addFinanceItem(formData: FormData) {
     const sessionUser = await getSession();
     if (!sessionUser) return { error: "Unauthorized" };
 
-    const title = formData.get("title") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-    const date = formData.get("date") as string;
-    const type = formData.get("type") as "income" | "expense";
-    const locale = formData.get("locale") as string;
+    const title = (formData.get("title") as string) || "";
+    const amountStr = (formData.get("amount") as string) || "";
+    const date = (formData.get("date") as string) || "";
+    const type = formData.get("type") as "income" | "expense" | null;
+    const locale = ((formData.get("locale") as string) || "pt-br").toLowerCase();
+    const statusField = formData.get("status") as "paid" | "pending" | null;
 
-    if (!title || !amount || !date || !type) {
+    const amount = parseFloat(amountStr);
+
+    if (!title.trim() || isNaN(amount) || !date || !type) {
         return { error: "Dados incompletos" };
     }
 
     const newItem: Omit<FinanceItem, "id"> = {
         userId: sessionUser,
-        title,
+        title: title.trim(),
         amount,
         date,
         type,
-        status: (formData.get("status") as "paid" | "pending") || "pending",
+        status: statusField || "pending",
         createdAt: new Date().toISOString(),
     };
 
@@ -54,16 +56,22 @@ export async function updateFinanceItem(formData: FormData) {
     const sessionUser = await getSession();
     if (!sessionUser) return { error: "Unauthorized" };
 
-    const id = formData.get("id") as string;
-    const title = formData.get("title") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-    const date = formData.get("date") as string;
+    const id = (formData.get("id") as string) || "";
+    const title = (formData.get("title") as string) || "";
+    const amountStr = (formData.get("amount") as string) || "";
+    const date = (formData.get("date") as string) || "";
     const status = formData.get("status") as "paid" | "pending";
-    const locale = formData.get("locale") as string;
+    const locale = ((formData.get("locale") as string) || "pt-br").toLowerCase();
+
+    const amount = parseFloat(amountStr);
+
+    if (!id || !title.trim() || isNaN(amount) || !date) {
+        return { error: "Dados incompletos" };
+    }
 
     try {
         await updateDoc(doc(db, "finance_items", id), {
-            title,
+            title: title.trim(),
             amount,
             date,
             status,
@@ -85,11 +93,16 @@ export async function deleteFinanceItem(id: string, locale: string) {
         revalidatePath(`/${locale}/tools/finance`);
         return { success: true };
     } catch (error) {
+        console.error("Erro ao deletar:", error);
         return { error: "Erro ao deletar" };
     }
 }
 
-export async function toggleStatus(id: string, currentStatus: "paid" | "pending", locale: string) {
+export async function toggleStatus(
+    id: string,
+    currentStatus: "paid" | "pending",
+    locale: string,
+) {
     const sessionUser = await getSession();
     if (!sessionUser) return { error: "Unauthorized" };
 
@@ -102,6 +115,7 @@ export async function toggleStatus(id: string, currentStatus: "paid" | "pending"
         revalidatePath(`/${locale}/tools/finance`);
         return { success: true };
     } catch (error) {
+        console.error("Erro ao atualizar status:", error);
         return { error: "Erro ao atualizar status" };
     }
 }
@@ -110,28 +124,29 @@ export async function getFinanceItems(
     month: string, // "YYYY-MM"
 ): Promise<FinanceItem[]> {
     const sessionUser = await getSession();
-
     if (!sessionUser) return [];
 
     try {
-        // Busca simples: filtra por UserId e depois filtramos a data no código (para simplificar índices do Firestore)
-        // OU: usar where("date", ">=", start) ...
-        // Para simplificar e evitar criar índices compostos agora, vou buscar tudo do user e filtrar.
-        // SE ficar lento, criamos índices.
-
         const q = query(
             collection(db, "finance_items"),
             where("userId", "==", sessionUser),
-            orderBy("date", "desc")
+            // sem orderBy aqui pra evitar índice composto por enquanto
         );
 
         const snapshot = await getDocs(q);
         const allItems = snapshot.docs.map(
-            (doc) => ({ id: doc.id, ...doc.data() } as FinanceItem)
+            (docSnap) => ({ id: docSnap.id, ...docSnap.data() } as FinanceItem),
         );
 
-        // Filtra pelo mês selecionado
-        return allItems.filter((item) => item.date.startsWith(month));
+        // Filtra pelo mês selecionado (date = "YYYY-MM-DD")
+        const filtered = allItems.filter((item) =>
+            item.date.startsWith(month),
+        );
+
+        // Ordena por data desc (mais recente primeiro)
+        filtered.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+        return filtered;
     } catch (error) {
         console.error("Erro ao buscar items:", error);
         return [];
