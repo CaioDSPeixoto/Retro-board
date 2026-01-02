@@ -1,9 +1,12 @@
+// app/[locale]/tools/finance/(protected)/layout.tsx
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 
 export default async function FinanceLayout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -15,9 +18,5 @@ export default async function FinanceLayout({
     redirect(`/${locale}/tools/finance/login`);
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {children}
-    </div>
-  );
+  return <div className="min-h-screen bg-gray-50">{children}</div>;
 }
