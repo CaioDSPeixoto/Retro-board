@@ -45,7 +45,7 @@ export async function addFinanceItem(formData: FormData) {
         revalidatePath(`/${locale}/tools/finance`);
         return { success: true };
     } catch (error) {
-        console.error("Erro ao adicionar:", error);
+        console.error("Error adding item:", error);
         return { error: "Erro ao salvar" };
     }
 }
@@ -110,6 +110,7 @@ export async function getFinanceItems(
     month: string, // "YYYY-MM"
 ): Promise<FinanceItem[]> {
     const sessionUser = await getSession();
+
     if (!sessionUser) return [];
 
     try {
