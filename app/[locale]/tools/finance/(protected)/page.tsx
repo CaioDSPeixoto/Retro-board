@@ -1,4 +1,5 @@
-// app/[locale]/tools/finance/(protected)/page.tsx
+export const dynamic = "force-dynamic";
+
 import { getFinanceItems, getCategories } from "./actions";
 import { format } from "date-fns";
 import FinanceClientPage from "./FinanceClientPage";
