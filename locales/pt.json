@@ -128,7 +128,34 @@
     "title": "Financeiro",
     "expenses": "Despesas",
     "incomes": "Receitas",
-    "groups": "Grupos"
+    "groups": "Grupos",
+
+    "incomesTitle": "Receitas",
+    "noIncomesThisMonth": "Nenhuma receita lançada neste mês.",
+    "expensesTitle": "Despesas",
+    "noExpensesThisMonth": "Nenhuma despesa lançada neste mês.",
+
+    "transactionsTitle": "Transações",
+    "noTransactionsThisMonth": "Nenhum lançamento este mês.",
+
+    "categoryTitle": "Categoria",
+    "noCategoryThisMonth": "Nenhum lançamento nesta categoria neste mês.",
+
+    "overdueTitle": "Em atraso",
+    "noOverdueThisMonth": "Não há contas em atraso neste mês.",
+
+    "launchedBy": "Lançado por",
+    "openAmount": "Saldo em aberto",
+
+    "statusPending": "Pendente",
+    "statusPaid": "Pago",
+    "statusPartial": "Parcialmente pago",
+
+    "fixedLabel": "Fixa",
+    "overdueBadge": "Em atraso",
+    "overdueMoved": "Movida para o próximo mês",
+
+    "confirmDelete": "Tem certeza que deseja apagar este lançamento?"
   },
   "UserMenu": {
     "account": "Conta",
@@ -175,5 +202,113 @@
       "invalid": "Email inválido.",
       "general": "Erro ao criar conta. Tente novamente."
     }
-  }
+  },
+  "FinancePage": {
+    "hello": "Olá",
+    "boardLabel": "Quadro de finanças",
+    "allBoardsLabel": "Todos os quadros",
+    "currentBoardPrefix": "Você está no quadro",
+    "balanceTitle": "Saldo em Caixa",
+    "entriesLabel": "Entradas",
+    "exitsLabel": "Saídas",
+    "shareTitle": "Compartilhar quadro",
+    "shareCodeLabel": "Código do quadro",
+    "shareCodeHint": "Envie esse código para alguém usar a opção \"Entrar em um quadro existente\".",
+    "shareEmailLabel": "Convidar por e-mail",
+    "shareEmailPlaceholder": "email@exemplo.com",
+    "shareEmailButton": "Enviar convite",
+    "inviteSent": "Convite enviado com sucesso!",
+    "overdueTitle": "Contas em atraso",
+    "overdueSubtitle": "Você tem {count} conta(s) com vencimento já passado.",
+    "transactionsTitle": "Transações",
+    "transactionsCount": "{count} lançamentos",
+    "noTransactions": "Nenhum lançamento este mês.",
+    "addNow": "Adicionar agora",
+    "pendingApprovalsTitle": "Aprovações pendentes",
+    "pendingApprovalsMessage": "Você tem {count} solicitação(ões) para entrar em quadros que você administra. Acesse a área de convites para aprovar ou recusar.",
+    "pendingApprovalsClose": "Entendi",
+    "joinByCodeTitle": "Entrar em um quadro por código",
+    "joinByCodeLabel": "Código do quadro",
+    "joinByCodePlaceholder": "Cole aqui o código que você recebeu",
+    "joinByCodeButton": "Solicitar entrada",
+    "invitesSectionTitle": "Convites e aprovações",
+    "invitesForYou": "Convites para você",
+    "noInvites": "Você não possui convites pendentes no momento.",
+    "ownerRequests": "Solicitações nos seus quadros",
+    "noOwnerRequests": "Nenhuma solicitação pendente nos quadros que você administra."
+  },
+  "FinanceBoards": {
+    "title": "Quadros de finanças",
+    "description": "Crie um novo quadro ou entre em um existente para organizar suas contas sozinho(a) ou com outras pessoas.",
+    "createSectionTitle": "Criar novo quadro",
+    "createNameLabel": "Nome do quadro",
+    "createNamePlaceholder": "Ex: Casa, Viagem com amigos...",
+    "createPersonalLabel": "Quadro pessoal (somente você vê e lança)",
+    "createButton": "Criar quadro",
+    "joinSectionTitle": "Entrar em um quadro existente",
+    "joinCodeLabel": "Código do quadro",
+    "joinCodePlaceholder": "Cole aqui o código que recebeu",
+    "joinButton": "Entrar",
+    "listTitle": "Seus quadros",
+    "personalTag": "Pessoal",
+    "sharedTag": "Compartilhado",
+    "openBoard": "Abrir",
+    "emptyMessage": "Você ainda não tem quadros criados ou compartilhados.",
+    "newBoardLabel": "Novo quadro",
+    "newBoardPlaceholder": "Dê um nome para este quadro",
+    "emptyTitle": "Você ainda não tem quadros",
+    "emptySubtitle": "Crie um novo quadro para começar a organizar suas finanças.",
+    "errors": {
+      "nameRequired": "Dê um nome para o quadro antes de criar.",
+      "codeRequired": "Informe o código do quadro para entrar.",
+      "boardNotFound": "Quadro não encontrado ou você ainda não foi aceito.",
+      "general": "Ocorreu um erro. Tente novamente."
+    }
+  },
+  "FinanceForm": {
+  "newTransactionTitle": "Novo lançamento",
+  "editTransactionTitle": "Editar lançamento",
+
+  "typeIncome": "Receita",
+  "typeExpense": "Despesa",
+
+  "categoryLabel": "Categoria",
+  "customCategoryHint": "Precisa de algo diferente? Adicione uma categoria personalizada:",
+  "customCategoryPlaceholder": "Nome da categoria",
+  "savingCategory": "Salvando...",
+  "addCategory": "Adicionar",
+
+  "descriptionLabel": "Descrição",
+  "descriptionPlaceholder": "Ex: Aluguel, Salário...",
+  "amountLabel": "Valor (R$)",
+  "dateLabel": "Data",
+
+  "alreadyPaidLabel": "Já foi pago/recebido?",
+  "paidAmountLabel": "Valor já pago (opcional)",
+  "paidAmountHint": "Use este campo para registrar pagamentos parciais. O saldo em aberto será levado para o próximo mês.",
+
+  "fixedCheckboxLabel": "Lançamento fixo (repetir todo mês)",
+
+  "savingButton": "Salvando...",
+  "saveButton": "Salvar lançamento",
+  "saveEditButton": "Salvar alterações",
+
+  "errors": {
+    "createCategory": "Erro ao criar categoria.",
+    "requiredFields": "Preencha todos os campos obrigatórios.",
+    "invalidAmount": "Informe um valor válido.",
+    "unknown": "Erro ao salvar. Tente novamente."
+  },
+
+  "title": "Novo lançamento",
+  "income": "Receita",
+  "expense": "Despesa",
+  "categoryCustomHelp": "Precisa de algo diferente? Adicione uma categoria personalizada:",
+  "categoryNamePlaceholder": "Nome da categoria",
+  "categoryAddButton": "Adicionar",
+  "paidLabel": "Já foi pago/recebido?",
+  "fixedLabel": "Despesa fixa (repetir todo mês)",
+  "submit": "Salvar lançamento",
+  "saving": "Salvando..."
+}
 }

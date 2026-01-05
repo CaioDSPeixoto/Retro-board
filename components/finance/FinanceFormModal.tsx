@@ -1,3 +1,4 @@
+// components/finance/FinanceFormModal.tsx
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
@@ -5,14 +6,22 @@ import { FiX } from "react-icons/fi";
 import {
   addFinanceItem,
   createCategory,
+  updateFinanceItem,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { useRouter } from "next/navigation";
+import { FinanceItem } from "@/types/finance";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   locale: string;
   initialCategories: string[];
+  initialItem?: FinanceItem | null;
+  boardId?: string | null;
+  onSaved?: () => void;
 };
 
 export default function FinanceFormModal({
@@ -20,28 +29,56 @@ export default function FinanceFormModal({
   onClose,
   locale,
   initialCategories,
+  initialItem,
+  boardId,
+  onSaved,
 }: Props) {
-  const [type, setType] = useState<"income" | "expense">("expense");
+  const t = useTranslations("FinanceForm");
+  const [type, setType] = useState<"income" | "expense">(
+    initialItem?.type ?? "expense",
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [category, setCategory] = useState<string>(
-    initialCategories[0] || "Contas Fixas",
+    initialItem?.category ||
+      initialCategories[0] ||
+      "Contas Fixas",
   );
   const [newCategory, setNewCategory] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
 
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const isEditMode = !!initialItem;
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user?.displayName) {
+        setCurrentUserName(user.displayName.split(" ")[0]);
+      } else if (user?.email) {
+        setCurrentUserName(user.email.split("@")[0]);
+      } else if (user?.uid) {
+        setCurrentUserName(user.uid);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!initialCategories || initialCategories.length === 0) return;
     setCategories(initialCategories);
-    if (!initialCategories.includes(category)) {
+
+    if (initialItem?.category) {
+      setCategory(initialItem.category);
+      setType(initialItem.type);
+    } else if (!initialCategories.includes(category)) {
       setCategory(initialCategories[0]);
     }
-  }, [initialCategories]);
+  }, [initialCategories, initialItem, isOpen]);
 
   if (!isOpen) return null;
 
@@ -78,8 +115,24 @@ export default function FinanceFormModal({
 
     formData.append("locale", locale);
     formData.append("category", category);
+    formData.append("type", type);
+    if (boardId) {
+      formData.append("boardId", boardId);
+    }
+    if (currentUserName) {
+      formData.append("createdByName", currentUserName);
+    }
 
-    const res = await addFinanceItem(formData);
+    let res:
+      | { success?: boolean; error?: string }
+      | undefined;
+
+    if (isEditMode && initialItem) {
+      formData.append("id", initialItem.id);
+      res = await updateFinanceItem(formData);
+    } else {
+      res = await addFinanceItem(formData);
+    }
 
     setLoading(false);
 
@@ -92,17 +145,22 @@ export default function FinanceFormModal({
       router.refresh();
     });
 
+    if (onSaved) onSaved();
     onClose();
   };
 
-  const showFixedOption =
-    type === "expense" && category === "Contas Fixas";
+  // agora fixa vale para income e expense
+  const showFixedOption = category === "Contas Fixas";
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
       <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Novo Lançamento</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            {isEditMode
+              ? t("editTransactionTitle")
+              : t("newTransactionTitle")}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -129,7 +187,7 @@ export default function FinanceFormModal({
                   : "text-gray-500"
               }`}
             >
-              Receita
+              {t("typeIncome")}
             </button>
             <button
               type="button"
@@ -140,7 +198,7 @@ export default function FinanceFormModal({
                   : "text-gray-500"
               }`}
             >
-              Despesa
+              {t("typeExpense")}
             </button>
           </div>
           <input type="hidden" name="type" value={type} />
@@ -148,7 +206,7 @@ export default function FinanceFormModal({
           {/* Categoria */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-500 uppercase">
-              Categoria
+              {t("categoryLabel")}
             </label>
             <select
               required
@@ -165,14 +223,14 @@ export default function FinanceFormModal({
 
             <div className="mt-1 p-2 rounded-xl bg-gray-50 border border-dashed border-gray-200">
               <p className="text-[11px] text-gray-500 mb-2">
-                Precisa de algo diferente? Adicione uma categoria personalizada:
+                {t("customCategoryHint")}
               </p>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="Nome da categoria"
+                  placeholder={t("customCategoryPlaceholder")}
                   className="flex-1 p-2 bg-white rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-gray-900 text-sm"
                 />
                 <button
@@ -181,7 +239,7 @@ export default function FinanceFormModal({
                   className="px-3 py-2 text-xs font-semibold rounded-lg border border-blue-200 bg-blue-50 text-blue-700 disabled:opacity-50 whitespace-nowrap"
                   disabled={!newCategory.trim() || addingCategory}
                 >
-                  {addingCategory ? "Salvando..." : "Adicionar"}
+                  {addingCategory ? t("savingCategory") : t("addCategory")}
                 </button>
               </div>
             </div>
@@ -190,12 +248,13 @@ export default function FinanceFormModal({
           {/* Descrição */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
-              Descrição
+              {t("descriptionLabel")}
             </label>
             <input
               name="title"
               required
-              placeholder="Ex: Aluguel, Salário..."
+              placeholder={t("descriptionPlaceholder")}
+              defaultValue={initialItem?.title ?? ""}
               className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
             />
           </div>
@@ -204,7 +263,7 @@ export default function FinanceFormModal({
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
-                Valor (R$)
+                {t("amountLabel")}
               </label>
               <input
                 name="amount"
@@ -212,38 +271,68 @@ export default function FinanceFormModal({
                 step="0.01"
                 required
                 placeholder="0,00"
+                defaultValue={
+                  initialItem ? String(initialItem.amount) : ""
+                }
                 className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
               />
             </div>
             <div className="flex-1">
               <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
-                Data
+                {t("dateLabel")}
               </label>
               <input
                 name="date"
                 type="date"
                 required
-                defaultValue={new Date().toISOString().split("T")[0]}
+                defaultValue={
+                  initialItem
+                    ? initialItem.date
+                    : new Date().toISOString().split("T")[0]
+                }
                 className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
               />
             </div>
           </div>
 
           {/* Pago/Recebido */}
-          <div className="flex items-center gap-2 mt-2">
-            <input
-              type="checkbox"
-              name="status"
-              value="paid"
-              id="paid"
-              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="paid" className="text-gray-700 select-none">
-              Já foi pago/recebido?
-            </label>
-          </div>
+          {!isEditMode && (
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                name="status"
+                value="paid"
+                id="paid"
+                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="paid" className="text-gray-700 select-none">
+                {t("alreadyPaidLabel")}
+              </label>
+            </div>
+          )}
 
-          {/* Despesa fixa */}
+          {/* Valor já pago (edição / parcial) */}
+          {isEditMode && (
+            <div className="mt-2">
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                {t("paidAmountLabel")}
+              </label>
+              <input
+                name="paidAmount"
+                type="number"
+                step="0.01"
+                defaultValue={
+                  initialItem?.paidAmount ?? (initialItem?.status === "paid" ? initialItem?.amount : 0)
+                }
+                className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
+              />
+              <p className="text-[11px] text-gray-400 mt-1">
+                {t("paidAmountHint")}
+              </p>
+            </div>
+          )}
+
+          {/* Despesa/Receita fixa */}
           {showFixedOption && (
             <div className="flex items-center gap-2 mt-1">
               <input
@@ -251,10 +340,11 @@ export default function FinanceFormModal({
                 name="isFixed"
                 value="true"
                 id="isFixed"
+                defaultChecked={initialItem?.isFixed ?? false}
                 className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="isFixed" className="text-gray-700 select-none">
-                Despesa fixa (repetir todo mês)
+                {t("fixedCheckboxLabel")}
               </label>
             </div>
           )}
@@ -268,7 +358,11 @@ export default function FinanceFormModal({
                 : "bg-red-600 hover:bg-red-700 shadow-red-200"
             } disabled:opacity-70`}
           >
-            {loading || isPending ? "Salvando..." : "Salvar Lançamento"}
+            {loading || isPending
+              ? t("savingButton")
+              : isEditMode
+                ? t("saveEditButton")
+                : t("saveButton")}
           </button>
         </form>
       </div>

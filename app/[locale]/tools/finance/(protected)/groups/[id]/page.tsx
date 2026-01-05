@@ -1,7 +1,3 @@
-type Props = {
-  params: { id: string };
-};
-
-export default function GroupPage({ params }: Props) {
-  return <div className="p-6">Grupo: {params.id}</div>;
+export default function GroupsPage() {
+  return <div className="p-6">Grupos</div>;
 }
