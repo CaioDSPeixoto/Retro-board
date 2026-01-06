@@ -129,33 +129,37 @@
     "expenses": "Despesas",
     "incomes": "Receitas",
     "groups": "Grupos",
-
     "incomesTitle": "Receitas",
     "noIncomesThisMonth": "Nenhuma receita lançada neste mês.",
     "expensesTitle": "Despesas",
     "noExpensesThisMonth": "Nenhuma despesa lançada neste mês.",
-
     "transactionsTitle": "Transações",
     "noTransactionsThisMonth": "Nenhum lançamento este mês.",
-
     "categoryTitle": "Categoria",
     "noCategoryThisMonth": "Nenhum lançamento nesta categoria neste mês.",
-
     "overdueTitle": "Em atraso",
     "noOverdueThisMonth": "Não há contas em atraso neste mês.",
-
-    "launchedBy": "Lançado por",
-    "openAmount": "Saldo em aberto",
-
+    "launchedBy": "Lançado por {name}",
+    "openAmount": "Saldo em aberto: {value}",
     "statusPending": "Pendente",
     "statusPaid": "Pago",
     "statusPartial": "Parcialmente pago",
-
     "fixedLabel": "Fixa",
     "overdueBadge": "Em atraso",
     "overdueMoved": "Movida para o próximo mês",
-
-    "confirmDelete": "Tem certeza que deseja apagar este lançamento?"
+    "confirmDelete": "Tem certeza que deseja apagar este lançamento?",
+    "rolledFromMonth": "Movida de {month}",
+    "partialPaid": "Pago {paid} de {total}",
+    "syntheticLabel": "Gerado",
+    "togglePaidAria": "Alternar pago",
+    "editAria": "Editar lançamento",
+    "deleteAria": "Excluir lançamento",
+    "errors": {
+      "mustBeLoggedIn": "Você precisa estar logado.",
+      "deleteFailed": "Erro ao excluir. Tente novamente.",
+      "toggleFailed": "Erro ao atualizar status. Tente novamente.",
+      "itemNotFound": "Item não encontrado."
+    }
   },
   "UserMenu": {
     "account": "Conta",
@@ -175,7 +179,9 @@
     "title": "Minhas Finanças",
     "description": "Faça login para gerenciar suas contas",
     "emailUserLabel": "Email ou Usuário",
+    "emailPlaceholder": "ex: seu@email.com",
     "passwordLabel": "Senha",
+    "passwordPlaceholder": "••••••••",
     "submitButton": "Acessar",
     "loading": "Entrando...",
     "noAccount": "Ainda não tem conta?",
@@ -189,8 +195,11 @@
     "title": "Nova Conta",
     "description": "Crie sua conta para começar",
     "emailLabel": "Email",
+    "emailPlaceholder": "seu@email.com",
     "passwordLabel": "Senha",
+    "passwordPlaceholder": "••••••••",
     "confirmPasswordLabel": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Criar Conta",
     "loading": "Criando conta...",
     "hasAccount": "Já tem conta?",
@@ -204,6 +213,13 @@
     }
   },
   "FinancePage": {
+    "defaultUserName": "Gestor",
+    "sending": "Enviando...",
+    "openAmountLabel": "Saldo em aberto",
+    "loadingInvites": "Carregando convites e solicitações...",
+    "inviteByEmail": "Convite por email para {email}",
+    "requestByCode": "Pedido de acesso via código",
+
     "hello": "Olá",
     "boardLabel": "Quadro de finanças",
     "allBoardsLabel": "Todos os quadros",
@@ -235,7 +251,19 @@
     "invitesForYou": "Convites para você",
     "noInvites": "Você não possui convites pendentes no momento.",
     "ownerRequests": "Solicitações nos seus quadros",
-    "noOwnerRequests": "Nenhuma solicitação pendente nos quadros que você administra."
+    "noOwnerRequests": "Nenhuma solicitação pendente nos quadros que você administra.",
+    "accept": "Aceitar",
+    "reject": "Recusar",
+    "joinRequestSent": "Solicitação enviada com sucesso!",
+
+    "errors": {
+      "boardNotFound": "Quadro não encontrado.",
+      "inviteSend": "Erro ao enviar convite. Tente novamente.",
+      "boardNotFoundCode": "Quadro não encontrado. Verifique o código.",
+      "alreadyMember": "Você já participa deste quadro.",
+      "alreadyRequested": "Você já solicitou acesso a este quadro.",
+      "requestSend": "Erro ao enviar pedido. Tente novamente."
+    }
   },
   "FinanceBoards": {
     "title": "Quadros de finanças",
@@ -258,6 +286,7 @@
     "newBoardPlaceholder": "Dê um nome para este quadro",
     "emptyTitle": "Você ainda não tem quadros",
     "emptySubtitle": "Crie um novo quadro para começar a organizar suas finanças.",
+    "membersLabel": "{count, plural, one {# membro} other {# membros}}",
     "errors": {
       "nameRequired": "Dê um nome para o quadro antes de criar.",
       "codeRequired": "Informe o código do quadro para entrar.",
@@ -266,49 +295,42 @@
     }
   },
   "FinanceForm": {
-  "newTransactionTitle": "Novo lançamento",
-  "editTransactionTitle": "Editar lançamento",
+    "newTransactionTitle": "Novo lançamento",
+    "editTransactionTitle": "Editar lançamento",
+    "typeIncome": "Receita",
+    "typeExpense": "Despesa",
+    "categoryLabel": "Categoria",
+    "customCategoryHint": "Precisa de algo diferente? Adicione uma categoria personalizada:",
+    "customCategoryPlaceholder": "Nome da categoria",
+    "savingCategory": "Salvando...",
+    "addCategory": "Adicionar",
+    "descriptionLabel": "Descrição",
+    "descriptionPlaceholder": "Ex: Aluguel, Salário...",
+    "amountLabel": "Valor (R$)",
+    "dateLabel": "Data",
+    "alreadyPaidLabel": "Já foi pago/recebido?",
+    "paidAmountLabel": "Valor já pago (opcional)",
+    "paidAmountHint": "Use este campo para registrar pagamentos parciais. O saldo em aberto será levado para o próximo mês.",
+    "fixedCheckboxLabel": "Lançamento fixo (repetir todo mês)",
+    "savingButton": "Salvando...",
+    "saveButton": "Salvar lançamento",
+    "saveEditButton": "Salvar alterações",
+    "errors": {
+      "createCategory": "Erro ao criar categoria.",
+      "requiredFields": "Preencha todos os campos obrigatórios.",
+      "invalidAmount": "Informe um valor válido.",
+      "unknown": "Erro ao salvar. Tente novamente."
+    },
 
-  "typeIncome": "Receita",
-  "typeExpense": "Despesa",
-
-  "categoryLabel": "Categoria",
-  "customCategoryHint": "Precisa de algo diferente? Adicione uma categoria personalizada:",
-  "customCategoryPlaceholder": "Nome da categoria",
-  "savingCategory": "Salvando...",
-  "addCategory": "Adicionar",
-
-  "descriptionLabel": "Descrição",
-  "descriptionPlaceholder": "Ex: Aluguel, Salário...",
-  "amountLabel": "Valor (R$)",
-  "dateLabel": "Data",
-
-  "alreadyPaidLabel": "Já foi pago/recebido?",
-  "paidAmountLabel": "Valor já pago (opcional)",
-  "paidAmountHint": "Use este campo para registrar pagamentos parciais. O saldo em aberto será levado para o próximo mês.",
-
-  "fixedCheckboxLabel": "Lançamento fixo (repetir todo mês)",
-
-  "savingButton": "Salvando...",
-  "saveButton": "Salvar lançamento",
-  "saveEditButton": "Salvar alterações",
-
-  "errors": {
-    "createCategory": "Erro ao criar categoria.",
-    "requiredFields": "Preencha todos os campos obrigatórios.",
-    "invalidAmount": "Informe um valor válido.",
-    "unknown": "Erro ao salvar. Tente novamente."
-  },
-
-  "title": "Novo lançamento",
-  "income": "Receita",
-  "expense": "Despesa",
-  "categoryCustomHelp": "Precisa de algo diferente? Adicione uma categoria personalizada:",
-  "categoryNamePlaceholder": "Nome da categoria",
-  "categoryAddButton": "Adicionar",
-  "paidLabel": "Já foi pago/recebido?",
-  "fixedLabel": "Despesa fixa (repetir todo mês)",
-  "submit": "Salvar lançamento",
-  "saving": "Salvando..."
-}
+    "title": "Novo lançamento",
+    "income": "Receita",
+    "expense": "Despesa",
+    "categoryCustomHelp": "Precisa de algo diferente? Adicione uma categoria personalizada:",
+    "categoryNamePlaceholder": "Nome da categoria",
+    "categoryAddButton": "Adicionar",
+    "paidLabel": "Já foi pago/recebido?",
+    "fixedLabel": "Despesa fixa (repetir todo mês)",
+    "submit": "Salvar lançamento",
+    "saving": "Salvando..."
+  }
 }

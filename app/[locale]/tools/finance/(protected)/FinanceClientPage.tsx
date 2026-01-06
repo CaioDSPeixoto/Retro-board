@@ -1,6 +1,6 @@
 "use client";
 
-import { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceItem } from "@/types/finance";
 import { useState, useMemo, useEffect } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -14,18 +14,13 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
-import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+
+import FinanceInvitePanel from "./FinanceInvitePanel";
+import FinanceJoinByCode from "./FinanceJoinByCode";
+import { getOwnerPendingApprovalsCount, sendInviteByEmail } from "./invite-actions";
 
 type Props = {
   initialItems: FinanceItem[];
@@ -34,6 +29,7 @@ type Props = {
   locale: string;
   boards: FinanceBoard[];
   currentBoardId?: string | null;
+  sessionUserId: string; // ✅ vem do server (cookie)
 };
 
 export default function FinanceClientPage({
@@ -43,15 +39,16 @@ export default function FinanceClientPage({
   locale,
   boards,
   currentBoardId,
+  sessionUserId,
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userName, setUserName] = useState("Gestor");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>(t("defaultUserName"));
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
-  const [boardName, setBoardName] = useState<string>("");
+
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
@@ -63,57 +60,42 @@ export default function FinanceClientPage({
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user?.displayName) {
-        setUserName(user.displayName.split(" ")[0]);
-      } else if (user?.email) {
-        setUserName(user.email.split("@")[0]);
-      }
-      setCurrentUserId(user?.uid ?? null);
+      if (user?.displayName) setUserName(user.displayName.split(" ")[0]);
+      else if (user?.email) setUserName(user.email.split("@")[0]);
+      else setUserName(t("defaultUserName"));
     });
     return () => unsubscribe();
-  }, []);
+  }, [t]);
 
   const currentBoard = useMemo(
     () => boards.find((b) => b.id === currentBoardId),
     [boards, currentBoardId],
   );
 
+  const boardName = currentBoardId
+    ? currentBoard?.name || t("allBoardsLabel")
+    : t("allBoardsLabel");
+
+  const isOwner = !!currentBoard && currentBoard.ownerId === sessionUserId;
+
   useEffect(() => {
-    if (!currentBoardId) {
-      setBoardName(t("allBoardsLabel"));
-      return;
-    }
-    const board = boards.find((b) => b.id === currentBoardId);
-    setBoardName(board?.name || t("allBoardsLabel"));
-  }, [boards, currentBoardId, t]);
+    const run = async () => {
+      const res = await getOwnerPendingApprovalsCount();
 
-  const isOwner =
-    !!currentBoard && !!currentUserId && currentBoard.ownerId === currentUserId;
-
-  // Busca aprovações pendentes (solicitações para entrar em quadros onde eu sou dono)
-  useEffect(() => {
-    if (!currentUserId) return;
-
-    const fetchPending = async () => {
-      try {
-        const invitesRef = collection(db, "finance_board_invites");
-        const snap = await getDocs(
-          query(
-            invitesRef,
-            where("ownerId", "==", currentUserId),
-            where("status", "==", "pending"),
-          ),
-        );
-        const count = snap.size;
+      if (res && typeof res === "object" && "count" in res) {
+        const count = Number((res as any).count || 0);
         setPendingApprovalsCount(count);
         setShowPendingPopup(count > 0);
-      } catch (err) {
-        console.error("Erro ao buscar aprovações pendentes:", err);
+        return;
       }
+
+      // se vier error, não quebra a tela
+      setPendingApprovalsCount(0);
+      setShowPendingPopup(false);
     };
 
-    fetchPending();
-  }, [currentUserId]);
+    run();
+  }, []);
 
   const currentDate = parseISO(currentMonth + "-01");
 
@@ -121,11 +103,8 @@ export default function FinanceClientPage({
     const newMonth = format(subMonths(currentDate, 1), "yyyy-MM");
     const params = new URLSearchParams(searchParams?.toString());
     params.set("month", newMonth);
-    if (currentBoardId) {
-      params.set("boardId", currentBoardId);
-    } else {
-      params.delete("boardId");
-    }
+    if (currentBoardId) params.set("boardId", currentBoardId);
+    else params.delete("boardId");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
@@ -133,21 +112,15 @@ export default function FinanceClientPage({
     const newMonth = format(addMonths(currentDate, 1), "yyyy-MM");
     const params = new URLSearchParams(searchParams?.toString());
     params.set("month", newMonth);
-    if (currentBoardId) {
-      params.set("boardId", currentBoardId);
-    } else {
-      params.delete("boardId");
-    }
+    if (currentBoardId) params.set("boardId", currentBoardId);
+    else params.delete("boardId");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
   const handleBoardChange = (boardId: string) => {
     const params = new URLSearchParams(searchParams?.toString());
-    if (boardId) {
-      params.set("boardId", boardId);
-    } else {
-      params.delete("boardId");
-    }
+    if (boardId) params.set("boardId", boardId);
+    else params.delete("boardId");
     params.set("month", currentMonth);
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
@@ -198,58 +171,27 @@ export default function FinanceClientPage({
     setIsModalOpen(true);
   };
 
-  const handleClickIncomes = () => {
-    const params = new URLSearchParams();
-    params.set("month", currentMonth);
-    if (currentBoardId) params.set("boardId", currentBoardId);
-    router.push(`/${locale}/tools/finance/incomes?${params.toString()}`);
-  };
-
-  const handleClickExpenses = () => {
-    const params = new URLSearchParams();
-    params.set("month", currentMonth);
-    if (currentBoardId) params.set("boardId", currentBoardId);
-    router.push(`/${locale}/tools/finance/expenses?${params.toString()}`);
-  };
-
   const handleInviteByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    const email = inviteEmail.trim();
-    if (!email || !currentBoard || !currentUserId) return;
+    if (!currentBoard) return;
+
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email) return;
 
     setInviteLoading(true);
     setInviteMessage(null);
     setInviteError(null);
 
-    try {
-      const boardRef = doc(db, "finance_boards", currentBoard.id);
-      const boardSnap = await getDoc(boardRef);
+    const res = await sendInviteByEmail(currentBoard.id, email, locale);
 
-      if (!boardSnap.exists()) {
-        setInviteError("Quadro não encontrado.");
-        setInviteLoading(false);
-        return;
-      }
-
-      await addDoc(collection(db, "finance_board_invites"), {
-        boardId: currentBoard.id,
-        boardName: currentBoard.name,
-        ownerId: currentBoard.ownerId,
-        type: "email",
-        email,
-        status: "pending",
-        createdBy: currentUserId,
-        createdAt: new Date().toISOString(),
-      });
-
+    if (res && "error" in res && res.error) {
+      setInviteError(res.error as string);
+    } else {
       setInviteEmail("");
       setInviteMessage(t("inviteSent"));
-    } catch (err) {
-      console.error("Erro ao enviar convite por email:", err);
-      setInviteError("Erro ao enviar convite. Tente novamente.");
-    } finally {
-      setInviteLoading(false);
     }
+
+    setInviteLoading(false);
   };
 
   return (
@@ -262,9 +204,7 @@ export default function FinanceClientPage({
               {t("pendingApprovalsTitle")}
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              {t("pendingApprovalsMessage", {
-                count: pendingApprovalsCount,
-              })}
+              {t("pendingApprovalsMessage", { count: pendingApprovalsCount })}
             </p>
             <button
               onClick={() => setShowPendingPopup(false)}
@@ -326,54 +266,36 @@ export default function FinanceClientPage({
         </div>
 
         <div className="text-center mb-4">
-          <p className="text-blue-100 text-sm mb-1">
-            {t("balanceTitle")}
-          </p>
+          <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
           <h2 className="text-4xl font-extrabold">
-            {new Intl.NumberFormat("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            }).format(balance)}
+            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(balance)}
           </h2>
         </div>
 
         <div className="flex gap-4 mt-6">
-          <div
-            className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl cursor-pointer"
-            onClick={handleClickIncomes}
-          >
-            <p className="text-xs text-blue-100 mb-1">
-              {t("entriesLabel")}
-            </p>
+          <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
+            <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
             <p className="text-lg font-bold text-green-300">
-              +
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.incomes)}
+              +{" "}
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                totals.incomes,
+              )}
             </p>
           </div>
-          <div
-            className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl cursor-pointer"
-            onClick={handleClickExpenses}
-          >
-            <p className="text-xs text-blue-100 mb-1">
-              {t("exitsLabel")}
-            </p>
+
+          <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
+            <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
             <p className="text-lg font-bold text-red-300">
-              -
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.expenses)}
+              -{" "}
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                totals.expenses,
+              )}
             </p>
           </div>
         </div>
       </div>
 
-      {/* BLOCO DE COMPARTILHAMENTO DO QUADRO (apenas dono) */}
+      {/* SHARE (só dono) */}
       {currentBoard && isOwner && (
         <div className="px-6 mt-4 mb-6">
           <div className="bg-white border border-blue-100 rounded-2xl shadow-sm">
@@ -389,9 +311,7 @@ export default function FinanceClientPage({
                 </span>
               </div>
               <FiChevronDown
-                className={`text-gray-400 transition-transform ${
-                  shareOpen ? "rotate-180" : ""
-                }`}
+                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""}`}
               />
             </button>
 
@@ -401,23 +321,16 @@ export default function FinanceClientPage({
                   <label className="block text-xs font-semibold text-gray-600 mb-1">
                     {t("shareCodeLabel")}
                   </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={currentBoard.id}
-                      className="flex-1 p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
-                    />
-                  </div>
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    {t("shareCodeHint")}
-                  </p>
+                  <input
+                    type="text"
+                    readOnly
+                    value={currentBoard.id}
+                    className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">{t("shareCodeHint")}</p>
                 </div>
 
-                <form
-                  onSubmit={handleInviteByEmail}
-                  className="mt-3 flex flex-col gap-3 md:flex-row"
-                >
+                <form onSubmit={handleInviteByEmail} className="mt-3 flex flex-col gap-3 md:flex-row">
                   <div className="flex-1">
                     <label className="block text-xs font-semibold text-gray-600 mb-1">
                       {t("shareEmailLabel")}
@@ -430,32 +343,29 @@ export default function FinanceClientPage({
                       className="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-gray-900"
                     />
                   </div>
+
                   <div className="flex items-end">
                     <button
                       type="submit"
                       disabled={inviteLoading || !inviteEmail.trim()}
                       className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0"
                     >
-                      {inviteLoading ? "Enviando..." : t("shareEmailButton")}
+                      {inviteLoading ? t("sending") : t("shareEmailButton")}
                     </button>
                   </div>
                 </form>
 
-                {inviteMessage && (
-                  <p className="mt-2 text-xs text-green-600">
-                    {inviteMessage}
-                  </p>
-                )}
-                {inviteError && (
-                  <p className="mt-2 text-xs text-red-600">
-                    {inviteError}
-                  </p>
-                )}
+                {inviteMessage && <p className="mt-2 text-xs text-green-600">{inviteMessage}</p>}
+                {inviteError && <p className="mt-2 text-xs text-red-600">{inviteError}</p>}
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* JOIN POR CÓDIGO + CONVITES */}
+      {/* <FinanceJoinByCode locale={locale} /> */}
+      <FinanceInvitePanel locale={locale} />
 
       {/* CONTAS EM ATRASO */}
       {overdueItems.length > 0 && (
@@ -463,56 +373,16 @@ export default function FinanceClientPage({
           <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3">
             <div className="flex justify-between items-center mb-2">
               <div>
-                <p className="text-xs text-amber-700 font-semibold">
-                  {t("overdueTitle")}
-                </p>
+                <p className="text-xs text-amber-700 font-semibold">{t("overdueTitle")}</p>
                 <p className="text-[11px] text-amber-600">
-                  {t("overdueSubtitle", {
-                    count: overdueItems.length,
-                  })}
+                  {t("overdueSubtitle", { count: overdueItems.length })}
                 </p>
               </div>
               <p className="text-sm font-bold text-amber-800">
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(overdueTotal)}
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                  overdueTotal,
+                )}
               </p>
-            </div>
-
-            <div className="max-h-52 overflow-y-auto mt-2 space-y-2">
-              {overdueItems.map((item) => {
-                const openAmount =
-                  item.amount - (item.paidAmount || 0);
-                return (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
-                        {item.title}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {format(new Date(item.date), "dd 'de' MMM, yyyy", {
-                          locale: ptBR,
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[11px] text-amber-700 font-semibold">
-                        {new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(Math.max(openAmount, 0))}
-                      </p>
-                      <p className="text-[10px] text-gray-400">
-                        saldo em aberto
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
@@ -521,37 +391,23 @@ export default function FinanceClientPage({
       {/* LISTA */}
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
-          <h3 className="font-bold text-gray-700">
-            {t("transactionsTitle")}
-          </h3>
+          <h3 className="font-bold text-gray-700">{t("transactionsTitle")}</h3>
           <span className="text-xs text-gray-400">
-            {t("transactionsCount", {
-              count: initialItems.length,
-            })}
+            {t("transactionsCount", { count: initialItems.length })}
           </span>
         </div>
 
         {initialItems.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-400 mb-2">
-              {t("noTransactions")}
-            </p>
-            <button
-              onClick={handleOpenCreateModal}
-              className="text-blue-600 font-bold text-sm"
-            >
+            <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
+            <button onClick={handleOpenCreateModal} className="text-blue-600 font-bold text-sm">
               {t("addNow")}
             </button>
           </div>
         ) : (
           <div className="flex flex-col gap-1">
             {initialItems.map((item) => (
-              <FinanceItemCard
-                key={item.id}
-                item={item}
-                locale={locale}
-                onEdit={handleEditItem}
-              />
+              <FinanceItemCard key={item.id} item={item} locale={locale} onEdit={handleEditItem} />
             ))}
           </div>
         )}

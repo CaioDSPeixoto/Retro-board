@@ -1,4 +1,3 @@
-// components/finance/FinanceFormModal.tsx
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
@@ -9,7 +8,7 @@ import {
   updateFinanceItem,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { useRouter } from "next/navigation";
-import { FinanceItem } from "@/types/finance";
+import type { FinanceItem } from "@/types/finance";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
@@ -21,7 +20,6 @@ type Props = {
   initialCategories: string[];
   initialItem?: FinanceItem | null;
   boardId?: string | null;
-  onSaved?: () => void;
 };
 
 export default function FinanceFormModal({
@@ -31,45 +29,38 @@ export default function FinanceFormModal({
   initialCategories,
   initialItem,
   boardId,
-  onSaved,
 }: Props) {
   const t = useTranslations("FinanceForm");
-  const [type, setType] = useState<"income" | "expense">(
-    initialItem?.type ?? "expense",
-  );
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const isEditMode = !!initialItem;
+
+  const [type, setType] = useState<"income" | "expense">(initialItem?.type ?? "expense");
   const [error, setError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [category, setCategory] = useState<string>(
-    initialItem?.category ||
-      initialCategories[0] ||
-      "Contas Fixas",
+    initialItem?.category || initialCategories[0] || "Contas Fixas",
   );
+
   const [newCategory, setNewCategory] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
 
-  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-
-  const isEditMode = !!initialItem;
+  const [currentUserName, setCurrentUserName] = useState<string>("");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user?.displayName) {
-        setCurrentUserName(user.displayName.split(" ")[0]);
-      } else if (user?.email) {
-        setCurrentUserName(user.email.split("@")[0]);
-      } else if (user?.uid) {
-        setCurrentUserName(user.uid);
-      }
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user?.displayName) setCurrentUserName(user.displayName.split(" ")[0]);
+      else if (user?.email) setCurrentUserName(user.email.split("@")[0]);
+      else setCurrentUserName("");
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   useEffect(() => {
-    if (!initialCategories || initialCategories.length === 0) return;
+    if (!initialCategories?.length) return;
+
     setCategories(initialCategories);
 
     if (initialItem?.category) {
@@ -98,58 +89,13 @@ export default function FinanceFormModal({
       return;
     }
 
-    setCategories((prev) =>
-      prev.includes(name) ? prev : [...prev, name],
-    );
+    setCategories((prev) => (prev.includes(name) ? prev : [...prev, name]));
     setCategory(name);
     setNewCategory("");
 
-    startTransition(() => {
-      router.refresh();
-    });
+    startTransition(() => router.refresh());
   };
 
-  const handleSubmit = async (formData: FormData) => {
-    setLoading(true);
-    setError(null);
-
-    formData.append("locale", locale);
-    formData.append("category", category);
-    formData.append("type", type);
-    if (boardId) {
-      formData.append("boardId", boardId);
-    }
-    if (currentUserName) {
-      formData.append("createdByName", currentUserName);
-    }
-
-    let res:
-      | { success?: boolean; error?: string }
-      | undefined;
-
-    if (isEditMode && initialItem) {
-      formData.append("id", initialItem.id);
-      res = await updateFinanceItem(formData);
-    } else {
-      res = await addFinanceItem(formData);
-    }
-
-    setLoading(false);
-
-    if (res && "error" in res && res.error) {
-      setError(res.error as string);
-      return;
-    }
-
-    startTransition(() => {
-      router.refresh();
-    });
-
-    if (onSaved) onSaved();
-    onClose();
-  };
-
-  // agora fixa vale para income e expense
   const showFixedOption = category === "Contas Fixas";
 
   return (
@@ -157,14 +103,9 @@ export default function FinanceFormModal({
       <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800">
-            {isEditMode
-              ? t("editTransactionTitle")
-              : t("newTransactionTitle")}
+            {isEditMode ? t("editTransactionTitle") : t("newTransactionTitle")}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <FiX size={24} />
           </button>
         </div>
@@ -175,16 +116,40 @@ export default function FinanceFormModal({
           </div>
         )}
 
-        <form action={handleSubmit} className="flex flex-col gap-4">
+        {/* ✅ usa Server Action diretamente */}
+        <form
+          action={async (fd) => {
+            setError(null);
+
+            // injeta campos que a action espera
+            fd.set("locale", locale);
+            fd.set("type", type);
+            fd.set("category", category);
+            if (boardId) fd.set("boardId", boardId);
+            if (currentUserName) fd.set("createdByName", currentUserName);
+
+            const res = isEditMode ? await updateFinanceItem(fd) : await addFinanceItem(fd);
+
+            if (res && "error" in res && res.error) {
+              setError(res.error as string);
+              return;
+            }
+
+            startTransition(() => router.refresh());
+            onClose();
+          }}
+          className="flex flex-col gap-4"
+        >
+          {/* Se for edição, manda o ID */}
+          {isEditMode && initialItem && <input type="hidden" name="id" value={initialItem.id} />}
+
           {/* Tipo */}
           <div className="flex bg-gray-100 p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setType("income")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition ${
-                type === "income"
-                  ? "bg-white text-green-600 shadow-sm"
-                  : "text-gray-500"
+                type === "income" ? "bg-white text-green-600 shadow-sm" : "text-gray-500"
               }`}
             >
               {t("typeIncome")}
@@ -193,21 +158,19 @@ export default function FinanceFormModal({
               type="button"
               onClick={() => setType("expense")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition ${
-                type === "expense"
-                  ? "bg-white text-red-600 shadow-sm"
-                  : "text-gray-500"
+                type === "expense" ? "bg-white text-red-600 shadow-sm" : "text-gray-500"
               }`}
             >
               {t("typeExpense")}
             </button>
           </div>
-          <input type="hidden" name="type" value={type} />
 
           {/* Categoria */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-gray-500 uppercase">
               {t("categoryLabel")}
             </label>
+
             <select
               required
               value={category}
@@ -222,9 +185,7 @@ export default function FinanceFormModal({
             </select>
 
             <div className="mt-1 p-2 rounded-xl bg-gray-50 border border-dashed border-gray-200">
-              <p className="text-[11px] text-gray-500 mb-2">
-                {t("customCategoryHint")}
-              </p>
+              <p className="text-[11px] text-gray-500 mb-2">{t("customCategoryHint")}</p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -271,9 +232,7 @@ export default function FinanceFormModal({
                 step="0.01"
                 required
                 placeholder="0,00"
-                defaultValue={
-                  initialItem ? String(initialItem.amount) : ""
-                }
+                defaultValue={initialItem ? String(initialItem.amount) : ""}
                 className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
               />
             </div>
@@ -286,9 +245,7 @@ export default function FinanceFormModal({
                 type="date"
                 required
                 defaultValue={
-                  initialItem
-                    ? initialItem.date
-                    : new Date().toISOString().split("T")[0]
+                  initialItem ? initialItem.date : new Date().toISOString().split("T")[0]
                 }
                 className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
               />
@@ -311,7 +268,7 @@ export default function FinanceFormModal({
             </div>
           )}
 
-          {/* Valor já pago (edição / parcial) */}
+          {/* Valor pago (edição) */}
           {isEditMode && (
             <div className="mt-2">
               <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
@@ -321,18 +278,14 @@ export default function FinanceFormModal({
                 name="paidAmount"
                 type="number"
                 step="0.01"
-                defaultValue={
-                  initialItem?.paidAmount ?? (initialItem?.status === "paid" ? initialItem?.amount : 0)
-                }
+                defaultValue={initialItem?.paidAmount ?? 0}
                 className="w-full p-3 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition text-gray-900"
               />
-              <p className="text-[11px] text-gray-400 mt-1">
-                {t("paidAmountHint")}
-              </p>
+              <p className="text-[11px] text-gray-400 mt-1">{t("paidAmountHint")}</p>
             </div>
           )}
 
-          {/* Despesa/Receita fixa */}
+          {/* Fixa */}
           {showFixedOption && (
             <div className="flex items-center gap-2 mt-1">
               <input
@@ -351,18 +304,14 @@ export default function FinanceFormModal({
 
           <button
             type="submit"
-            disabled={loading || isPending}
+            disabled={isPending}
             className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition shadow-lg ${
               type === "income"
                 ? "bg-green-600 hover:bg-green-700 shadow-green-200"
                 : "bg-red-600 hover:bg-red-700 shadow-red-200"
             } disabled:opacity-70`}
           >
-            {loading || isPending
-              ? t("savingButton")
-              : isEditMode
-                ? t("saveEditButton")
-                : t("saveButton")}
+            {isPending ? t("savingButton") : isEditMode ? t("saveEditButton") : t("saveButton")}
           </button>
         </form>
       </div>

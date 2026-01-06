@@ -1,8 +1,7 @@
-// components/finance/FinanceItemCard.tsx
 "use client";
 
-import { FinanceItem } from "@/types/finance";
-import { format } from "date-fns";
+import { FinanceItem, FinanceStatus } from "@/types/finance";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   FiArrowDown,
@@ -12,13 +11,11 @@ import {
   FiTrash2,
   FiEdit2,
 } from "react-icons/fi";
-import {
-  deleteFinanceItem,
-  toggleStatus,
-} from "@/app/[locale]/tools/finance/(protected)/actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { auth, db } from "@/lib/firebase";
+import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 
 type Props = {
   item: FinanceItem;
@@ -29,27 +26,83 @@ type Props = {
 export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   const router = useRouter();
   const t = useTranslations("Finance");
+
   const isIncome = item.type === "income";
   const isPaid = item.status === "paid";
   const isPartial = item.status === "partial";
   const isSynthetic = item.isSynthetic === true;
-  const openAmount = item.amount - (item.paidAmount || 0);
+
+  const paidAmount = item.paidAmount || 0;
+  const openAmount = Math.max(item.amount - paidAmount, 0);
+
+  const isRolled = !!item.carriedFromMonth;
+
+  const monthParam = item.date.slice(0, 7);
+  const boardParam = item.boardId ? `&boardId=${encodeURIComponent(item.boardId)}` : "";
 
   const handleDelete = async () => {
     if (isSynthetic) return;
-    if (confirm(t("confirmDelete"))) {
-      const res = await deleteFinanceItem(item.id, locale);
-      if (!("error" in res) || !res.error) {
-        router.refresh();
-      }
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert(t("errors.mustBeLoggedIn"));
+      return;
+    }
+
+    if (!confirm(t("confirmDelete"))) return;
+
+    try {
+      await deleteDoc(doc(db, "finance_items", item.id));
+      router.refresh();
+    } catch (err) {
+      console.error("Erro ao deletar item:", err);
+      alert(t("errors.deleteFailed"));
     }
   };
 
   const handleToggle = async () => {
     if (isSynthetic) return;
-    const res = await toggleStatus(item.id, item.status, locale);
-    if (!("error" in res) || !res.error) {
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert(t("errors.mustBeLoggedIn"));
+      return;
+    }
+
+    try {
+      const itemRef = doc(db, "finance_items", item.id);
+      const snap = await getDoc(itemRef);
+      if (!snap.exists()) {
+        alert(t("errors.itemNotFound"));
+        return;
+      }
+
+      const data = snap.data() as FinanceItem;
+
+      const amount = data.amount;
+      const currentStatus = data.status as FinanceStatus;
+
+      let newStatus: FinanceStatus;
+      let newPaidAmount = data.paidAmount || 0;
+
+      if (currentStatus === "paid") {
+        newStatus = "pending";
+        newPaidAmount = 0;
+      } else {
+        // pending ou partial -> marcar como totalmente pago
+        newStatus = "paid";
+        newPaidAmount = amount;
+      }
+
+      await updateDoc(itemRef, {
+        status: newStatus,
+        paidAmount: newPaidAmount,
+      });
+
       router.refresh();
+    } catch (err) {
+      console.error("Erro ao alternar status:", err);
+      alert(t("errors.toggleFailed"));
     }
   };
 
@@ -71,26 +124,34 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
+
           {item.isFixed && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
               {t("fixedLabel")}
             </span>
           )}
-          {item.isRolled && (
+
+          {isRolled && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
-              {t("rolledFromMonth", {
-                month: item.rolledFromMonth || "",
-              })}
+              {t("rolledFromMonth", { month: item.carriedFromMonth || "" })}
+            </span>
+          )}
+
+          {isSynthetic && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-50 text-gray-600 border border-gray-100">
+              {t("syntheticLabel")}
             </span>
           )}
         </div>
 
         <p className="text-xs text-gray-400 capitalize">
-          {format(new Date(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+          {format(parseISO(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
         </p>
 
         <Link
-          href={`/${locale}/tools/finance/categories/${encodeURIComponent(item.category)}?month=${item.date.slice(0, 7)}`}
+          href={`/${locale}/tools/finance/categories/${encodeURIComponent(
+            item.category,
+          )}?month=${monthParam}${boardParam}`}
           className="text-[11px] text-blue-600 mt-1 hover:underline inline-block"
         >
           {item.category}
@@ -108,7 +169,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               paid: new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-              }).format(item.paidAmount || 0),
+              }).format(paidAmount),
               total: new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -130,11 +191,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
       </div>
 
       <div className="text-right flex flex-col items-end gap-1">
-        <span
-          className={`font-bold ${
-            isIncome ? "text-green-600" : "text-red-600"
-          }`}
-        >
+        <span className={`font-bold ${isIncome ? "text-green-600" : "text-red-600"}`}>
           {isIncome ? "+ " : "- "}
           {new Intl.NumberFormat("pt-BR", {
             style: "currency",
@@ -144,19 +201,13 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
         <div className="text-[11px] text-gray-500">
           {item.status === "paid" && (
-            <span className="text-green-600 font-semibold">
-              {t("statusPaid")}
-            </span>
+            <span className="text-green-600 font-semibold">{t("statusPaid")}</span>
           )}
           {item.status === "pending" && (
-            <span className="text-amber-600 font-semibold">
-              {t("statusPending")}
-            </span>
+            <span className="text-amber-600 font-semibold">{t("statusPending")}</span>
           )}
           {item.status === "partial" && (
-            <span className="text-blue-600 font-semibold">
-              {t("statusPartial")}
-            </span>
+            <span className="text-blue-600 font-semibold">{t("statusPartial")}</span>
           )}
         </div>
 
@@ -167,20 +218,25 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               className={`${
                 isPaid ? "text-green-500" : "text-gray-300"
               } hover:text-green-600 transition`}
+              aria-label={t("togglePaidAria")}
             >
               {isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
             </button>
+
             {onEdit && (
               <button
                 onClick={handleEditClick}
                 className="text-gray-300 hover:text-blue-500 transition"
+                aria-label={t("editAria")}
               >
                 <FiEdit2 size={16} />
               </button>
             )}
+
             <button
               onClick={handleDelete}
               className="text-gray-300 hover:text-red-500 transition"
+              aria-label={t("deleteAria")}
             >
               <FiTrash2 size={16} />
             </button>

@@ -21,22 +21,20 @@ export type FinanceItem = {
   isSynthetic?: boolean;
 
   // quem lançou
-  createdBy?: string;       // userId de quem lançou
-  createdByName?: string;   // nome bonitinho pra exibir
+  createdBy?: string; // userId de quem lançou
+  createdByName?: string; // nome pra exibir
 
   // pagamentos parciais / saldo em aberto
-  paidAmount?: number;      // quanto já foi pago
-  openAmount?: number;      // quanto falta (pode ser calculado ou salvo)
+  paidAmount?: number; // quanto já foi pago
+  openAmount?: number; // quanto falta (pode ser calculado ou salvo)
 
   // contas carregadas de outro mês
-  carriedFromMonth?: string;   // ex: "2025-12"
-  carriedFromItemId?: string;  // id do item de origem
+  carriedFromMonth?: string; // ex: "2025-12"
+  carriedFromItemId?: string; // id do item de origem
 };
 
-/**
- * Quadro de finanças (board)
- * Ex: "Casa", "Viagem amigos", "Investimentos"
- */
+// ====== BOARDS ======
+
 export type FinanceBoard = {
   id: string;
   name: string;
@@ -45,39 +43,37 @@ export type FinanceBoard = {
   createdAt: string;
   isPersonal?: boolean;
 
-  // caso você tenha código de convite do board
+  // opcionais (se você usar depois)
   code?: string;
   inviteCode?: string;
-
-  // campos extras que você vier a usar depois
-  // podem ser adicionados aqui como opcionais
 };
 
-/**
- * Convite para participar de um board
- * (se você estiver usando coleções de convites)
- */
+// ====== INVITES (modelo atual do seu app) ======
+
 export type FinanceBoardInviteStatus =
   | "pending"
   | "accepted"
   | "rejected"
   | "cancelled";
 
-export type FinanceBoardInviteDirection = "toOwner" | "toUser";
+export type FinanceBoardInviteType = "email" | "code";
 
 export type FinanceBoardInvite = {
   id: string;
+
   boardId: string;
   boardName: string;
 
-  fromUserId: string;
-  fromUserEmail?: string;
+  ownerId: string; // dono do board (pra aprovar)
+  type: FinanceBoardInviteType;
 
-  toUserId?: string;
-  toEmail: string;
+  // alvo do convite/pedido
+  email?: string; // quando type="email"
+  userId?: string; // quando type="code"
 
   status: FinanceBoardInviteStatus;
-  direction: FinanceBoardInviteDirection;
 
+  createdBy: string; // quem criou (owner no email invite, user no code request)
   createdAt: string;
+  respondedAt?: string;
 };
