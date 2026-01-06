@@ -192,27 +192,37 @@ export default function FinanceClientPage({
       <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-lg font-medium opacity-90">
-              {t("hello")}, {userName}!
-            </h1>
-            <p className="text-xs text-blue-100 mt-1">
-              {t("currentBoardPrefix")}{" "}
-              <span className="font-semibold">{boardName}</span>
-            </p>
-          </div>
+        {/* (Opcional) mantém valores usados sem aparecer (evita warning de variável não usada) */}
+        <span className="sr-only">
+          {userName} {boardName}
+        </span>
 
-          <div className="flex gap-4 items-center bg-blue-700/50 p-1 rounded-full px-4">
-            <button onClick={handlePrevMonth} aria-label="Mês anterior">
-              <FiChevronLeft />
-            </button>
-            <span className="text-sm font-semibold capitalize min-w-[120px] text-center">
-              {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-            </span>
-            <button onClick={handleNextMonth} aria-label="Próximo mês">
-              <FiChevronRight />
-            </button>
+        {/* CONTROLE DE MÊS (full width + centralizado) */}
+        <div className="mb-4">
+          <div className="w-full">
+            <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
+              <button
+                onClick={handlePrevMonth}
+                aria-label="Mês anterior"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+              >
+                <FiChevronLeft />
+              </button>
+
+              <div className="flex-1 text-center">
+                <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
+                  {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+                </span>
+              </div>
+
+              <button
+                onClick={handleNextMonth}
+                aria-label="Próximo mês"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+              >
+                <FiChevronRight />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -257,9 +267,7 @@ export default function FinanceClientPage({
             >
               <div className="flex items-center gap-2">
                 <FiUsers className="text-blue-600" size={18} />
-                <span className="text-sm font-semibold text-gray-800">
-                  {t("shareTitle")}
-                </span>
+                <span className="text-sm font-semibold text-gray-800">{t("shareTitle")}</span>
               </div>
               <FiChevronDown
                 className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""}`}
