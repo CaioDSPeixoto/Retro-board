@@ -1,3 +1,4 @@
+// app/[locale]/tools/finance/(protected)/register/RegisterForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -19,6 +20,8 @@ export default function RegisterForm({ locale }: { locale: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
@@ -34,33 +37,29 @@ export default function RegisterForm({ locale }: { locale: string }) {
       return;
     }
 
-    let userId = "";
+    let idToken = "";
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      userId = userCredential.user.uid;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
       console.error("Firebase Register Error", firebaseError);
 
-      if (firebaseError.code === "auth/email-already-in-use") {
-        setError(t("errors.inUse"));
-      } else if (firebaseError.code === "auth/invalid-email") {
-        setError(t("errors.invalid"));
-      } else {
-        setError(t("errors.general"));
-      }
+      if (firebaseError.code === "auth/email-already-in-use") setError(t("errors.inUse"));
+      else if (firebaseError.code === "auth/invalid-email") setError(t("errors.invalid"));
+      else setError(t("errors.general"));
 
       setLoading(false);
       return;
     }
 
-    if (userId) {
-      await loginAction(userId, locale);
+    if (!idToken) {
+      setError(t("errors.general"));
+      setLoading(false);
+      return;
     }
+
+    await loginAction(idToken, locale);
   };
 
   return (
@@ -72,9 +71,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("emailLabel")}
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("emailLabel")}</label>
         <input
           type="email"
           value={email}
@@ -86,9 +83,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("passwordLabel")}
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("passwordLabel")}</label>
         <input
           type="password"
           value={password}
@@ -124,10 +119,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
       <div className="text-center mt-4">
         <p className="text-sm text-gray-500">
           {t("hasAccount")}{" "}
-          <Link
-            href={`/${locale}/tools/finance/login`}
-            className="text-blue-600 font-bold hover:underline"
-          >
+          <Link href={`/${locale}/tools/finance/login`} className="text-blue-600 font-bold hover:underline">
             {t("loginLink")}
           </Link>
         </p>

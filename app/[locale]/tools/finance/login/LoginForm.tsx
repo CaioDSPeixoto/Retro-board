@@ -31,8 +31,7 @@ export default function LoginForm({ locale }: Props) {
     let idToken = "";
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      idToken = await userCredential.user.getIdToken();
-      setError("");
+      idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
       console.error("Firebase Login Error", firebaseError);
 
@@ -58,16 +57,7 @@ export default function LoginForm({ locale }: Props) {
       return;
     }
 
-    // 2) Server action (cria cookie e redireciona)
-    // Se der erro aqui, NÃO é erro de senha.
-    try {
-      await loginAction(idToken, locale);
-      // normalmente redirect acontece e não volta
-    } catch (err) {
-      console.error("loginAction Error", err);
-      setError(t("errors.general"));
-      setLoading(false);
-    }
+    await loginAction(idToken, locale);
   };
 
   return (
