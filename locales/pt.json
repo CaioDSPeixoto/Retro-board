@@ -321,7 +321,7 @@
       "invalidAmount": "Informe um valor válido.",
       "unknown": "Erro ao salvar. Tente novamente."
     },
-
+    "cancel": "Cancelar",
     "title": "Novo lançamento",
     "income": "Receita",
     "expense": "Despesa",

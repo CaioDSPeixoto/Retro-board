@@ -7,6 +7,55 @@ export default function ReleasesPage() {
 
   const releases = [
     {
+      version: "0.6.6",
+      date: "02/01/2026",
+      changes: [
+        "REFACT: ajustes visuais",
+      ],
+    },
+    {
+      version: "0.6.5",
+      date: "02/01/2026",
+      changes: [
+        "FIX: correcao atras de correcao",
+      ],
+    },
+    {
+      version: "0.6.4",
+      date: "02/01/2026",
+      changes: [
+        "FIX: mais um commit de correcao",
+      ],
+    },
+    {
+      version: "0.6.3",
+      date: "02/01/2026",
+      changes: [
+        "FIX: vibe coding não é bom",
+      ],
+    },
+    {
+      version: "0.6.2",
+      date: "02/01/2026",
+      changes: [
+        "FIX: corrigindo erro do vibe coding",
+      ],
+    },
+    {
+      version: "0.6.1",
+      date: "02/01/2026",
+      changes: [
+        "FIX: correcao de importacao",
+      ],
+    },
+    {
+      version: "0.6.0",
+      date: "02/01/2026",
+      changes: [
+        "FEAT: testando vibe coding",
+      ],
+    },
+    {
       version: "0.5.3",
       date: "16/12/2025",
       changes: [

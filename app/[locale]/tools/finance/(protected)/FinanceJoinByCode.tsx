@@ -16,8 +16,9 @@ export default function FinanceJoinByCode({ locale }: Props) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
     const trimmed = code.trim();
-    if (!trimmed) return;
+    if (!trimmed || loading) return;
 
     setLoading(true);
     setFeedback(null);
@@ -36,7 +37,7 @@ export default function FinanceJoinByCode({ locale }: Props) {
   };
 
   return (
-    <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mx-6">
+    <div className="bg-white border border-blue-100 rounded-xl shadow-sm p-4">
       <h2 className="text-base font-semibold text-gray-800 mb-2">
         {t("joinByCodeTitle")}
       </h2>

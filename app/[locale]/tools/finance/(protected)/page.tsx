@@ -30,15 +30,20 @@ export default async function FinancePage({
   const boards: FinanceBoard[] = await getBoardsData();
 
   // ===== LISTAGEM DE QUADROS (SEM boardId) =====
+ // LISTAGEM DE QUADROS
   if (!boardId) {
     return (
-      <FinanceBoardsClient
-        locale={locale}
-        currentMonth={currentMonth}
-        initialBoards={boards}
-      />
+      <div className="max-w-4xl mx-auto px-6 pb-10">
+        {/* lista de quadros (CLIENT) */}
+        <FinanceBoardsClient
+          locale={locale}
+          currentMonth={currentMonth}
+          initialBoards={boards}
+        />
+      </div>
     );
   }
+
 
   // ===== VISUALIZAÇÃO DO QUADRO (COM boardId) =====
   const [items, categories] = await Promise.all([

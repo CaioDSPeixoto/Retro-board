@@ -40,14 +40,14 @@
     },
     "alerts": {
       "requireName": "¡Por favor, escriba su nombre antes de crear la tarjeta!",
-      "addCardError": "Error al añadir la tarjeta. Inténtelo de nuevo.",
+      "addCardError": "Error al añadir tarjeta. Inténtelo de nuevo.",
       "voteError": "Error al registrar el voto.",
       "roomNotFound": "¡Sala no encontrada!",
       "fetchRoomError": "Error al cargar la sala."
     },
     "logs": {
-      "fetchRoomError": "Error al buscar la sala:",
-      "addCardError": "Error al añadir la tarjeta:",
+      "fetchRoomError": "Error al buscar sala:",
+      "addCardError": "Error al añadir tarjeta:",
       "voteError": "Error al votar:"
     },
     "errors": {
@@ -61,11 +61,11 @@
     },
     "share": {
       "copied": "¡Enlace copiado al portapapeles!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Únete a la sala: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Entra en la sala: {url}"
     }
   },
   "Home": {
-    "slogan": "¡Comentarios que impulsan el futuro!",
+    "slogan": "¡Feedbacks que impulsan el futuro!",
     "tabs": {
       "create": "Crear Sala",
       "enter": "Entrar en Sala"
@@ -95,24 +95,24 @@
       "roomNotFound": "¡Sala no encontrada!"
     },
     "logs": {
-      "createError": "Error al crear la sala:",
-      "checkRoomError": "Error al verificar la sala:"
+      "createError": "Error al crear sala:",
+      "checkRoomError": "Error al verificar sala:"
     }
   },
   "Tools": {
     "title": "Herramientas",
-    "description": "Seleccione una de las herramientas disponibles a continuación.",
-    "timeTrackerTitle": "Control de Horario",
+    "description": "Seleccione abajo una de las herramientas disponibles.",
+    "timeTrackerTitle": "Control de Horarios",
     "timeTrackerDesc": "Registre horarios y calcule horas trabajadas.",
-    "todoListTitle": "Lista de Tareas",
-    "todoListDesc": "Gestione tareas con alertas de horario",
+    "todoListTitle": "Tareas",
+    "todoListDesc": "Gestione tareas con alertas de horario.",
     "financeTitle": "Finanzas",
-    "financeDesc": "Gestiona tus cuentas y gastos",
+    "financeDesc": "Gestione sus cuentas y sus gastos.",
     "toolSoon": "En construcción..."
   },
   "TimeTracker": {
-    "title": "Control de Horario",
-    "registerNow": "Registrar horario ahora",
+    "title": "Control de Horarios",
+    "registerNow": "Fichar ahora",
     "addManual": "Añadir horario manualmente",
     "delete": "Eliminar",
     "worked": "Horas trabajadas",
@@ -128,45 +128,81 @@
     "title": "Finanzas",
     "expenses": "Gastos",
     "incomes": "Ingresos",
-    "groups": "Grupos"
+    "groups": "Grupos",
+    "incomesTitle": "Ingresos",
+    "noIncomesThisMonth": "Ningún ingreso registrado este mes.",
+    "expensesTitle": "Gastos",
+    "noExpensesThisMonth": "Ningún gasto registrado este mes.",
+    "transactionsTitle": "Transacciones",
+    "noTransactionsThisMonth": "Ningún movimiento este mes.",
+    "categoryTitle": "Categoría",
+    "noCategoryThisMonth": "Ningún movimiento en esta categoría este mes.",
+    "overdueTitle": "Vencido",
+    "noOverdueThisMonth": "No hay cuentas vencidas este mes.",
+    "launchedBy": "Registrado por {name}",
+    "openAmount": "Saldo pendiente: {value}",
+    "statusPending": "Pendiente",
+    "statusPaid": "Pagado",
+    "statusPartial": "Pagado parcialmente",
+    "fixedLabel": "Fijo",
+    "overdueBadge": "Vencido",
+    "overdueMoved": "Movido al próximo mes",
+    "confirmDelete": "¿Está seguro de que desea eliminar este registro?",
+    "rolledFromMonth": "Movido desde {month}",
+    "partialPaid": "Pagado {paid} de {total}",
+    "syntheticLabel": "Generado",
+    "togglePaidAria": "Alternar estado de pago",
+    "editAria": "Editar registro",
+    "deleteAria": "Eliminar registro",
+    "errors": {
+      "mustBeLoggedIn": "Debe iniciar sesión.",
+      "deleteFailed": "Error al eliminar. Inténtelo de nuevo.",
+      "toggleFailed": "Error al actualizar estado. Inténtelo de nuevo.",
+      "itemNotFound": "Elemento no encontrado."
+    }
   },
   "UserMenu": {
     "account": "Cuenta",
-    "logout": "Cerrar sesión",
-    "versionTitle": "Ver las notas de la versión {version}"
+    "logout": "Salir",
+    "versionTitle": "Ver notas de la versión v{version}"
   },
   "TodoList": {
     "title": "Lista de Tareas",
     "add": "Añadir tarea",
     "delete": "Eliminar",
     "placeholder": "Descripción de la tarea",
-    "clearAll": "Borrar todo",
+    "clearAll": "Limpiar todo",
     "remaining": "restantes",
-    "empty": "No hay tareas todavía..."
+    "empty": "No hay tareas por ahora..."
   },
   "FinanceLogin": {
     "title": "Mis Finanzas",
-    "description": "Inicia sesión para administrar tus cuentas",
+    "description": "Inicie sesión para gestionar sus cuentas",
     "emailUserLabel": "Correo o Usuario",
+    "emailPlaceholder": "ej: su@correo.com",
     "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
     "submitButton": "Acceder",
     "loading": "Entrando...",
-    "noAccount": "¿Aún no tienes cuenta?",
-    "registerLink": "Regístrate",
+    "noAccount": "¿Aún no tiene cuenta?",
+    "registerLink": "Regístrese",
     "errors": {
       "invalid": "Correo o contraseña inválidos.",
-      "general": "Error de autenticación. Inténtalo de nuevo."
+      "general": "Error al autenticar. Inténtelo de nuevo."
     }
   },
   "FinanceRegister": {
     "title": "Nueva Cuenta",
-    "description": "Crea tu cuenta para empezar",
-    "emailLabel": "Correo",
+    "description": "Cree su cuenta para comenzar",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "su@correo.com",
     "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
     "confirmPasswordLabel": "Confirmar Contraseña",
+    "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Crear Cuenta",
     "loading": "Creando cuenta...",
-    "hasAccount": "¿Ya tienes cuenta?",
+    "hasAccount": "¿Ya tiene cuenta?",
     "loginLink": "Entrar",
     "errors": {
       "match": "Las contraseñas no coinciden.",
@@ -175,5 +211,124 @@
       "invalid": "Correo inválido.",
       "general": "Error al crear la cuenta. Inténtelo de nuevo."
     }
+  },
+  "FinancePage": {
+    "defaultUserName": "Gestor",
+    "sending": "Enviando...",
+    "openAmountLabel": "Saldo pendiente",
+    "loadingInvites": "Cargando invitaciones y solicitudes...",
+    "inviteByEmail": "Invitación por correo para {email}",
+    "requestByCode": "Solicitud de acceso mediante código",
+    "hello": "Hola",
+    "boardLabel": "Tablero de finanzas",
+    "allBoardsLabel": "Todos los tableros",
+    "currentBoardPrefix": "Está en el tablero",
+    "balanceTitle": "Saldo en Caja",
+    "entriesLabel": "Ingresos",
+    "exitsLabel": "Gastos",
+    "shareTitle": "Compartir tablero",
+    "shareCodeLabel": "Código del tablero",
+    "shareCodeHint": "Envíe este código a alguien para que use la opción \"Entrar en un tablero existente\".",
+    "shareEmailLabel": "Invitar por correo",
+    "shareEmailPlaceholder": "correo@ejemplo.com",
+    "shareEmailButton": "Enviar invitación",
+    "inviteSent": "¡Invitación enviada con éxito!",
+    "overdueTitle": "Cuentas vencidas",
+    "overdueSubtitle": "Tiene {count} cuenta(s) con vencimiento ya pasado.",
+    "transactionsTitle": "Transacciones",
+    "transactionsCount": "{count} movimientos",
+    "noTransactions": "Ningún movimiento este mes.",
+    "addNow": "Añadir ahora",
+    "pendingApprovalsTitle": "Aprobaciones pendientes",
+    "pendingApprovalsMessage": "Tiene {count} solicitud(es) para entrar en tableros que usted administra. Acceda al área de invitaciones para aprobar o rechazar.",
+    "pendingApprovalsClose": "Entendido",
+    "joinByCodeTitle": "Entrar en un tablero por código",
+    "joinByCodeLabel": "Código del tablero",
+    "joinByCodePlaceholder": "Pegue aquí el código que recibió",
+    "joinByCodeButton": "Solicitar entrada",
+    "invitesSectionTitle": "Invitaciones y aprobaciones",
+    "invitesForYou": "Invitaciones para usted",
+    "noInvites": "No tiene invitaciones pendientes en este momento.",
+    "ownerRequests": "Solicitudes en sus tableros",
+    "noOwnerRequests": "Ninguna solicitud pendiente en los tableros que usted administra.",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "joinRequestSent": "¡Solicitud enviada con éxito!",
+    "errors": {
+      "boardNotFound": "Tablero no encontrado.",
+      "inviteSend": "Error al enviar invitación. Inténtelo de nuevo.",
+      "boardNotFoundCode": "Tablero no encontrado. Verifique el código.",
+      "alreadyMember": "Ya participa en este tablero.",
+      "alreadyRequested": "Ya ha solicitado acceso a este tablero.",
+      "requestSend": "Error al enviar la solicitud. Inténtelo de nuevo."
+    }
+  },
+  "FinanceBoards": {
+    "title": "Tableros de finanzas",
+    "description": "Cree un nuevo tablero o entre en uno existente para organizar sus cuentas solo(a) o con otras personas.",
+    "createSectionTitle": "Crear nuevo tablero",
+    "createNameLabel": "Nombre del tablero",
+    "createNamePlaceholder": "Ej: Casa, Viaje con amigos...",
+    "createPersonalLabel": "Tablero personal (solo usted lo ve y registra)",
+    "createButton": "Crear tablero",
+    "joinSectionTitle": "Entrar en un tablero existente",
+    "joinCodeLabel": "Código del tablero",
+    "joinCodePlaceholder": "Pegue aquí el código que recibió",
+    "joinButton": "Entrar",
+    "listTitle": "Sus tableros",
+    "personalTag": "Personal",
+    "sharedTag": "Compartido",
+    "openBoard": "Abrir",
+    "emptyMessage": "Aún no tiene tableros creados o compartidos.",
+    "newBoardLabel": "Nuevo tablero",
+    "newBoardPlaceholder": "Dé un nombre a este tablero",
+    "emptyTitle": "Aún no tiene tableros",
+    "emptySubtitle": "Cree un nuevo tablero para comenzar a organizar sus finanzas.",
+    "membersLabel": "{count, plural, one {# miembro} other {# miembros}}",
+    "errors": {
+      "nameRequired": "Dé un nombre al tablero antes de crearlo.",
+      "codeRequired": "Indique el código del tablero para entrar.",
+      "boardNotFound": "Tablero no encontrado o aún no ha sido aceptado.",
+      "general": "Ocurrió un error. Inténtelo de nuevo."
+    }
+  },
+  "FinanceForm": {
+    "newTransactionTitle": "Nuevo registro",
+    "editTransactionTitle": "Editar registro",
+    "typeIncome": "Ingreso",
+    "typeExpense": "Gasto",
+    "categoryLabel": "Categoría",
+    "customCategoryHint": "¿Necesita algo diferente? Añada una categoría personalizada:",
+    "customCategoryPlaceholder": "Nombre de la categoría",
+    "savingCategory": "Guardando...",
+    "addCategory": "Añadir",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "Ej: Alquiler, Salario...",
+    "amountLabel": "Valor ($)",
+    "dateLabel": "Fecha",
+    "alreadyPaidLabel": "¿Ya ha sido pagado/recibido?",
+    "paidAmountLabel": "Valor ya pagado (opcional)",
+    "paidAmountHint": "Use este campo para registrar pagos parciales. El saldo pendiente se llevará al próximo mes.",
+    "fixedCheckboxLabel": "Registro fijo (repetir cada mes)",
+    "savingButton": "Guardando...",
+    "saveButton": "Guardar registro",
+    "saveEditButton": "Guardar cambios",
+    "errors": {
+      "createCategory": "Error al crear categoría.",
+      "requiredFields": "Complete todos los campos obligatorios.",
+      "invalidAmount": "Indique un valor válido.",
+      "unknown": "Error al guardar. Inténtelo de nuevo."
+    },
+    "cancel": "Cancelar",
+    "title": "Nuevo movimiento",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "categoryCustomHelp": "¿Necesita algo diferente? Añada una categoría personalizada:",
+    "categoryNamePlaceholder": "Nombre de la categoría",
+    "categoryAddButton": "Añadir",
+    "paidLabel": "¿Ya ha sido pagado/recibido?",
+    "fixedLabel": "Gasto fijo (repetir cada mes)",
+    "submit": "Guardar registro",
+    "saving": "Guardando..."
   }
 }

@@ -1,16 +1,11 @@
+// app/[locale]/tools/finance/(protected)/FinanceClientPage.tsx
 "use client";
 
 import type { FinanceBoard, FinanceItem } from "@/types/finance";
 import { useState, useMemo, useEffect } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiPlus,
-  FiUsers,
-  FiChevronDown,
-} from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiPlus, FiUsers, FiChevronDown } from "react-icons/fi";
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
@@ -18,9 +13,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
 
-import FinanceInvitePanel from "./FinanceInvitePanel";
-import FinanceJoinByCode from "./FinanceJoinByCode";
-import { getOwnerPendingApprovalsCount, sendInviteByEmail } from "./invite-actions";
+import { sendInviteByEmail } from "./invite-actions";
 
 type Props = {
   initialItems: FinanceItem[];
@@ -29,7 +22,7 @@ type Props = {
   locale: string;
   boards: FinanceBoard[];
   currentBoardId?: string | null;
-  sessionUserId: string; // ✅ vem do server (cookie)
+  sessionUserId: string; // vem do server (cookie)
 };
 
 export default function FinanceClientPage({
@@ -55,9 +48,6 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
-  const [showPendingPopup, setShowPendingPopup] = useState(false);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user?.displayName) setUserName(user.displayName.split(" ")[0]);
@@ -77,25 +67,6 @@ export default function FinanceClientPage({
     : t("allBoardsLabel");
 
   const isOwner = !!currentBoard && currentBoard.ownerId === sessionUserId;
-
-  useEffect(() => {
-    const run = async () => {
-      const res = await getOwnerPendingApprovalsCount();
-
-      if (res && typeof res === "object" && "count" in res) {
-        const count = Number((res as any).count || 0);
-        setPendingApprovalsCount(count);
-        setShowPendingPopup(count > 0);
-        return;
-      }
-
-      // se vier error, não quebra a tela
-      setPendingApprovalsCount(0);
-      setShowPendingPopup(false);
-    };
-
-    run();
-  }, []);
 
   const currentDate = parseISO(currentMonth + "-01");
 
@@ -196,26 +167,6 @@ export default function FinanceClientPage({
 
   return (
     <div className="pb-24">
-      {/* POPUP DE APROVAÇÕES PENDENTES */}
-      {showPendingPopup && pendingApprovalsCount > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">
-              {t("pendingApprovalsTitle")}
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              {t("pendingApprovalsMessage", { count: pendingApprovalsCount })}
-            </p>
-            <button
-              onClick={() => setShowPendingPopup(false)}
-              className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition"
-            >
-              {t("pendingApprovalsClose")}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
         <div className="px-6 pt-4 pb-2">
@@ -253,13 +204,13 @@ export default function FinanceClientPage({
           </div>
 
           <div className="flex gap-4 items-center bg-blue-700/50 p-1 rounded-full px-4">
-            <button onClick={handlePrevMonth}>
+            <button onClick={handlePrevMonth} aria-label="Mês anterior">
               <FiChevronLeft />
             </button>
             <span className="text-sm font-semibold capitalize min-w-[120px] text-center">
               {format(currentDate, "MMMM yyyy", { locale: ptBR })}
             </span>
-            <button onClick={handleNextMonth}>
+            <button onClick={handleNextMonth} aria-label="Próximo mês">
               <FiChevronRight />
             </button>
           </div>
@@ -363,10 +314,6 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {/* JOIN POR CÓDIGO + CONVITES */}
-      {/* <FinanceJoinByCode locale={locale} /> */}
-      <FinanceInvitePanel locale={locale} />
-
       {/* CONTAS EM ATRASO */}
       {overdueItems.length > 0 && (
         <div className="px-6 mt-2 mb-4">
@@ -383,6 +330,35 @@ export default function FinanceClientPage({
                   overdueTotal,
                 )}
               </p>
+            </div>
+
+            <div className="max-h-52 overflow-y-auto mt-2 space-y-2">
+              {overdueItems.map((item) => {
+                const openAmount = item.amount - (item.paidAmount || 0);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{item.title}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {format(new Date(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-[11px] text-amber-700 font-semibold">
+                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                          Math.max(openAmount, 0),
+                        )}
+                      </p>
+                      <p className="text-[10px] text-gray-400">{t("openAmountLabel")}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -417,6 +393,7 @@ export default function FinanceClientPage({
       <button
         onClick={handleOpenCreateModal}
         className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
+        aria-label={t("addNow")}
       >
         <FiPlus size={28} />
       </button>

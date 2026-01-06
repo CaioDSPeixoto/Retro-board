@@ -36,14 +36,14 @@
     "categories": {
       "bom": "Good",
       "ruim": "Bad",
-      "melhorar": "Improve"
+      "melhorar": "To Improve"
     },
     "alerts": {
-      "requireName": "Please enter your name before creating the card!",
-      "addCardError": "Error adding card. Try again.",
+      "requireName": "Please enter your name before creating a card!",
+      "addCardError": "Error adding card. Please try again.",
       "voteError": "Error registering vote.",
       "roomNotFound": "Room not found!",
-      "fetchRoomError": "Error loading the room."
+      "fetchRoomError": "Error loading room."
     },
     "logs": {
       "fetchRoomError": "Error fetching room:",
@@ -65,33 +65,33 @@
     }
   },
   "Home": {
-    "slogan": "Feedback that drives the future!",
+    "slogan": "Feedbacks that drive the future!",
     "tabs": {
       "create": "Create Room",
       "enter": "Enter Room"
     },
     "roomName": {
-      "label": "What do you want the room name to be?",
+      "label": "Room name preference?",
       "default": "Default",
       "custom": "Custom",
-      "placeholder": "Enter the room name",
+      "placeholder": "Enter room name",
       "defaultName": "Retrospective"
     },
     "userName": {
-      "label": "How should users be named?",
+      "label": "Username preference?",
       "allowAnonymous": "Allow Anonymous",
       "requireName": "Name Required",
       "placeholder": "Enter your name..."
     },
     "createButton": "Create Room",
     "enterRoom": {
-      "placeholder": "Enter the room ID",
+      "placeholder": "Enter room ID",
       "button": "Enter"
     },
     "loading": "Creating room...",
     "alerts": {
       "requireName": "Please enter your name before creating the room!",
-      "createError": "Error creating the room. Try again.",
+      "createError": "Error creating room. Please try again.",
       "roomNotFound": "Room not found!"
     },
     "logs": {
@@ -103,37 +103,68 @@
     "title": "Tools",
     "description": "Select one of the available tools below.",
     "timeTrackerTitle": "Time Tracker",
-    "timeTrackerDesc": "Register times and calculate hours worked.",
-    "todoListTitle": "Todo List",
-    "todoListDesc": "Manage tasks with time alerts",
+    "timeTrackerDesc": "Log your time and calculate worked hours.",
+    "todoListTitle": "Tasks",
+    "todoListDesc": "Manage tasks with time alerts.",
     "financeTitle": "Finance",
-    "financeDesc": "Manage your accounts and expenses",
+    "financeDesc": "Manage your bills and expenses.",
     "toolSoon": "Coming soon..."
   },
   "TimeTracker": {
     "title": "Time Tracker",
-    "registerNow": "Register time now",
+    "registerNow": "Clock in now",
     "addManual": "Add time manually",
     "delete": "Delete",
     "worked": "Hours worked",
-    "lunch": "Lunch time",
+    "lunch": "Lunch break",
     "remaining": "Remaining",
-    "extra": "Overtime",
-    "workload6": "Daily workload: 6h",
-    "workload8": "Daily workload: 8h",
-    "workload848": "Daily workload: 8h48"
+    "extra": "Extra hours",
+    "workload6": "Daily load: 6h",
+    "workload8": "Daily load: 8h",
+    "workload848": "Daily load: 8h48"
   },
   "Finance": {
     "hello": "Hello",
     "title": "Finance",
     "expenses": "Expenses",
-    "incomes": "Incomes",
-    "groups": "Groups"
+    "incomes": "Income",
+    "groups": "Groups",
+    "incomesTitle": "Income",
+    "noIncomesThisMonth": "No income recorded this month.",
+    "expensesTitle": "Expenses",
+    "noExpensesThisMonth": "No expenses recorded this month.",
+    "transactionsTitle": "Transactions",
+    "noTransactionsThisMonth": "No transactions this month.",
+    "categoryTitle": "Category",
+    "noCategoryThisMonth": "No records in this category this month.",
+    "overdueTitle": "Overdue",
+    "noOverdueThisMonth": "No overdue bills this month.",
+    "launchedBy": "Logged by {name}",
+    "openAmount": "Open balance: {value}",
+    "statusPending": "Pending",
+    "statusPaid": "Paid",
+    "statusPartial": "Partially paid",
+    "fixedLabel": "Fixed",
+    "overdueBadge": "Overdue",
+    "overdueMoved": "Moved to next month",
+    "confirmDelete": "Are you sure you want to delete this entry?",
+    "rolledFromMonth": "Moved from {month}",
+    "partialPaid": "Paid {paid} of {total}",
+    "syntheticLabel": "Generated",
+    "togglePaidAria": "Toggle paid status",
+    "editAria": "Edit entry",
+    "deleteAria": "Delete entry",
+    "errors": {
+      "mustBeLoggedIn": "You must be logged in.",
+      "deleteFailed": "Error deleting. Please try again.",
+      "toggleFailed": "Error updating status. Please try again.",
+      "itemNotFound": "Item not found."
+    }
   },
   "UserMenu": {
     "account": "Account",
     "logout": "Logout",
-    "versionTitle": "View release notes {version}"
+    "versionTitle": "View release notes for v{version}"
   },
   "TodoList": {
     "title": "Todo List",
@@ -142,28 +173,33 @@
     "placeholder": "Task description",
     "clearAll": "Clear all",
     "remaining": "remaining",
-    "empty": "No tasks yet..."
+    "empty": "No tasks for now..."
   },
   "FinanceLogin": {
-    "title": "My Finance",
-    "description": "Login to manage your accounts",
+    "title": "My Finances",
+    "description": "Log in to manage your accounts",
     "emailUserLabel": "Email or Username",
+    "emailPlaceholder": "ex: your@email.com",
     "passwordLabel": "Password",
-    "submitButton": "Access",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "Login",
     "loading": "Logging in...",
     "noAccount": "Don't have an account?",
     "registerLink": "Sign up",
     "errors": {
       "invalid": "Invalid email or password.",
-      "general": "Authentication error. Try again."
+      "general": "Authentication error. Please try again."
     }
   },
   "FinanceRegister": {
     "title": "New Account",
-    "description": "Create your account to start",
+    "description": "Create your account to get started",
     "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
     "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
     "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Create Account",
     "loading": "Creating account...",
     "hasAccount": "Already have an account?",
@@ -171,9 +207,128 @@
     "errors": {
       "match": "Passwords do not match.",
       "length": "Password must be at least 6 characters.",
-      "inUse": "Email already in use.",
+      "inUse": "This email is already in use.",
       "invalid": "Invalid email.",
-      "general": "Error creating account. Try again."
+      "general": "Error creating account. Please try again."
     }
+  },
+  "FinancePage": {
+    "defaultUserName": "Manager",
+    "sending": "Sending...",
+    "openAmountLabel": "Open balance",
+    "loadingInvites": "Loading invites and requests...",
+    "inviteByEmail": "Email invitation to {email}",
+    "requestByCode": "Access request via code",
+    "hello": "Hello",
+    "boardLabel": "Finance Board",
+    "allBoardsLabel": "All Boards",
+    "currentBoardPrefix": "You are on the board",
+    "balanceTitle": "Cash Balance",
+    "entriesLabel": "Income",
+    "exitsLabel": "Expenses",
+    "shareTitle": "Share board",
+    "shareCodeLabel": "Board code",
+    "shareCodeHint": "Send this code to someone to use the \"Join an existing board\" option.",
+    "shareEmailLabel": "Invite by email",
+    "shareEmailPlaceholder": "email@example.com",
+    "shareEmailButton": "Send invite",
+    "inviteSent": "Invite sent successfully!",
+    "overdueTitle": "Overdue accounts",
+    "overdueSubtitle": "You have {count} account(s) past the due date.",
+    "transactionsTitle": "Transactions",
+    "transactionsCount": "{count} entries",
+    "noTransactions": "No entries this month.",
+    "addNow": "Add now",
+    "pendingApprovalsTitle": "Pending approvals",
+    "pendingApprovalsMessage": "You have {count} request(s) to join boards you manage. Go to the invites area to approve or reject.",
+    "pendingApprovalsClose": "Got it",
+    "joinByCodeTitle": "Join a board by code",
+    "joinByCodeLabel": "Board code",
+    "joinByCodePlaceholder": "Paste the code you received here",
+    "joinByCodeButton": "Request access",
+    "invitesSectionTitle": "Invites and approvals",
+    "invitesForYou": "Invites for you",
+    "noInvites": "You have no pending invites at the moment.",
+    "ownerRequests": "Requests on your boards",
+    "noOwnerRequests": "No pending requests on the boards you manage.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "joinRequestSent": "Request sent successfully!",
+    "errors": {
+      "boardNotFound": "Board not found.",
+      "inviteSend": "Error sending invite. Please try again.",
+      "boardNotFoundCode": "Board not found. Check the code.",
+      "alreadyMember": "You are already a member of this board.",
+      "alreadyRequested": "You have already requested access to this board.",
+      "requestSend": "Error sending request. Please try again."
+    }
+  },
+  "FinanceBoards": {
+    "title": "Finance Boards",
+    "description": "Create a new board or join an existing one to organize your bills alone or with others.",
+    "createSectionTitle": "Create new board",
+    "createNameLabel": "Board name",
+    "createNamePlaceholder": "e.g., Home, Trip with friends...",
+    "createPersonalLabel": "Personal board (only you can see and log)",
+    "createButton": "Create board",
+    "joinSectionTitle": "Join an existing board",
+    "joinCodeLabel": "Board code",
+    "joinCodePlaceholder": "Paste the code you received",
+    "joinButton": "Join",
+    "listTitle": "Your boards",
+    "personalTag": "Personal",
+    "sharedTag": "Shared",
+    "openBoard": "Open",
+    "emptyMessage": "You don't have any created or shared boards yet.",
+    "newBoardLabel": "New board",
+    "newBoardPlaceholder": "Name this board",
+    "emptyTitle": "You have no boards yet",
+    "emptySubtitle": "Create a new board to start organizing your finances.",
+    "membersLabel": "{count, plural, one {# member} other {# members}}",
+    "errors": {
+      "nameRequired": "Enter a board name before creating.",
+      "codeRequired": "Enter the board code to join.",
+      "boardNotFound": "Board not found or you haven't been accepted yet.",
+      "general": "An error occurred. Please try again."
+    }
+  },
+  "FinanceForm": {
+    "newTransactionTitle": "New transaction",
+    "editTransactionTitle": "Edit transaction",
+    "typeIncome": "Income",
+    "typeExpense": "Expense",
+    "categoryLabel": "Category",
+    "customCategoryHint": "Need something different? Add a custom category:",
+    "customCategoryPlaceholder": "Category name",
+    "savingCategory": "Saving...",
+    "addCategory": "Add",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "e.g., Rent, Salary...",
+    "amountLabel": "Amount ($)",
+    "dateLabel": "Date",
+    "alreadyPaidLabel": "Already paid/received?",
+    "paidAmountLabel": "Amount already paid (optional)",
+    "paidAmountHint": "Use this field to record partial payments. The open balance will be carried over to next month.",
+    "fixedCheckboxLabel": "Fixed entry (repeat every month)",
+    "savingButton": "Saving...",
+    "saveButton": "Save transaction",
+    "saveEditButton": "Save changes",
+    "errors": {
+      "createCategory": "Error creating category.",
+      "requiredFields": "Please fill in all required fields.",
+      "invalidAmount": "Enter a valid amount.",
+      "unknown": "Error saving. Please try again."
+    },
+    "cancel": "Cancel",
+    "title": "New entry",
+    "income": "Income",
+    "expense": "Expense",
+    "categoryCustomHelp": "Need something different? Add a custom category:",
+    "categoryNamePlaceholder": "Category name",
+    "categoryAddButton": "Add",
+    "paidLabel": "Already paid/received?",
+    "fixedLabel": "Fixed expense (repeat every month)",
+    "submit": "Save entry",
+    "saving": "Saving..."
   }
 }

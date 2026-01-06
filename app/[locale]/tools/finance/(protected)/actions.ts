@@ -1,3 +1,4 @@
+// app/[locale]/tools/finance/(protected)/actions.ts
 "use server";
 
 import { adminDb } from "@/lib/firebase-admin";
@@ -8,13 +9,22 @@ import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 
 /* ================= helpers ================= */
 
+async function getBoard(boardId: string): Promise<FinanceBoard | null> {
+  const snap = await adminDb.collection("finance_boards").doc(boardId).get();
+  if (!snap.exists) return null;
+  return { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
+}
+
+function isMember(board: FinanceBoard, userId: string) {
+  const members = Array.isArray(board.memberIds) ? board.memberIds : [];
+  return board.ownerId === userId || members.includes(userId);
+}
+
 async function canEditItem(existing: FinanceItem, sessionUser: string) {
   if (existing.boardId) {
-    const boardSnap = await adminDb.doc(`finance_boards/${existing.boardId}`).get();
-    if (!boardSnap.exists) return false;
-    const board = boardSnap.data() as FinanceBoard;
-    const members = Array.isArray(board.memberIds) ? board.memberIds : [];
-    return members.includes(sessionUser) || board.ownerId === sessionUser;
+    const board = await getBoard(existing.boardId);
+    if (!board) return false;
+    return isMember(board, sessionUser);
   }
   return existing.userId === sessionUser;
 }
@@ -28,23 +38,16 @@ export async function createCategory(name: string, locale: string) {
   const trimmed = name.trim();
   if (!trimmed) return { error: "Nome de categoria inválido" };
 
-  if (BUILTIN_CATEGORIES.includes(trimmed)) {
-    return { error: "Essa categoria já existe" };
-  }
+  if (BUILTIN_CATEGORIES.includes(trimmed)) return { error: "Essa categoria já existe" };
 
-  try {
-    await adminDb.collection("finance_categories").add({
-      userId: sessionUser,
-      name: trimmed,
-      createdAt: new Date().toISOString(),
-    });
+  await adminDb.collection("finance_categories").add({
+    userId: sessionUser,
+    name: trimmed,
+    createdAt: new Date().toISOString(),
+  });
 
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
-  } catch (error) {
-    console.error("Erro ao criar categoria:", error);
-    return { error: "Erro ao criar categoria" };
-  }
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
 }
 
 /* ================= boards ================= */
@@ -56,21 +59,16 @@ export async function createFinanceBoard(name: string, locale: string) {
   const trimmed = name.trim();
   if (!trimmed) return { error: "Nome inválido" };
 
-  try {
-    const ref = await adminDb.collection("finance_boards").add({
-      name: trimmed,
-      ownerId: sessionUser,
-      memberIds: [sessionUser],
-      createdAt: new Date().toISOString(),
-      isPersonal: false,
-    });
+  const ref = await adminDb.collection("finance_boards").add({
+    name: trimmed,
+    ownerId: sessionUser,
+    memberIds: [sessionUser],
+    createdAt: new Date().toISOString(),
+    isPersonal: false,
+  });
 
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true, boardId: ref.id };
-  } catch (error) {
-    console.error("Erro ao criar quadro:", error);
-    return { error: "Erro ao criar quadro" };
-  }
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true, boardId: ref.id };
 }
 
 /* ================= itens ================= */
@@ -79,35 +77,32 @@ export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
-  const title = String(formData.get("title") || "").trim();
+  const title = String(formData.get("title") || "");
   const amountStr = String(formData.get("amount") || "");
   const date = String(formData.get("date") || "");
   const type = formData.get("type") as "income" | "expense" | null;
-  const category = String(formData.get("category") || "").trim();
+  const category = String(formData.get("category") || "");
   const locale = String(formData.get("locale") || "pt").toLowerCase();
 
-  const statusField = (formData.get("status") as FinanceStatus | null) ?? null;
+  const statusField = formData.get("status") as FinanceStatus | null;
   const isFixedFlag = formData.get("isFixed") === "true";
 
-  const boardIdRaw = String(formData.get("boardId") || "").trim();
-  const createdByName = String(formData.get("createdByName") || "").trim();
+  const boardIdRaw = String(formData.get("boardId") || "");
+  const createdByNameFromForm = String(formData.get("createdByName") || "");
 
-  const amount = Number(amountStr);
+  const amount = parseFloat(amountStr);
 
-  if (!title || !date || !type || !category || !Number.isFinite(amount) || amount <= 0) {
+  if (!title.trim() || Number.isNaN(amount) || !date || !type) {
     return { error: "Dados incompletos" };
   }
+  if (!category.trim()) return { error: "Categoria é obrigatória" };
 
-  // valida boardId se veio
+  // valida board se veio
   let boardId: string | undefined;
   if (boardIdRaw) {
-    const boardSnap = await adminDb.doc(`finance_boards/${boardIdRaw}`).get();
-    if (!boardSnap.exists) return { error: "Quadro não encontrado" };
-    const board = boardSnap.data() as FinanceBoard;
-    const members = Array.isArray(board.memberIds) ? board.memberIds : [];
-    if (!(members.includes(sessionUser) || board.ownerId === sessionUser)) {
-      return { error: "Sem permissão para lançar neste quadro" };
-    }
+    const board = await getBoard(boardIdRaw);
+    if (!board) return { error: "Quadro não encontrado" };
+    if (!isMember(board, sessionUser)) return { error: "Sem permissão para lançar neste quadro" };
     boardId = boardIdRaw;
   }
 
@@ -116,46 +111,40 @@ export async function addFinanceItem(formData: FormData) {
 
   const newItem: Omit<FinanceItem, "id"> = {
     userId: sessionUser,
-    title,
+    title: title.trim(),
     amount,
     date,
     type,
     status,
-    category,
+    category: category.trim(),
     createdAt: new Date().toISOString(),
     paidAmount,
-    ...(category === "Contas Fixas" && isFixedFlag ? { isFixed: true } : {}),
+    ...(category.trim() === "Contas Fixas" && isFixedFlag ? { isFixed: true } : {}),
     ...(boardId ? { boardId } : {}),
     createdBy: sessionUser,
-    ...(createdByName ? { createdByName } : {}),
+    ...(createdByNameFromForm ? { createdByName: createdByNameFromForm } : {}),
   };
 
-  try {
-    await adminDb.collection("finance_items").add(newItem);
+  await adminDb.collection("finance_items").add(newItem);
 
-    // template se fixa
-    if (category === "Contas Fixas" && isFixedFlag) {
-      const day = Number((date.split("-")[2] || "1").replace(/^0+/, "")) || 1;
-
-      await adminDb.collection("finance_fixed_templates").add({
-        userId: sessionUser,
-        title,
-        amount,
-        day,
-        category,
-        type,
-        createdAt: new Date().toISOString(),
-        active: true,
-        ...(boardId ? { boardId } : {}),
-      });
-    }
-
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
-  } catch (error) {
-    console.error("Error adding item:", error);
-    return { error: "Erro ao salvar" };
+  // fixa => template
+  if (category.trim() === "Contas Fixas" && isFixedFlag) {
+    const day = parseInt(date.split("-")[2] || "1", 10);
+    await adminDb.collection("finance_fixed_templates").add({
+      userId: sessionUser,
+      title: title.trim(),
+      amount,
+      day,
+      category: category.trim(),
+      type,
+      createdAt: new Date().toISOString(),
+      active: true,
+      ...(boardId ? { boardId } : {}),
+    });
   }
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
 }
 
 export async function updateFinanceItem(formData: FormData) {
@@ -163,111 +152,83 @@ export async function updateFinanceItem(formData: FormData) {
   if (!sessionUser) return { error: "Unauthorized" };
 
   const id = String(formData.get("id") || "");
-  const title = String(formData.get("title") || "").trim();
+  const title = String(formData.get("title") || "");
   const amountStr = String(formData.get("amount") || "");
   const date = String(formData.get("date") || "");
-  const category = String(formData.get("category") || "").trim();
+  const category = String(formData.get("category") || "");
   const type = formData.get("type") as "income" | "expense" | null;
   const locale = String(formData.get("locale") || "pt").toLowerCase();
-  const paidAmountStr = String(formData.get("paidAmount") || "0");
+  const paidAmountStr = String(formData.get("paidAmount") || "");
 
-  const amount = Number(amountStr);
-  const paidAmountRaw = Number(paidAmountStr);
+  const amount = parseFloat(amountStr);
+  const paidAmountRaw = paidAmountStr ? parseFloat(paidAmountStr) : 0;
 
-  if (!id || !title || !date || !category || !type || !Number.isFinite(amount) || amount <= 0) {
+  if (!id || !title.trim() || Number.isNaN(amount) || !date || !category.trim() || !type) {
     return { error: "Dados incompletos" };
   }
 
-  try {
-    const ref = adminDb.doc(`finance_items/${id}`);
-    const snap = await ref.get();
-    if (!snap.exists) return { error: "Item não encontrado" };
+  const ref = adminDb.collection("finance_items").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Item não encontrado" };
 
-    const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: "Unauthorized" };
 
-    const allowed = await canEditItem(existing, sessionUser);
-    if (!allowed) return { error: "Unauthorized" };
+  const paidAmount = Math.max(0, paidAmountRaw);
+  let status: FinanceStatus = "pending";
+  if (paidAmount >= amount) status = "paid";
+  else if (paidAmount > 0) status = "partial";
 
-    const paidAmount = Math.max(0, Number.isFinite(paidAmountRaw) ? paidAmountRaw : 0);
+  await ref.update({
+    title: title.trim(),
+    amount,
+    date,
+    category: category.trim(),
+    type,
+    status,
+    paidAmount,
+  });
 
-    let status: FinanceStatus = "pending";
-    if (paidAmount >= amount) status = "paid";
-    else if (paidAmount > 0) status = "partial";
-
-    await ref.update({
-      title,
-      amount,
-      date,
-      category,
-      type,
-      status,
-      paidAmount,
-    });
-
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
-  } catch (error) {
-    console.error("Erro ao atualizar:", error);
-    return { error: "Erro ao atualizar" };
-  }
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
 }
 
 export async function deleteFinanceItem(id: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
-  try {
-    const ref = adminDb.collection("finance_items").doc(id);
-    const snap = await ref.get();
-    if (!snap.exists) return { error: "Item não encontrado" };
+  const ref = adminDb.collection("finance_items").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Item não encontrado" };
 
-    const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: "Unauthorized" };
 
-    const allowed = await canEditItem(existing, sessionUser);
-    if (!allowed) return { error: "Unauthorized" };
-
-    await ref.delete();
-
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
-  } catch (error) {
-    console.error("Erro ao deletar item:", error);
-    return { error: "Erro ao deletar" };
-  }
+  await ref.delete();
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
 }
 
 export async function toggleStatus(id: string, currentStatus: FinanceStatus, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
-  try {
-    const ref = adminDb.doc(`finance_items/${id}`);
-    const snap = await ref.get();
-    if (!snap.exists) return { error: "Item não encontrado" };
+  const ref = adminDb.collection("finance_items").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Item não encontrado" };
 
-    const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: "Unauthorized" };
 
-    const allowed = await canEditItem(existing, sessionUser);
-    if (!allowed) return { error: "Unauthorized" };
+  const amount = existing.amount;
+  const newStatus: FinanceStatus = currentStatus === "paid" ? "pending" : "paid";
+  const paidAmount = newStatus === "paid" ? amount : 0;
 
-    const amount = existing.amount;
-    let newStatus: FinanceStatus;
-    let paidAmount = existing.paidAmount || 0;
+  await ref.update({ status: newStatus, paidAmount });
 
-    if (currentStatus === "paid") {
-      newStatus = "pending";
-      paidAmount = 0;
-    } else {
-      newStatus = "paid";
-      paidAmount = amount;
-    }
-
-    await ref.update({ status: newStatus, paidAmount });
-
-    revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
-  } catch (error) {
-    console.error("Erro ao atualizar status:", error);
-    return { error: "Erro ao atualizar status" };
-  }
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
 }

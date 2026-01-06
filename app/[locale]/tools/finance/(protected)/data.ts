@@ -23,13 +23,9 @@ export async function getFinanceItemsData(month: string, boardId?: string | null
     }
 
     const snap = await q.get();
+    const monthItems: FinanceItem[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as any;
 
-    const monthItems: FinanceItem[] = snap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as any),
-    })) as FinanceItem[];
-
-    // Sintéticos (só visão pessoal)
+    // sintéticos (somente visão pessoal)
     let syntheticFixedItems: FinanceItem[] = [];
 
     if (!boardId) {
@@ -51,11 +47,11 @@ export async function getFinanceItemsData(month: string, boardId?: string | null
 
       const [yearStr, monthStr] = month.split("-");
       const year = Number(yearStr);
-      const monthIdx = Number(monthStr); // 1-12
+      const monthIdx = Number(monthStr);
       const lastDayOfMonth = new Date(year, monthIdx, 0).getDate();
 
       syntheticFixedItems = fixedTemplates
-        .map((t) => {
+        .map((t: any) => {
           const rawDay = typeof t.day === "number" ? t.day : parseInt(String(t.day) || "1", 10);
           const day = Math.min(rawDay, lastDayOfMonth);
           const dayStr = String(day).padStart(2, "0");
@@ -70,7 +66,7 @@ export async function getFinanceItemsData(month: string, boardId?: string | null
             title: t.title,
             amount: t.amount,
             date: dateStr,
-            type: t.type === "income" ? "income" : "expense",
+            type: t.type || "expense",
             status: "pending",
             category: t.category,
             createdAt: t.createdAt || new Date().toISOString(),
@@ -85,7 +81,6 @@ export async function getFinanceItemsData(month: string, boardId?: string | null
 
     const combined = boardId ? monthItems : [...monthItems, ...syntheticFixedItems];
     combined.sort((a, b) => (a.date < b.date ? 1 : -1));
-
     return combined;
   } catch (error) {
     console.error("Erro ao buscar items:", error);
@@ -104,8 +99,8 @@ export async function getCategoriesData(): Promise<string[]> {
       .get();
 
     const customNames = snap.docs
-      .map((d) => (d.data().name as string) || "")
-      .filter((n) => n.trim().length > 0);
+      .map((d) => (d.data() as any).name as string)
+      .filter((n) => n && n.trim().length > 0);
 
     return Array.from(new Set([...BUILTIN_CATEGORIES, ...customNames]));
   } catch (error) {
@@ -124,20 +119,14 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
       .where("ownerId", "==", sessionUser)
       .get();
 
-    const owned = ownedSnap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as any),
-    })) as FinanceBoard[];
+    const owned = ownedSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoard[];
 
     const memberSnap = await adminDb
       .collection("finance_boards")
       .where("memberIds", "array-contains", sessionUser)
       .get();
 
-    const memberBoards = memberSnap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as any),
-    })) as FinanceBoard[];
+    const memberBoards = memberSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoard[];
 
     const all = [...owned, ...memberBoards];
     const seen = new Set<string>();

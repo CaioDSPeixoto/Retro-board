@@ -22,27 +22,50 @@ export default function LoginForm({ locale }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
+    // 1) Firebase login (aqui sim é onde pode ser "email/senha inválidos")
+    let idToken = "";
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
-      const idToken = await userCredential.user.getIdToken();
-
-      await loginAction(idToken, locale);
+      idToken = await userCredential.user.getIdToken();
+      setError("");
     } catch (firebaseError: any) {
       console.error("Firebase Login Error", firebaseError);
 
+      const code = firebaseError?.code;
       if (
-        firebaseError.code === "auth/invalid-credential" ||
-        firebaseError.code === "auth/user-not-found" ||
-        firebaseError.code === "auth/wrong-password"
+        code === "auth/invalid-credential" ||
+        code === "auth/user-not-found" ||
+        code === "auth/wrong-password" ||
+        code === "auth/invalid-email"
       ) {
         setError(t("errors.invalid"));
       } else {
         setError(t("errors.general"));
       }
+
+      setLoading(false);
+      return;
+    }
+
+    if (!idToken) {
+      setError(t("errors.general"));
+      setLoading(false);
+      return;
+    }
+
+    // 2) Server action (cria cookie e redireciona)
+    // Se der erro aqui, NÃO é erro de senha.
+    try {
+      await loginAction(idToken, locale);
+      // normalmente redirect acontece e não volta
+    } catch (err) {
+      console.error("loginAction Error", err);
+      setError(t("errors.general"));
       setLoading(false);
     }
   };
