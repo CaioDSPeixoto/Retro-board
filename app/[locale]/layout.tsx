@@ -32,7 +32,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT && (
+        {/* {process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT && (
           <Script
             id="google-adsense"
             async
@@ -40,7 +40,7 @@ export default async function RootLayout({
             crossOrigin="anonymous"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT}`}
           />
-        )}
+        )} */}
       </head>
       <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
         <NextIntlClientProvider messages={messages}>
@@ -48,7 +48,7 @@ export default async function RootLayout({
           <main className="flex-1 w-full flex flex-col">
             {children}
             <div className="mt-auto">
-              <AdBanner />
+              {/* <AdBanner /> */}
             </div>
           </main>
           <Footer />

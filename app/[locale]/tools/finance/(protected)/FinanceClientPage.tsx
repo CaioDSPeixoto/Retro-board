@@ -5,7 +5,13 @@ import type { FinanceBoard, FinanceItem } from "@/types/finance";
 import { useState, useMemo, useEffect } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FiChevronLeft, FiChevronRight, FiPlus, FiUsers, FiChevronDown } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiPlus,
+  FiUsers,
+  FiChevronDown,
+} from "react-icons/fi";
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
@@ -88,6 +94,15 @@ export default function FinanceClientPage({
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
+  const handleGoToToday = () => {
+    const todayMonth = format(new Date(), "yyyy-MM");
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("month", todayMonth);
+    if (currentBoardId) params.set("boardId", currentBoardId);
+    else params.delete("boardId");
+    router.push(`/${locale}/tools/finance?${params.toString()}`);
+  };
+
   const handleBoardChange = (boardId: string) => {
     const params = new URLSearchParams(searchParams?.toString());
     if (boardId) params.set("boardId", boardId);
@@ -96,24 +111,24 @@ export default function FinanceClientPage({
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
-const totals = useMemo(() => {
-  return initialItems.reduce(
-    (acc, item) => {
-      const isPaid = item.status === "paid";
+  const totals = useMemo(() => {
+    return initialItems.reduce(
+      (acc, item) => {
+        const isPaid = item.status === "paid";
 
-      if (item.type === "income") {
-        if (isPaid) acc.incomes += item.amount;
-        else acc.incomesForecast += item.amount;
-      } else {
-        if (isPaid) acc.expenses += item.amount;
-        else acc.expensesForecast += item.amount;
-      }
+        if (item.type === "income") {
+          if (isPaid) acc.incomes += item.amount;
+          else acc.incomesForecast += item.amount;
+        } else {
+          if (isPaid) acc.expenses += item.amount;
+          else acc.expensesForecast += item.amount;
+        }
 
-      return acc;
-    },
-    { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 }
-  );
-}, [initialItems]);
+        return acc;
+      },
+      { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 },
+    );
+  }, [initialItems]);
 
   const balance = totals.incomes - totals.expenses;
 
@@ -200,14 +215,15 @@ const totals = useMemo(() => {
       <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        {/* (Opcional) mantém valores usados sem aparecer (evita warning de variável não usada) */}
+        {/* manter variáveis usadas sem aparecer */}
         <span className="sr-only">
           {userName} {boardName}
         </span>
 
-        {/* CONTROLE DE MÊS (full width + centralizado) */}
-        <div className="mb-4">
-          <div className="w-full">
+                {/* CONTROLE DE MÊS + BOTÃO HOJE */}
+        <div className="mb-4 flex items-center justify-between gap-3">
+          {/* Barra de navegação de mês */}
+          <div className="flex-1">
             <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
               <button
                 onClick={handlePrevMonth}
@@ -232,12 +248,25 @@ const totals = useMemo(() => {
               </button>
             </div>
           </div>
+
+          {/* Botão HOJE ao lado */}
+          <button
+            type="button"
+            onClick={handleGoToToday}
+            className="px-3 py-2 text-xs font-semibold rounded-xl border border-white/40 bg-white/10 hover:bg-white/20 active:scale-95 transition"
+          >
+            Hoje
+          </button>
         </div>
+
 
         <div className="text-center mb-4">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
           <h2 className="text-4xl font-extrabold">
-            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(balance)}
+            {new Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(balance)}
           </h2>
         </div>
 
@@ -245,36 +274,48 @@ const totals = useMemo(() => {
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
             <p className="text-lg font-bold text-green-300">
-              +{" "}
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                totals.incomes,
-              )}
+              +
+              {" "}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totals.incomes)}
             </p>
 
-            <p className="text-xs text-blue-100 mb-1">{t("entriesForecastLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("entriesForecastLabel")}
+            </p>
             <p className="text-lg font-bold text-green-300">
-              +{" "}
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                totals.incomesForecast,
-              )}
+              +
+              {" "}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totals.incomesForecast)}
             </p>
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
             <p className="text-lg font-bold text-red-300">
-              -{" "}
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                totals.expenses,
-              )}
+              -
+              {" "}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totals.expenses)}
             </p>
 
-            <p className="text-xs text-blue-100 mb-1">{t("exitsForecastLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("exitsForecastLabel")}
+            </p>
             <p className="text-lg font-bold text-red-300">
-              -{" "}
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                totals.expensesForecast,
-              )}
+              -
+              {" "}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totals.expensesForecast)}
             </p>
           </div>
         </div>
@@ -291,10 +332,14 @@ const totals = useMemo(() => {
             >
               <div className="flex items-center gap-2">
                 <FiUsers className="text-blue-600" size={18} />
-                <span className="text-sm font-semibold text-gray-800">{t("shareTitle")}</span>
+                <span className="text-sm font-semibold text-gray-800">
+                  {t("shareTitle")}
+                </span>
               </div>
               <FiChevronDown
-                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""}`}
+                className={`text-gray-400 transition-transform ${
+                  shareOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -310,10 +355,15 @@ const totals = useMemo(() => {
                     value={currentBoard.id}
                     className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
                   />
-                  <p className="mt-1 text-[11px] text-gray-400">{t("shareCodeHint")}</p>
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    {t("shareCodeHint")}
+                  </p>
                 </div>
 
-                <form onSubmit={handleInviteByEmail} className="mt-3 flex flex-col gap-3 md:flex-row">
+                <form
+                  onSubmit={handleInviteByEmail}
+                  className="mt-3 flex flex-col gap-3 md:flex-row"
+                >
                   <div className="flex-1">
                     <label className="block text-xs font-semibold text-gray-600 mb-1">
                       {t("shareEmailLabel")}
@@ -338,8 +388,12 @@ const totals = useMemo(() => {
                   </div>
                 </form>
 
-                {inviteMessage && <p className="mt-2 text-xs text-green-600">{inviteMessage}</p>}
-                {inviteError && <p className="mt-2 text-xs text-red-600">{inviteError}</p>}
+                {inviteMessage && (
+                  <p className="mt-2 text-xs text-green-600">{inviteMessage}</p>
+                )}
+                {inviteError && (
+                  <p className="mt-2 text-xs text-red-600">{inviteError}</p>
+                )}
               </div>
             )}
           </div>
@@ -352,15 +406,18 @@ const totals = useMemo(() => {
           <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3">
             <div className="flex justify-between items-center mb-2">
               <div>
-                <p className="text-xs text-amber-700 font-semibold">{t("overdueTitle")}</p>
+                <p className="text-xs text-amber-700 font-semibold">
+                  {t("overdueTitle")}
+                </p>
                 <p className="text-[11px] text-amber-600">
                   {t("overdueSubtitle", { count: overdueItems.length })}
                 </p>
               </div>
               <p className="text-sm font-bold text-amber-800">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                  overdueTotal,
-                )}
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(overdueTotal)}
               </p>
             </div>
 
@@ -374,19 +431,26 @@ const totals = useMemo(() => {
                     className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{item.title}</p>
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {item.title}
+                      </p>
                       <p className="text-[11px] text-gray-500">
-                        {format(new Date(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                        {format(new Date(item.date), "dd 'de' MMM, yyyy", {
+                          locale: ptBR,
+                        })}
                       </p>
                     </div>
 
                     <div className="text-right">
                       <p className="text-[11px] text-amber-700 font-semibold">
-                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                          Math.max(openAmount, 0),
-                        )}
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(Math.max(openAmount, 0))}
                       </p>
-                      <p className="text-[10px] text-gray-400">{t("openAmountLabel")}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {t("openAmountLabel")}
+                      </p>
                     </div>
                   </div>
                 );
@@ -399,7 +463,9 @@ const totals = useMemo(() => {
       {/* LISTA */}
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
-          <h3 className="font-bold text-gray-700">{t("transactionsTitle")}</h3>
+          <h3 className="font-bold text-gray-700">
+            {t("transactionsTitle")}
+          </h3>
           <span className="text-xs text-gray-400">
             {t("transactionsCount", { count: initialItems.length })}
           </span>
@@ -407,15 +473,25 @@ const totals = useMemo(() => {
 
         {initialItems.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
-            <button onClick={handleOpenCreateModal} className="text-blue-600 font-bold text-sm">
+            <p className="text-gray-400 mb-2">
+              {t("noTransactions")}
+            </p>
+            <button
+              onClick={handleOpenCreateModal}
+              className="text-blue-600 font-bold text-sm"
+            >
               {t("addNow")}
             </button>
           </div>
         ) : (
           <div className="flex flex-col gap-1">
             {initialItems.map((item) => (
-              <FinanceItemCard key={item.id} item={item} locale={locale} onEdit={handleEditItem} />
+              <FinanceItemCard
+                key={item.id}
+                item={item}
+                locale={locale}
+                onEdit={handleEditItem}
+              />
             ))}
           </div>
         )}

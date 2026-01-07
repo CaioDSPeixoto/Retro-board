@@ -15,7 +15,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { auth, db } from "@/lib/firebase";
-import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { deleteFinanceItem } from "@/app/[locale]/tools/finance/(protected)/actions";
 
 type Props = {
   item: FinanceItem;
@@ -43,16 +44,14 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   const handleDelete = async () => {
     if (isSynthetic) return;
 
-    const user = auth.currentUser;
-    if (!user) {
-      alert(t("errors.mustBeLoggedIn"));
-      return;
-    }
-
     if (!confirm(t("confirmDelete"))) return;
 
     try {
-      await deleteDoc(doc(db, "finance_items", item.id));
+      const res = await deleteFinanceItem(item.id, locale);
+      if (res && "error" in res && res.error) {
+        alert(res.error as string);
+        return;
+      }
       router.refresh();
     } catch (err) {
       console.error("Erro ao deletar item:", err);
@@ -201,13 +200,19 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
         <div className="text-[11px] text-gray-500">
           {item.status === "paid" && (
-            <span className="text-green-600 font-semibold">{isIncome ? t("statusReceived") : t("statusPaid")}</span>
+            <span className="text-green-600 font-semibold">
+              {isIncome ? t("statusReceived") : t("statusPaid")}
+            </span>
           )}
           {item.status === "pending" && (
-            <span className="text-amber-600 font-semibold">{t("statusPending")}</span>
+            <span className="text-amber-600 font-semibold">
+              {t("statusPending")}
+            </span>
           )}
           {item.status === "partial" && (
-            <span className="text-blue-600 font-semibold">{t("statusPartial")}</span>
+            <span className="text-blue-600 font-semibold">
+              {t("statusPartial")}
+            </span>
           )}
         </div>
 

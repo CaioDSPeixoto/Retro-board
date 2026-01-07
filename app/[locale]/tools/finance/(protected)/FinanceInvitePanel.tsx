@@ -1,76 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { FinanceBoardInvite } from "@/types/finance";
 import { useTranslations } from "next-intl";
-import {
-  listInvitesForMe,
-  listOwnerRequests,
-  respondInvite,
-  getOwnerPendingApprovalsCount,
-} from "./invite-actions";
 
-type Props = { locale: string };
+type Props = {
+  locale: string;
+  loading: boolean;
+  invitesForMe: FinanceBoardInvite[];
+  ownerRequests: FinanceBoardInvite[];
+  pendingCount: number;
+  respondingId: string | null;
+  onRespond: (inviteId: string, action: "accept" | "reject") => void | Promise<void>;
+};
 
-export default function FinanceInvitesPanel({ locale }: Props) {
+export default function FinanceInvitesPanel({
+  locale,
+  loading,
+  invitesForMe,
+  ownerRequests,
+  pendingCount,
+  respondingId,
+  onRespond,
+}: Props) {
   const t = useTranslations("FinancePage");
-
-  const [invitesForMe, setInvitesForMe] = useState<FinanceBoardInvite[]>([]);
-  const [ownerRequests, setOwnerRequests] = useState<FinanceBoardInvite[]>([]);
-  const [pendingCount, setPendingCount] = useState(0);
-
-  const [loading, setLoading] = useState(false);
-
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const [me, owner, pending] = await Promise.all([
-        listInvitesForMe(),
-        listOwnerRequests(),
-        getOwnerPendingApprovalsCount(),
-      ]);
-
-      if (me && typeof me === "object" && !("error" in me)) {
-        setInvitesForMe(me.invites || []);
-      } else {
-        setInvitesForMe([]);
-      }
-
-      if (owner && typeof owner === "object" && !("error" in owner)) {
-        setOwnerRequests(owner.invites || []);
-      } else {
-        setOwnerRequests([]);
-      }
-
-      if (pending && typeof pending === "object" && "count" in pending) {
-        setPendingCount(Number((pending as any).count || 0));
-      } else {
-        setPendingCount(0);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleRespond = async (inviteId: string, action: "accept" | "reject") => {
-    const res = await respondInvite(inviteId, action, locale);
-    if (res && "error" in res && res.error) return;
-    await fetchAll();
-  };
 
   const hasInvites = invitesForMe.length > 0 || ownerRequests.length > 0;
   const hasPending = pendingCount > 0;
 
+  // se não estiver carregando e não tiver nada, nem mostra o painel
   if (!loading && !hasInvites && !hasPending) return null;
 
   return (
     <div className="space-y-6">
-      {/* Aprovações pendentes (no topo da página principal) */}
+      {/* Aprovações pendentes (para quadros que eu sou dona) */}
       {(loading || hasPending) && (
         <div className="bg-amber-50 border border-amber-100 rounded-xl shadow-sm p-4">
           <div className="flex items-start justify-between gap-3">
@@ -101,7 +63,9 @@ export default function FinanceInvitesPanel({ locale }: Props) {
             {t("invitesSectionTitle")}
           </h2>
 
-          {loading && <p className="text-sm text-gray-500 mb-3">{t("loadingInvites")}</p>}
+          {loading && (
+            <p className="text-sm text-gray-500 mb-3">{t("loadingInvites")}</p>
+          )}
 
           {/* Convites para mim */}
           <div className="mb-5">
@@ -130,15 +94,17 @@ export default function FinanceInvitesPanel({ locale }: Props) {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => handleRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50"
+                        disabled={respondingId === invite.id}
+                        onClick={() => onRespond(invite.id, "reject")}
+                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleRespond(invite.id, "accept")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50"
+                        disabled={respondingId === invite.id}
+                        onClick={() => onRespond(invite.id, "accept")}
+                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50 disabled:opacity-60"
                       >
                         {t("accept")}
                       </button>
@@ -149,7 +115,7 @@ export default function FinanceInvitesPanel({ locale }: Props) {
             )}
           </div>
 
-          {/* Pedidos para meus quadros */}
+          {/* Pedidos para meus quadros (sou dona e alguém pediu via código) */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               {t("ownerRequests")}
@@ -168,21 +134,25 @@ export default function FinanceInvitesPanel({ locale }: Props) {
                       <p className="text-sm font-medium text-gray-800 truncate">
                         {invite.boardName}
                       </p>
-                      <p className="text-[11px] text-gray-500">{t("requestByCode")}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {t("requestByCode")}
+                      </p>
                     </div>
 
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => handleRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50"
+                        disabled={respondingId === invite.id}
+                        onClick={() => onRespond(invite.id, "reject")}
+                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleRespond(invite.id, "accept")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50"
+                        disabled={respondingId === invite.id}
+                        onClick={() => onRespond(invite.id, "accept")}
+                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50 disabled:opacity-60"
                       >
                         {t("accept")}
                       </button>

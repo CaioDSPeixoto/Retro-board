@@ -31,6 +31,12 @@ export type FinanceItem = {
   // contas carregadas de outro mês
   carriedFromMonth?: string; // ex: "2025-12"
   carriedFromItemId?: string; // id do item de origem
+
+  fixedTemplateId?: string; 
+  installmentGroupId?: string; 
+  installmentIndex?: number; 
+  installmentTotal?: number; 
+  originalAmount?: number;
 };
 
 // ====== BOARDS ======

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition, useRef } from "react";
-import { FiX, FiPlus, FiCheck } from "react-icons/fi"; // Importando ícones novos
+import { FiX, FiPlus, FiCheck } from "react-icons/fi";
 import {
   addFinanceItem,
   createCategory,
@@ -46,7 +46,7 @@ export default function FinanceFormModal({
   );
 
   const [newCategory, setNewCategory] = useState("");
-  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false); // Controle do Collapse
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
 
   const [currentUserName, setCurrentUserName] = useState<string>("");
@@ -100,7 +100,7 @@ export default function FinanceFormModal({
     setCategories((prev) => (prev.includes(name) ? prev : [...prev, name]));
     setCategory(name);
     setNewCategory("");
-    setShowNewCategoryForm(false); // Fecha o form após criar
+    setShowNewCategoryForm(false);
 
     startTransition(() => router.refresh());
   };
@@ -170,14 +170,13 @@ export default function FinanceFormModal({
             </button>
           </div>
 
-          {/* Seção de Categoria Reformulada */}
+          {/* Seção de Categoria */}
           <div className="space-y-2">
             <div className="flex justify-between items-center px-1">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">
                 {t("categoryLabel")}
               </label>
-              
-              {/* Botão de Gatilho para Nova Categoria */}
+
               <button
                 type="button"
                 onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
@@ -186,21 +185,29 @@ export default function FinanceFormModal({
                 }`}
               >
                 {showNewCategoryForm ? (
-                  <><FiX size={14} /> {t("cancel") || "Cancelar"}</>
+                  <>
+                    <FiX size={14} /> {t("cancel") || "Cancelar"}
+                  </>
                 ) : (
-                  <><FiPlus size={14} /> {t("addCategory") || "Nova"}</>
+                  <>
+                    <FiPlus size={14} /> {t("addCategory") || "Nova"}
+                  </>
                 )}
               </button>
             </div>
 
             {!showNewCategoryForm ? (
-              // Select normal
               <select
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5em' }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 1rem center",
+                  backgroundSize: "1.5em",
+                }}
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -209,7 +216,6 @@ export default function FinanceFormModal({
                 ))}
               </select>
             ) : (
-              // Input de Nova Categoria (Collapse)
               <div className="flex gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
                 <input
                   ref={newCatInputRef}
@@ -219,7 +225,7 @@ export default function FinanceFormModal({
                   placeholder={t("customCategoryPlaceholder")}
                   className="flex-1 p-3 bg-blue-50/50 rounded-xl border-2 border-blue-200 focus:border-blue-500 outline-none text-gray-900 text-sm transition-all"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddCategory();
                     }
@@ -287,6 +293,27 @@ export default function FinanceFormModal({
             </div>
           </div>
 
+          {/* Parcelamento (somente na criação) */}
+          {!isEditMode && (
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                Número de parcelas
+              </label>
+              <input
+                name="installments"
+                type="number"
+                min={1}
+                max={60}
+                defaultValue={1}
+                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+              />
+              <p className="mt-1 text-[11px] text-gray-400 px-1">
+                Use 1 para lançamento normal. Ex: 3 parcelas cria 3 lançamentos mensais
+                (1/3, 2/3, 3/3).
+              </p>
+            </div>
+          )}
+
           {/* Pago/Recebido */}
           {!isEditMode && (
             <div className="flex items-center gap-3 p-1">
@@ -314,7 +341,10 @@ export default function FinanceFormModal({
                 defaultChecked={initialItem?.isFixed ?? false}
                 className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-              <label htmlFor="isFixed" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+              <label
+                htmlFor="isFixed"
+                className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+              >
                 {t("fixedCheckboxLabel")}
               </label>
             </div>
@@ -334,7 +364,11 @@ export default function FinanceFormModal({
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 {t("savingButton")}
               </span>
-            ) : isEditMode ? t("saveEditButton") : t("saveButton")}
+            ) : isEditMode ? (
+              t("saveEditButton")
+            ) : (
+              t("saveButton")
+            )}
           </button>
         </form>
       </div>

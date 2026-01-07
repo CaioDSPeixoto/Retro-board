@@ -3,150 +3,265 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import type { FinanceBoard, FinanceItem } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import type { FinanceBoardInvite } from "@/types/finance";
 
-export async function getFinanceItemsData(month: string, boardId?: string | null): Promise<FinanceItem[]> {
-  const sessionUser = await getSession();
-  if (!sessionUser) return [];
+/* ================= utils ================= */
 
-  try {
-    const startDate = `${month}-01`;
-    const endDate = `${month}-31`;
+function getMonthRange(month: string): { start: string; end: string } {
+  // month: "YYYY-MM"
+  const [yearStr, monthStr] = month.split("-");
+  const year = parseInt(yearStr, 10);
+  const m = parseInt(monthStr, 10);
 
-    let q = adminDb.collection("finance_items")
-      .where("date", ">=", startDate)
-      .where("date", "<=", endDate);
+  const start = `${yearStr}-${monthStr}-01`;
+  const lastDay = new Date(year, m, 0).getDate(); // m é 1-12
+  const end = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
-    if (boardId) {
-      q = q.where("boardId", "==", boardId);
-    } else {
-      q = q.where("userId", "==", sessionUser);
-    }
-
-    const snap = await q.get();
-    const monthItems: FinanceItem[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as any;
-
-    // sintéticos (somente visão pessoal)
-    let syntheticFixedItems: FinanceItem[] = [];
-
-    if (!boardId) {
-      const fixedSnap = await adminDb
-        .collection("finance_fixed_templates")
-        .where("userId", "==", sessionUser)
-        .get();
-
-      const fixedTemplates = fixedSnap.docs
-        .map((d) => ({ id: d.id, ...(d.data() as any) }))
-        .filter((t) => t.active !== false);
-
-      const existingKeys = new Set(
-        monthItems.map((item) => {
-          const dayStr = item.date.split("-")[2] || "01";
-          return `${item.title}|${item.amount}|${item.category}|${dayStr}`;
-        }),
-      );
-
-      const [yearStr, monthStr] = month.split("-");
-      const year = Number(yearStr);
-      const monthIdx = Number(monthStr);
-      const lastDayOfMonth = new Date(year, monthIdx, 0).getDate();
-
-      syntheticFixedItems = fixedTemplates
-        .map((t: any) => {
-          const rawDay = typeof t.day === "number" ? t.day : parseInt(String(t.day) || "1", 10);
-          const day = Math.min(rawDay, lastDayOfMonth);
-          const dayStr = String(day).padStart(2, "0");
-          const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
-          const key = `${t.title}|${t.amount}|${t.category}|${dayStr}`;
-
-          if (existingKeys.has(key)) return null;
-
-          const item: FinanceItem = {
-            id: `fixed_${t.id}_${month}`,
-            userId: sessionUser,
-            title: t.title,
-            amount: t.amount,
-            date: dateStr,
-            type: t.type || "expense",
-            status: "pending",
-            category: t.category,
-            createdAt: t.createdAt || new Date().toISOString(),
-            isFixed: true,
-            isSynthetic: true,
-          };
-
-          return item;
-        })
-        .filter(Boolean) as FinanceItem[];
-    }
-
-    const combined = boardId ? monthItems : [...monthItems, ...syntheticFixedItems];
-    combined.sort((a, b) => (a.date < b.date ? 1 : -1));
-    return combined;
-  } catch (error) {
-    console.error("Erro ao buscar items:", error);
-    return [];
-  }
+  return { start, end };
 }
 
-export async function getCategoriesData(): Promise<string[]> {
-  const sessionUser = await getSession();
-  if (!sessionUser) return BUILTIN_CATEGORIES;
+/* ================= invites ================= */
 
-  try {
-    const snap = await adminDb
-      .collection("finance_categories")
-      .where("userId", "==", sessionUser)
-      .get();
+export async function getInvitesData(userId: string): Promise<FinanceBoardInvite[]> {
+  if (!userId) return [];
 
-    const customNames = snap.docs
-      .map((d) => (d.data() as any).name as string)
-      .filter((n) => n && n.trim().length > 0);
+  // Ajuste os filtros conforme está seu modelo de convites hoje.
+  const snap = await adminDb
+    .collection("finance_board_invites")
+    .where("status", "==", "pending")
+    .where("userId", "==", userId)
+    .get();
 
-    return Array.from(new Set([...BUILTIN_CATEGORIES, ...customNames]));
-  } catch (error) {
-    console.error("Erro ao buscar categorias:", error);
-    return BUILTIN_CATEGORIES;
-  }
+  const invites: FinanceBoardInvite[] = snap.docs.map((doc) => {
+    const data = doc.data() as any;
+    return {
+      id: doc.id,
+      boardId: data.boardId,
+      boardName: data.boardName,
+      ownerId: data.ownerId,
+      type: data.type,
+      email: data.email,
+      userId: data.userId,
+      status: data.status,
+      createdBy: data.createdBy,
+      createdAt: data.createdAt,
+      respondedAt: data.respondedAt,
+    };
+  });
+
+  return invites;
 }
+
+/* ================= boards ================= */
 
 export async function getBoardsData(): Promise<FinanceBoard[]> {
-  const sessionUser = await getSession();
-  if (!sessionUser) return [];
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return [];
 
-  try {
-    const ownedSnap = await adminDb
-      .collection("finance_boards")
-      .where("ownerId", "==", sessionUser)
-      .get();
+  const snap = await adminDb
+    .collection("finance_boards")
+    .where("memberIds", "array-contains", sessionUserId)
+    .get();
 
-    const owned = ownedSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoard[];
+  const boards: FinanceBoard[] = [];
+  snap.forEach((doc) => {
+    const data = doc.data() as any;
+    boards.push({
+      id: doc.id,
+      name: data.name,
+      ownerId: data.ownerId,
+      memberIds: Array.isArray(data.memberIds) ? data.memberIds : [],
+      createdAt: data.createdAt ?? "",
+      isPersonal: data.isPersonal ?? false,
+      code: data.code,
+      inviteCode: data.inviteCode,
+    });
+  });
 
-    const memberSnap = await adminDb
-      .collection("finance_boards")
-      .where("memberIds", "array-contains", sessionUser)
-      .get();
+  return boards.sort((a, b) => a.name.localeCompare(b.name));
+}
 
-    const memberBoards = memberSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoard[];
+/* ================= categories ================= */
 
-    const all = [...owned, ...memberBoards];
-    const seen = new Set<string>();
-    const unique: FinanceBoard[] = [];
+export async function getCategoriesData(): Promise<string[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return BUILTIN_CATEGORIES;
 
-    for (const b of all) {
-      if (!seen.has(b.id)) {
-        seen.add(b.id);
-        unique.push(b);
-      }
+  const snap = await adminDb
+    .collection("finance_categories")
+    .where("userId", "==", sessionUserId)
+    .get();
+
+  const userCats = new Set<string>();
+  snap.forEach((doc) => {
+    const data = doc.data() as any;
+    if (typeof data.name === "string" && data.name.trim()) {
+      userCats.add(data.name.trim());
+    }
+  });
+
+  const all = new Set<string>([...BUILTIN_CATEGORIES, ...userCats]);
+  return Array.from(all).sort((a, b) => a.localeCompare(b));
+}
+
+/* ================= fixed templates helper ================= */
+
+async function ensureFixedItemsForMonth(
+  userId: string,
+  month: string,
+  boardId?: string | null,
+  existingItems: FinanceItem[] = [],
+): Promise<FinanceItem[]> {
+  const { start, end } = getMonthRange(month);
+
+  // Busca todos os templates ativos do usuário
+  const templatesSnap = await adminDb
+    .collection("finance_fixed_templates")
+    .where("userId", "==", userId)
+    .where("active", "==", true)
+    .get();
+
+  const allTemplates: {
+    id: string;
+    title: string;
+    amount: number;
+    day: number;
+    category: string;
+    type?: "income" | "expense";
+    boardId?: string;
+  }[] = [];
+
+  templatesSnap.forEach((doc) => {
+    const data = doc.data() as any;
+    allTemplates.push({
+      id: doc.id,
+      title: data.title,
+      amount: data.amount,
+      day: data.day,
+      category: data.category,
+      type: data.type,
+      boardId: data.boardId,
+    });
+  });
+
+  // filtra templates do quadro ou pessoais
+  const templates = allTemplates.filter((tpl) =>
+    boardId ? tpl.boardId === boardId : !tpl.boardId,
+  );
+
+  if (templates.length === 0) return existingItems;
+
+  const items = [...existingItems];
+
+  for (const tpl of templates) {
+    // verifica se já existe item deste template neste mês
+    const alreadyExists = items.some(
+      (it) => it.fixedTemplateId === tpl.id && it.date.startsWith(month),
+    );
+    if (alreadyExists) continue;
+
+    // cria uma nova conta fixa para este mês
+    const [yStr, mStr] = month.split("-");
+    const year = parseInt(yStr, 10);
+    const m = parseInt(mStr, 10);
+
+    const lastDay = new Date(year, m, 0).getDate();
+    const day = Math.min(Math.max(tpl.day || 1, 1), lastDay);
+
+    const date = `${yStr}-${mStr}-${String(day).padStart(2, "0")}`;
+
+    const newItem: Omit<FinanceItem, "id"> = {
+      userId,
+      title: tpl.title,
+      amount: tpl.amount,
+      date,
+      type: tpl.type || "expense",
+      status: "pending",
+      category: tpl.category,
+      createdAt: new Date().toISOString(),
+      isFixed: true,
+      isSynthetic: false,
+      createdBy: userId,
+      fixedTemplateId: tpl.id,
+      paidAmount: 0,
+    };
+
+    // só adiciona boardId se existir (pra não mandar undefined pro Firestore)
+    if (boardId) {
+      (newItem as any).boardId = boardId;
     }
 
-    unique.sort((a, b) => {
-      if (!a.createdAt || !b.createdAt) return 0;
-      return a.createdAt < b.createdAt ? 1 : -1;
-    });
-
-    return unique;
-  } catch (error) {
-    console.error("Erro ao buscar quadros:", error);
-    return [];
+    const ref = await adminDb.collection("finance_items").add(newItem);
+    items.push({ id: ref.id, ...newItem });
   }
+
+  return items;
+}
+
+/* ================= items ================= */
+
+export async function getFinanceItemsData(
+  month: string,
+  boardId?: string | null,
+): Promise<FinanceItem[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return [];
+
+  const { start, end } = getMonthRange(month);
+
+  let query = adminDb
+    .collection("finance_items")
+    .where("userId", "==", sessionUserId)
+    .where("date", ">=", start)
+    .where("date", "<=", end);
+
+  if (boardId) {
+    query = query.where("boardId", "==", boardId);
+  }
+
+  const snap = await query.get();
+
+  const items: FinanceItem[] = [];
+  snap.forEach((doc) => {
+    const data = doc.data() as any;
+    items.push({
+      id: doc.id,
+      userId: data.userId,
+      boardId: data.boardId,
+      title: data.title,
+      amount: data.amount,
+      date: data.date,
+      type: data.type,
+      status: data.status,
+      category: data.category,
+      createdAt: data.createdAt,
+      isFixed: data.isFixed,
+      isSynthetic: data.isSynthetic,
+      createdBy: data.createdBy,
+      createdByName: data.createdByName,
+      paidAmount: data.paidAmount,
+      openAmount: data.openAmount,
+      carriedFromMonth: data.carriedFromMonth,
+      carriedFromItemId: data.carriedFromItemId,
+      fixedTemplateId: data.fixedTemplateId,
+      installmentGroupId: data.installmentGroupId,
+      installmentIndex: data.installmentIndex,
+      installmentTotal: data.installmentTotal,
+      originalAmount: data.originalAmount,
+    });
+  });
+
+  // garante que as contas fixas deste mês existam
+  const withFixed = await ensureFixedItemsForMonth(
+    sessionUserId,
+    month,
+    boardId,
+    items,
+  );
+
+  // ordena por data e depois título
+  return withFixed.sort((a, b) => {
+    if (a.date === b.date) return a.title.localeCompare(b.title);
+    return a.date.localeCompare(b.date);
+  });
 }

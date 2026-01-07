@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { format } from "date-fns";
 import FinanceClientPage from "./FinanceClientPage";
 import FinanceBoardsClient from "../FinanceBoardsClient";
-import { getFinanceItemsData, getCategoriesData, getBoardsData } from "./data";
+import { getFinanceItemsData, getCategoriesData, getBoardsData, getInvitesData } from "./data";
 import type { FinanceBoard } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 
@@ -20,21 +20,15 @@ export default async function FinancePage({
 
   const currentMonth = month || format(new Date(), "yyyy-MM");
 
-  // vem do cookie (mock session)
   const sessionUserId = await getSession();
-
-  // layout já faz redirect se não tiver session
-  // mas deixo seguro pro TS
   const safeSessionUserId = sessionUserId ?? "";
 
   const boards: FinanceBoard[] = await getBoardsData();
 
-  // ===== LISTAGEM DE QUADROS (SEM boardId) =====
- // LISTAGEM DE QUADROS
+  // LISTAGEM DE QUADROS (sem boardId)
   if (!boardId) {
     return (
       <div className="max-w-4xl mx-auto px-6 pb-10">
-        {/* lista de quadros (CLIENT) */}
         <FinanceBoardsClient
           locale={locale}
           currentMonth={currentMonth}
@@ -44,8 +38,7 @@ export default async function FinancePage({
     );
   }
 
-
-  // ===== VISUALIZAÇÃO DO QUADRO (COM boardId) =====
+  // VISUALIZAÇÃO DO QUADRO (com boardId)
   const [items, categories] = await Promise.all([
     getFinanceItemsData(currentMonth, boardId),
     getCategoriesData(),
