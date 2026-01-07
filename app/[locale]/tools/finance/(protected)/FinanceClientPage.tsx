@@ -96,16 +96,24 @@ export default function FinanceClientPage({
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
-  const totals = useMemo(() => {
-    return initialItems.reduce(
-      (acc, item) => {
-        if (item.type === "income") acc.incomes += item.amount;
-        else acc.expenses += item.amount;
-        return acc;
-      },
-      { incomes: 0, expenses: 0 },
-    );
-  }, [initialItems]);
+const totals = useMemo(() => {
+  return initialItems.reduce(
+    (acc, item) => {
+      const isPaid = item.status === "paid";
+
+      if (item.type === "income") {
+        if (isPaid) acc.incomes += item.amount;
+        else acc.incomesForecast += item.amount;
+      } else {
+        if (isPaid) acc.expenses += item.amount;
+        else acc.expensesForecast += item.amount;
+      }
+
+      return acc;
+    },
+    { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 }
+  );
+}, [initialItems]);
 
   const balance = totals.incomes - totals.expenses;
 
@@ -242,6 +250,14 @@ export default function FinanceClientPage({
                 totals.incomes,
               )}
             </p>
+
+            <p className="text-xs text-blue-100 mb-1">{t("entriesForecastLabel")}</p>
+            <p className="text-lg font-bold text-green-300">
+              +{" "}
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                totals.incomesForecast,
+              )}
+            </p>
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
@@ -250,6 +266,14 @@ export default function FinanceClientPage({
               -{" "}
               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
                 totals.expenses,
+              )}
+            </p>
+
+            <p className="text-xs text-blue-100 mb-1">{t("exitsForecastLabel")}</p>
+            <p className="text-lg font-bold text-red-300">
+              -{" "}
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+                totals.expensesForecast,
               )}
             </p>
           </div>

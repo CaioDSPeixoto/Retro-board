@@ -105,7 +105,7 @@ export default function FinanceFormModal({
     startTransition(() => router.refresh());
   };
 
-  const showFixedOption = category === "Contas Fixas";
+  const showFixedOption = category === "Contas Fixas" || initialItem?.isFixed;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">

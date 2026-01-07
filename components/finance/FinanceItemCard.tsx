@@ -201,7 +201,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
         <div className="text-[11px] text-gray-500">
           {item.status === "paid" && (
-            <span className="text-green-600 font-semibold">{t("statusPaid")}</span>
+            <span className="text-green-600 font-semibold">{isIncome ? t("statusReceived") : t("statusPaid")}</span>
           )}
           {item.status === "pending" && (
             <span className="text-amber-600 font-semibold">{t("statusPending")}</span>
