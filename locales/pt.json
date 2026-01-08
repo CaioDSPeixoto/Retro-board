@@ -171,8 +171,8 @@
     "incomesTitle": "Receitas",
     "expensesTitle": "Despesas",
     "totalPaidAndPending": "Total (pagas + pendentes)",
-    "onlyFinished": "Apenas finalizadas:",
-    "onlyPending": "Apenas pendentes:",
+    "onlyFinished": "Finalizadas:",
+    "onlyPending": "Pendentes:",
     "incomesCountLabel": "{count} lançamento(s)",
     "incomesOverdueLabel": "{count} em atraso",
     "expensesCountLabel": "{count} lançamento(s)",
@@ -192,7 +192,6 @@
     "totalTransactionsLabel": "Total de lançamentos",
     "avgExpenseTicketLabel": "Ticket médio das despesas",
     "avgIncomeTicketLabel": "Ticket médio das receitas",
-    "overdueCountLabel": "Lançamentos em atraso",
 
     "othersCategory": "Outros"
   },

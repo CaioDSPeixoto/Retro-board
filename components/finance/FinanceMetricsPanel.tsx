@@ -455,13 +455,6 @@ export default function FinanceMetricsPanel({
                 {incomeCount ? currency(avgIncome) : "—"}
               </span>
             </div>
-
-            <div className="flex justify-between">
-              <span>{t("overdueCountLabel")}</span>
-              <span className="font-semibold">
-                {overdueCount > 0 ? overdueCount : 0}
-              </span>
-            </div>
           </div>
         </div>
       </div>

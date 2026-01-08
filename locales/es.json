@@ -171,8 +171,8 @@
     "incomesTitle": "Ingresos",
     "expensesTitle": "Gastos",
     "totalPaidAndPending": "Total (pagados + pendientes)",
-    "onlyFinished": "Solo finalizados:",
-    "onlyPending": "Solo pendientes:",
+    "onlyFinished": "Finalizados:",
+    "onlyPending": "Pendientes:",
     "incomesCountLabel": "{count} lanzamiento(s)",
     "incomesOverdueLabel": "{count} en atraso",
     "expensesCountLabel": "{count} lanzamiento(s)",
@@ -192,7 +192,6 @@
     "totalTransactionsLabel": "Total de lanzamientos",
     "avgExpenseTicketLabel": "Ticket medio de gastos",
     "avgIncomeTicketLabel": "Ticket medio de ingresos",
-    "overdueCountLabel": "Lanzamientos en atraso",
 
     "othersCategory": "Otros"
   },

@@ -171,8 +171,8 @@
     "incomesTitle": "Income",
     "expensesTitle": "Expenses",
     "totalPaidAndPending": "Total (paid + pending)",
-    "onlyFinished": "Only finished:",
-    "onlyPending": "Only pending:",
+    "onlyFinished": "Finished:",
+    "onlyPending": "Pending:",
     "incomesCountLabel": "{count} transaction(s)",
     "incomesOverdueLabel": "{count} overdue",
     "expensesCountLabel": "{count} transaction(s)",
@@ -192,7 +192,6 @@
     "totalTransactionsLabel": "Total transactions",
     "avgExpenseTicketLabel": "Average expense amount",
     "avgIncomeTicketLabel": "Average income amount",
-    "overdueCountLabel": "Overdue transactions",
 
     "othersCategory": "Others"
   },
