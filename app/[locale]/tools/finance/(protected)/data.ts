@@ -1,9 +1,8 @@
 // app/[locale]/tools/finance/(protected)/data.ts
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
-import type { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceBoardInvite } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
-import type { FinanceBoardInvite } from "@/types/finance";
 
 /* ================= utils ================= */
 
