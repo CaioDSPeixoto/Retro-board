@@ -37,11 +37,7 @@ export default function FinanceJoinByCode({ locale }: Props) {
   };
 
   return (
-    <div className="bg-white border border-blue-100 rounded-xl shadow-sm p-4">
-      <h2 className="text-base font-semibold text-gray-800 mb-2">
-        {t("joinByCodeTitle")}
-      </h2>
-
+    <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row">
         <div className="flex-1">
           <label className="block text-xs font-semibold text-gray-600 mb-1">

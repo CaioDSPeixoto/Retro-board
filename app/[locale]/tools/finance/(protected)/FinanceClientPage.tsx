@@ -56,6 +56,7 @@ export default function FinanceClientPage({
   const [shareOpen, setShareOpen] = useState(false);
 
   const [showMetrics, setShowMetrics] = useState(false);
+  const [overdueOpen, setOverdueOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -315,9 +316,8 @@ export default function FinanceClientPage({
                 </span>
               </div>
               <FiChevronDown
-                className={`text-gray-400 transition-transform ${
-                  shareOpen ? "rotate-180" : ""
-                }`}
+                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -378,66 +378,6 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {/* CONTAS EM ATRASO */}
-      {overdueItems.length > 0 && (
-        <div className="px-6 mt-2 mb-4">
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3">
-            <div className="flex justify-between items-center mb-2">
-              <div>
-                <p className="text-xs text-amber-700 font-semibold">
-                  {t("overdueTitle")}
-                </p>
-                <p className="text-[11px] text-amber-600">
-                  {t("overdueSubtitle", { count: overdueItems.length })}
-                </p>
-              </div>
-              <p className="text-sm font-bold text-amber-800">
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(overdueTotal)}
-              </p>
-            </div>
-
-            <div className="max-h-52 overflow-y-auto mt-2 space-y-2">
-              {overdueItems.map((item) => {
-                const openAmount = item.amount - (item.paidAmount || 0);
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
-                        {item.title}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {format(new Date(item.date), "dd 'de' MMM, yyyy", {
-                          locale: ptBR,
-                        })}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-[11px] text-amber-700 font-semibold">
-                        {new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(Math.max(openAmount, 0))}
-                      </p>
-                      <p className="text-[10px] text-gray-400">
-                        {t("openAmountLabel")}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* LISTA / MÉTRICAS */}
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
@@ -456,30 +396,108 @@ export default function FinanceClientPage({
             <button
               type="button"
               onClick={() => setShowMetrics(false)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                !showMetrics
+              className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Lista
             </button>
             <button
               type="button"
               onClick={() => setShowMetrics(true)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                showMetrics
+              className={`px-3 py-1 rounded-lg transition-all ${showMetrics
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Métricas
             </button>
           </div>
         </div>
 
+                {/* CONTAS EM ATRASO (colapse, apenas na aba Lista) */}
+        {!showMetrics && overdueItems.length > 0 && (
+          <div className="mb-4">
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl shadow-sm">
+              {/* Cabeçalho clicável */}
+              <button
+                type="button"
+                onClick={() => setOverdueOpen((prev) => !prev)}
+                className="w-full px-3 py-2 flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0 text-left">
+                  <p className="text-xs text-amber-800 font-semibold">
+                    {t("overdueTitle")}
+                  </p>
+                  <p className="text-[11px] text-amber-700">
+                    {t("overdueSubtitle", { count: overdueItems.length })}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-amber-800 whitespace-nowrap">
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(overdueTotal)}
+                  </p>
+                  <FiChevronDown
+                    className={`text-amber-800 transition-transform ${
+                      overdueOpen ? "rotate-180" : ""
+                    }`}
+                    size={16}
+                  />
+                </div>
+              </button>
+
+              {/* Lista expandida */}
+              {overdueOpen && (
+                <div className="border-t border-amber-100 px-3 pb-3 pt-2 max-h-52 overflow-y-auto space-y-2">
+                  {overdueItems.map((item) => {
+                    const openAmount = item.amount - (item.paidAmount || 0);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-[11px] text-gray-500">
+                            {format(new Date(item.date), "dd 'de' MMM, yyyy", {
+                              locale: ptBR,
+                            })}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-[11px] text-amber-700 font-semibold">
+                            {new Intl.NumberFormat("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            }).format(Math.max(openAmount, 0))}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            {t("openAmountLabel")}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {showMetrics ? (
-          <FinanceMetricsPanel items={initialItems} currentMonth={currentMonth} />
+          <FinanceMetricsPanel
+            items={initialItems}
+            currentMonth={currentMonth}
+          />
         ) : initialItems.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
             <p className="text-gray-400 mb-2">{t("noTransactions")}</p>

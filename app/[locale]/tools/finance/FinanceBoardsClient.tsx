@@ -67,6 +67,8 @@ export default function FinanceBoardsClient({
   const [invitesLoading, setInvitesLoading] = useState(true);
   const [respondingId, setRespondingId] = useState<string | null>(null);
 
+  const [activeTab, setActiveTab] = useState<"create" | "join">("create");
+
   const membersLabel = useMemo(
     () => (count: number) => (count > 1 ? "membros" : "membro"),
     [],
@@ -207,11 +209,16 @@ export default function FinanceBoardsClient({
       return;
     }
 
-    // atualiza os membros no modal imediatamente
-    const updatedMembers = (board.memberIds || []).filter((id) => id !== memberId);
-    setMembersBoard({ ...board, memberIds: updatedMembers });
-
     setMembersLoading(false);
+    setMembersBoard((prev) =>
+      prev && prev.id === board.id
+        ? {
+          ...prev,
+          memberIds: (prev.memberIds || []).filter((id) => id !== memberId),
+        }
+        : prev,
+    );
+
     router.refresh();
   };
 
@@ -234,34 +241,65 @@ export default function FinanceBoardsClient({
         </div>
       )}
 
-      {/* CRIAR QUADRO */}
-      <div className="bg-white border border-blue-100 rounded-xl shadow-sm p-4">
-        <form onSubmit={handleCreate} className="flex flex-col gap-3 md:flex-row">
-          <div className="flex-1">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
-              {tBoards("newBoardLabel")}
-            </label>
-            <input
-              type="text"
-              value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
-              placeholder={tBoards("newBoardPlaceholder")}
-              required
-              autoComplete="off"
-              className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900"
-            />
-          </div>
+      {/* SEÇÃO DE AÇÃO (CRIAR OU ENTRAR) */}
+      <div className="bg-white border border-blue-100 rounded-2xl shadow-sm overflow-hidden">
+        {/* SELETOR DE ABAS */}
+        <div className="flex border-b border-gray-100 bg-gray-50/50">
+          <button
+            onClick={() => setActiveTab("create")}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "create"
+                ? "bg-white text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+          >
+            {tBoards("createButton")} {/* Ou uma tradução como "Novo Quadro" */}
+          </button>
+          <button
+            onClick={() => setActiveTab("join")}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "join"
+                ? "bg-white text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+          >
+            Entrar por Código
+          </button>
+        </div>
 
-          <div className="flex items-end">
-            <button
-              type="submit"
-              disabled={creating || !newBoardName.trim()}
-              className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
-            >
-              {creating ? tBoards("createButton") + "..." : tBoards("createButton")}
-            </button>
-          </div>
-        </form>
+        {/* CONTEÚDO DAS ABAS */}
+        <div className="p-4">
+          {activeTab === "create" ? (
+            <form onSubmit={handleCreate} className="flex flex-col gap-3 md:flex-row">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  {tBoards("newBoardLabel")}
+                </label>
+                <input
+                  type="text"
+                  value={newBoardName}
+                  onChange={(e) => setNewBoardName(e.target.value)}
+                  placeholder={tBoards("newBoardPlaceholder")}
+                  required
+                  autoComplete="off"
+                  className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  disabled={creating || !newBoardName.trim()}
+                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
+                >
+                  {creating ? tBoards("createButton") + "..." : tBoards("createButton")}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="animate-in fade-in duration-300">
+              <FinanceJoinByCode locale={locale} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* APROVAÇÕES + CONVITES */}
@@ -293,11 +331,11 @@ export default function FinanceBoardsClient({
                 key={board.id}
                 className="relative border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition bg-white flex flex-col justify-between"
               >
-                {/* ENGRENAGEM – apenas dono */}
+                {/* BOTÃO DE ENGRENAGEM (apenas dono) */}
                 {isOwner && (
                   <button
                     type="button"
-                    className="absolute top-3 right-3 text-gray-500 hover:text-blue-600"
+                    className="absolute top-3 right-3 text-gray-300 hover:text-blue-600"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -308,12 +346,12 @@ export default function FinanceBoardsClient({
                   </button>
                 )}
 
-                {/* MENU DROPDOWN (só dono) */}
+                {/* MENU DROPDOWN */}
                 {isOwner && menuBoardId === board.id && (
                   <div className="absolute z-20 top-9 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden">
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
                       onClick={() => {
                         setMenuBoardId(null);
                         setRenameBoardState(board);
@@ -324,7 +362,7 @@ export default function FinanceBoardsClient({
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
                       onClick={() => {
                         setMenuBoardId(null);
                         setMembersBoard(board);
@@ -335,7 +373,7 @@ export default function FinanceBoardsClient({
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                      className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600"
                       onClick={() => {
                         setMenuBoardId(null);
                         setDeleteBoardState(board);
@@ -378,9 +416,6 @@ export default function FinanceBoardsClient({
           })}
         </div>
       )}
-
-      {/* ENTRAR POR CÓDIGO */}
-      <FinanceJoinByCode locale={locale} />
 
       {/* MODAL RENOMEAR QUADRO */}
       {renameBoardState && (
@@ -457,7 +492,7 @@ export default function FinanceBoardsClient({
                     deleteLoading ||
                     !deleteNameConfirm.trim() ||
                     deleteNameConfirm.trim().toLowerCase() !==
-                      deleteBoardState.name.trim().toLowerCase()
+                    deleteBoardState.name.trim().toLowerCase()
                   }
                   className="px-4 py-2 text-sm rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
                 >
@@ -485,23 +520,20 @@ export default function FinanceBoardsClient({
             )}
 
             <div className="max-h-56 overflow-y-auto space-y-2 mb-4">
-              {(membersBoard.memberIds || []).map((memberId) => {
-                const isOwner = memberId === membersBoard.ownerId;
-                const canRemove = sessionUserId === membersBoard.ownerId && !isOwner;
+              {(membersBoard.memberIds || []).map((memberId) => (
+                <div
+                  key={memberId}
+                  className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-800 truncate">{memberId}</p>
+                    {memberId === membersBoard.ownerId && (
+                      <p className="text-[11px] text-blue-600">Dono do quadro</p>
+                    )}
+                  </div>
 
-                return (
-                  <div
-                    key={memberId}
-                    className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm text-gray-800 truncate">{memberId}</p>
-                      {isOwner && (
-                        <p className="text-[11px] text-blue-600">Dono do quadro</p>
-                      )}
-                    </div>
-
-                    {canRemove && (
+                  {sessionUserId === membersBoard.ownerId &&
+                    memberId !== membersBoard.ownerId && (
                       <button
                         type="button"
                         disabled={membersLoading}
@@ -511,9 +543,8 @@ export default function FinanceBoardsClient({
                         Remover
                       </button>
                     )}
-                  </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-end">
