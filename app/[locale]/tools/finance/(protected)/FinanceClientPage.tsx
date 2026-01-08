@@ -15,6 +15,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
+import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
@@ -53,6 +54,8 @@ export default function FinanceClientPage({
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+
+  const [showMetrics, setShowMetrics] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -94,21 +97,13 @@ export default function FinanceClientPage({
     router.push(`/${locale}/tools/finance?${params.toString()}`);
   };
 
-  const handleGoToToday = () => {
-    const todayMonth = format(new Date(), "yyyy-MM");
-    const params = new URLSearchParams(searchParams?.toString());
-    params.set("month", todayMonth);
-    if (currentBoardId) params.set("boardId", currentBoardId);
-    else params.delete("boardId");
-    router.push(`/${locale}/tools/finance?${params.toString()}`);
-  };
-
   const handleBoardChange = (boardId: string) => {
     const params = new URLSearchParams(searchParams?.toString());
     if (boardId) params.set("boardId", boardId);
     else params.delete("boardId");
     params.set("month", currentMonth);
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false); // volta pra lista ao trocar de quadro
   };
 
   const totals = useMemo(() => {
@@ -215,50 +210,37 @@ export default function FinanceClientPage({
       <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        {/* manter variáveis usadas sem aparecer */}
+        {/* mantém valores usados sem aparecer */}
         <span className="sr-only">
           {userName} {boardName}
         </span>
 
-                {/* CONTROLE DE MÊS + BOTÃO HOJE */}
-        <div className="mb-4 flex items-center justify-between gap-3">
-          {/* Barra de navegação de mês */}
-          <div className="flex-1">
-            <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
-              <button
-                onClick={handlePrevMonth}
-                aria-label="Mês anterior"
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
-              >
-                <FiChevronLeft />
-              </button>
+        {/* CONTROLE DE MÊS */}
+        <div className="mb-4">
+          <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
+            <button
+              onClick={handlePrevMonth}
+              aria-label="Mês anterior"
+              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+            >
+              <FiChevronLeft />
+            </button>
 
-              <div className="flex-1 text-center">
-                <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
-                  {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-                </span>
-              </div>
-
-              <button
-                onClick={handleNextMonth}
-                aria-label="Próximo mês"
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
-              >
-                <FiChevronRight />
-              </button>
+            <div className="flex-1 text-center">
+              <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
+                {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+              </span>
             </div>
+
+            <button
+              onClick={handleNextMonth}
+              aria-label="Próximo mês"
+              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+            >
+              <FiChevronRight />
+            </button>
           </div>
-
-          {/* Botão HOJE ao lado */}
-          <button
-            type="button"
-            onClick={handleGoToToday}
-            className="px-3 py-2 text-xs font-semibold rounded-xl border border-white/40 bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          >
-            Hoje
-          </button>
         </div>
-
 
         <div className="text-center mb-4">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
@@ -274,8 +256,7 @@ export default function FinanceClientPage({
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
             <p className="text-lg font-bold text-green-300">
-              +
-              {" "}
+              +{" "}
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -286,8 +267,7 @@ export default function FinanceClientPage({
               {t("entriesForecastLabel")}
             </p>
             <p className="text-lg font-bold text-green-300">
-              +
-              {" "}
+              +{" "}
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -298,8 +278,7 @@ export default function FinanceClientPage({
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
             <p className="text-lg font-bold text-red-300">
-              -
-              {" "}
+              -{" "}
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -310,8 +289,7 @@ export default function FinanceClientPage({
               {t("exitsForecastLabel")}
             </p>
             <p className="text-lg font-bold text-red-300">
-              -
-              {" "}
+              -{" "}
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -460,22 +438,51 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {/* LISTA */}
+      {/* LISTA / MÉTRICAS */}
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
-          <h3 className="font-bold text-gray-700">
-            {t("transactionsTitle")}
-          </h3>
-          <span className="text-xs text-gray-400">
-            {t("transactionsCount", { count: initialItems.length })}
-          </span>
+          <div>
+            <h3 className="font-bold text-gray-700">
+              {showMetrics ? "Métricas do mês" : t("transactionsTitle")}
+            </h3>
+            {!showMetrics && (
+              <span className="text-xs text-gray-400">
+                {t("transactionsCount", { count: initialItems.length })}
+              </span>
+            )}
+          </div>
+
+          <div className="inline-flex bg-gray-100 rounded-xl p-1 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setShowMetrics(false)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                !showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
+            >
+              Lista
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMetrics(true)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
+            >
+              Métricas
+            </button>
+          </div>
         </div>
 
-        {initialItems.length === 0 ? (
+        {showMetrics ? (
+          <FinanceMetricsPanel items={initialItems} currentMonth={currentMonth} />
+        ) : initialItems.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-400 mb-2">
-              {t("noTransactions")}
-            </p>
+            <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
             <button
               onClick={handleOpenCreateModal}
               className="text-blue-600 font-bold text-sm"

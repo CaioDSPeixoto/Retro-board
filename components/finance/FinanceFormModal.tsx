@@ -37,7 +37,9 @@ export default function FinanceFormModal({
 
   const isEditMode = !!initialItem;
 
-  const [type, setType] = useState<"income" | "expense">(initialItem?.type ?? "expense");
+  const [type, setType] = useState<"income" | "expense">(
+    initialItem?.type ?? "expense",
+  );
   const [error, setError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<string[]>(initialCategories);
@@ -49,14 +51,9 @@ export default function FinanceFormModal({
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
 
+  const [useInstallments, setUseInstallments] = useState(false);
+
   const [currentUserName, setCurrentUserName] = useState<string>("");
-
-  // ⚙️ Estados para fixa x parcelado
-  const [isFixedChecked, setIsFixedChecked] = useState<boolean>(initialItem?.isFixed ?? false);
-  const [isInstallmentEnabled, setIsInstallmentEnabled] = useState<boolean>(false);
-
-  // Bloqueio geral dos outros campos enquanto cria categoria
-  const formLocked = isPending || addingCategory || showNewCategoryForm;
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -74,19 +71,10 @@ export default function FinanceFormModal({
     if (initialItem?.category) {
       setCategory(initialItem.category);
       setType(initialItem.type);
-      setIsFixedChecked(initialItem.isFixed ?? false);
     } else if (!initialCategories.includes(category)) {
       setCategory(initialCategories[0]);
     }
   }, [initialCategories, initialItem, isOpen]);
-
-  // Reseta estados de categoria nova e parcelamento ao abrir / trocar item
-  useEffect(() => {
-    setShowNewCategoryForm(false);
-    setNewCategory("");
-    setIsInstallmentEnabled(false);
-    setError(null);
-  }, [isOpen, initialItem]);
 
   // Foca no input quando o formulário de nova categoria abre
   useEffect(() => {
@@ -121,7 +109,9 @@ export default function FinanceFormModal({
     startTransition(() => router.refresh());
   };
 
-  const showFixedOption = category === "Contas Fixas" || initialItem?.isFixed;
+  const showFixedBase = category === "Contas Fixas" || initialItem?.isFixed;
+  const disableFixedForInstallments = !isEditMode && useInstallments;
+  const canUseFixed = showFixedBase && !disableFixedForInstallments;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
@@ -153,11 +143,9 @@ export default function FinanceFormModal({
             if (boardId) fd.set("boardId", boardId);
             if (currentUserName) fd.set("createdByName", currentUserName);
 
-            if (!isInstallmentEnabled) {
-              fd.delete("installments");
-            }
-
-            const res = isEditMode ? await updateFinanceItem(fd) : await addFinanceItem(fd);
+            const res = isEditMode
+              ? await updateFinanceItem(fd)
+              : await addFinanceItem(fd);
 
             if (res && "error" in res && res.error) {
               setError(res.error as string);
@@ -169,27 +157,35 @@ export default function FinanceFormModal({
           }}
           className="flex flex-col gap-4"
         >
-          {isEditMode && initialItem && <input type="hidden" name="id" value={initialItem.id} />}
+          {isEditMode && initialItem && (
+            <input type="hidden" name="id" value={initialItem.id} />
+          )}
 
           {/* Seletor de Tipo (Receita/Despesa) */}
-          <div className="flex bg-gray-100 p-1 rounded-xl">
+          <div
+            className={`flex bg-gray-100 p-1 rounded-xl ${
+              showNewCategoryForm ? "opacity-50 pointer-events-none" : ""
+            }`}
+          >
             <button
               type="button"
-              disabled={formLocked}
               onClick={() => setType("income")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "income" ? "bg-white text-green-600 shadow-sm" : "text-gray-500"
-              } ${formLocked ? "opacity-60 cursor-not-allowed" : ""}`}
+                type === "income"
+                  ? "bg-white text-green-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
             >
               {t("typeIncome")}
             </button>
             <button
               type="button"
-              disabled={formLocked}
               onClick={() => setType("expense")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "expense" ? "bg-white text-red-600 shadow-sm" : "text-gray-500"
-              } ${formLocked ? "opacity-60 cursor-not-allowed" : ""}`}
+                type === "expense"
+                  ? "bg-white text-red-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
             >
               {t("typeExpense")}
             </button>
@@ -205,16 +201,15 @@ export default function FinanceFormModal({
               <button
                 type="button"
                 onClick={() => {
-                  if (showNewCategoryForm) {
-                    // cancelando -> limpa e destrava o form
-                    setShowNewCategoryForm(false);
+                  setShowNewCategoryForm((prev) => !prev);
+                  if (!showNewCategoryForm) {
                     setNewCategory("");
-                  } else {
-                    setShowNewCategoryForm(true);
                   }
                 }}
                 className={`text-xs font-bold flex items-center gap-1 transition-colors ${
-                  showNewCategoryForm ? "text-red-500" : "text-blue-600 hover:text-blue-700"
+                  showNewCategoryForm
+                    ? "text-red-500"
+                    : "text-blue-600 hover:text-blue-700"
                 }`}
               >
                 {showNewCategoryForm ? (
@@ -234,10 +229,7 @@ export default function FinanceFormModal({
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                disabled={formLocked} // trava quando estiver no fluxo de nova categoria
-                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none ${
-                  formLocked ? "opacity-60 cursor-not-allowed" : ""
-                }`}
+                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                   backgroundRepeat: "no-repeat",
@@ -266,12 +258,11 @@ export default function FinanceFormModal({
                       handleAddCategory();
                     }
                   }}
-                  disabled={isPending}
                 />
                 <button
                   type="button"
                   onClick={handleAddCategory}
-                  disabled={!newCategory.trim() || addingCategory || isPending}
+                  disabled={!newCategory.trim() || addingCategory}
                   className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
                   {addingCategory ? (
@@ -284,176 +275,170 @@ export default function FinanceFormModal({
             )}
           </div>
 
-          {/* Descrição */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-              {t("descriptionLabel")}
-            </label>
-            <input
-              name="title"
-              required
-              placeholder={t("descriptionPlaceholder")}
-              defaultValue={initialItem?.title ?? ""}
-              disabled={formLocked}
-              className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
-                formLocked ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-            />
-          </div>
-
-          {/* Valor + Data */}
-          <div className="flex gap-4">
-            <div className="flex-1">
+          {/* Restante do formulário fica "travado" enquanto cria nova categoria */}
+          <fieldset
+            disabled={showNewCategoryForm}
+            className={showNewCategoryForm ? "opacity-50 pointer-events-none" : ""}
+          >
+            {/* Descrição */}
+            <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                {t("amountLabel")}
+                {t("descriptionLabel")}
               </label>
               <input
-                name="amount"
-                type="number"
-                step="0.01"
+                name="title"
                 required
-                placeholder="0,00"
-                defaultValue={initialItem ? String(initialItem.amount) : ""}
-                disabled={formLocked}
-                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
-                  formLocked ? "opacity-60 cursor-not-allowed" : ""
-                }`}
+                placeholder={t("descriptionPlaceholder")}
+                defaultValue={initialItem?.title ?? ""}
+                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
               />
             </div>
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                {t("dateLabel")}
-              </label>
-              <input
-                name="date"
-                type="date"
-                required
-                defaultValue={
-                  initialItem ? initialItem.date : new Date().toISOString().split("T")[0]
-                }
-                disabled={formLocked}
-                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
-                  formLocked ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              />
-            </div>
-          </div>
 
-          {/* Parcelamento (discreto + bloqueio com fixa) - apenas na criação */}
-          {!isEditMode && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 p-1">
+            {/* Valor + Data */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                  {t("amountLabel")}
+                </label>
+                <input
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="0,00"
+                  defaultValue={initialItem ? String(initialItem.amount) : ""}
+                  className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                  {t("dateLabel")}
+                </label>
+                <input
+                  name="date"
+                  type="date"
+                  required
+                  defaultValue={
+                    initialItem
+                      ? initialItem.date
+                      : new Date().toISOString().split("T")[0]
+                  }
+                  className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                />
+              </div>
+            </div>
+
+            {/* Parcelamento (somente na criação, discreto) */}
+            {!isEditMode && (
+              <div className="mt-1 space-y-2">
+                <div className="flex items-center gap-3 p-1">
+                  <input
+                    type="checkbox"
+                    id="useInstallments"
+                    checked={useInstallments}
+                    onChange={(e) => setUseInstallments(e.target.checked)}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="useInstallments"
+                    className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                  >
+                    Pagar em parcelas
+                  </label>
+                </div>
+
+                {useInstallments && (
+                  <div className="pl-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                      Número de parcelas
+                    </label>
+                    <input
+                      name="installments"
+                      type="number"
+                      min={1}
+                      max={60}
+                      defaultValue={1}
+                      className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1 px-1">
+                      O valor informado é o valor de cada parcela.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Pago/Recebido */}
+            {!isEditMode && (
+              <div className="flex items-center gap-3 p-1 mt-1">
                 <input
                   type="checkbox"
-                  id="installmentsEnabled"
+                  name="status"
+                  value="paid"
+                  id="paid"
                   className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  checked={isInstallmentEnabled}
-                  disabled={formLocked || isFixedChecked}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setIsInstallmentEnabled(checked);
-                    if (checked) {
-                      // se parcelado = true, desmarca fixa
-                      setIsFixedChecked(false);
-                    }
-                  }}
                 />
                 <label
-                  htmlFor="installmentsEnabled"
-                  className={`text-sm font-medium cursor-pointer select-none ${
-                    formLocked || isFixedChecked ? "text-gray-400" : "text-gray-700"
-                  }`}
+                  htmlFor="paid"
+                  className="text-sm font-medium text-gray-700 cursor-pointer select-none"
                 >
-                  Lançamento parcelado?
+                  {t("alreadyPaidLabel")}
                 </label>
               </div>
-
-              {isInstallmentEnabled && (
-                <div className="pl-1">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                    Número de parcelas
-                  </label>
-                  <input
-                    name="installments"
-                    type="number"
-                    min={1}
-                    max={60}
-                    defaultValue={1}
-                    disabled={formLocked}
-                    className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
-                      formLocked ? "opacity-60 cursor-not-allowed" : ""
-                    }`}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Pago/Recebido */}
-          {!isEditMode && (
-            <div className="flex items-center gap-3 p-1">
-              <input
-                type="checkbox"
-                name="status"
-                value="paid"
-                id="paid"
-                disabled={formLocked}
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <label
-                htmlFor="paid"
-                className={`text-sm font-medium cursor-pointer select-none ${
-                  formLocked ? "text-gray-400" : "text-gray-700"
-                }`}
-              >
-                {t("alreadyPaidLabel")}
-              </label>
-            </div>
-          )}
-
-          {/* Fixa (bloqueada se parcelado estiver ativo) */}
-          {showFixedOption && (
-            <div className="flex items-center gap-3 p-1">
-              <input
-                type="checkbox"
-                name="isFixed"
-                id="isFixed"
-                checked={isFixedChecked}
-                onChange={(e) => setIsFixedChecked(e.target.checked)}
-                disabled={formLocked || isInstallmentEnabled}
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <label
-                htmlFor="isFixed"
-                className={`text-sm font-medium cursor-pointer select-none ${
-                  formLocked || isInstallmentEnabled ? "text-gray-400" : "text-gray-700"
-                }`}
-              >
-                {t("fixedCheckboxLabel")}
-              </label>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isPending || showNewCategoryForm || addingCategory}
-            className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${
-              type === "income"
-                ? "bg-green-600 hover:bg-green-700 shadow-green-100"
-                : "bg-red-600 hover:bg-red-700 shadow-red-100"
-            } disabled:opacity-70 disabled:cursor-not-allowed`}
-          >
-            {isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                {t("savingButton")}
-              </span>
-            ) : isEditMode ? (
-              t("saveEditButton")
-            ) : (
-              t("saveButton")
             )}
-          </button>
+
+            {/* Fixa */}
+            {showFixedBase && (
+              <div className="flex flex-col gap-1 p-1 mt-1">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="isFixed"
+                    value="true"
+                    id="isFixed"
+                    defaultChecked={initialItem?.isFixed ?? false}
+                    disabled={!canUseFixed}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  <label
+                    htmlFor="isFixed"
+                    className={`text-sm font-medium cursor-pointer select-none ${
+                      canUseFixed ? "text-gray-700" : "text-gray-400"
+                    }`}
+                  >
+                    {t("fixedCheckboxLabel")}
+                  </label>
+                </div>
+                {disableFixedForInstallments && (
+                  <p className="text-[11px] text-gray-400 pl-1">
+                    Não é possível marcar como conta fixa em lançamentos
+                    parcelados.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${
+                type === "income"
+                  ? "bg-green-600 hover:bg-green-700 shadow-green-100"
+                  : "bg-red-600 hover:bg-red-700 shadow-red-100"
+              } disabled:opacity-70`}
+            >
+              {isPending ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {t("savingButton")}
+                </span>
+              ) : isEditMode ? (
+                t("saveEditButton")
+              ) : (
+                t("saveButton")
+              )}
+            </button>
+          </fieldset>
         </form>
       </div>
     </div>
