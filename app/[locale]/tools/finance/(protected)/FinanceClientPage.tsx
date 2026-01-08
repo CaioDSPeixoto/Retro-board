@@ -251,7 +251,7 @@ export default function FinanceClientPage({
           <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
             <button
               onClick={handlePrevMonth}
-              aria-label="Mês anterior"
+              aria-label={t("prevMonthAria")}
               className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
             >
               <FiChevronLeft />
@@ -266,7 +266,7 @@ export default function FinanceClientPage({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleNextMonth}
-                aria-label="Próximo mês"
+                aria-label={t("nextMonthAria")}
                 className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
               >
                 <FiChevronRight />
@@ -278,10 +278,9 @@ export default function FinanceClientPage({
                   onClick={handleGoToCurrentMonth}
                   className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide"
                 >
-                  Hoje
+                  {t("goTodayLabel")}
                 </button>
               )}
-              
             </div>
           </div>
         </div>
@@ -342,8 +341,9 @@ export default function FinanceClientPage({
                 </span>
               </div>
               <FiChevronDown
-                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""
-                  }`}
+                className={`text-gray-400 transition-transform ${
+                  shareOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -409,7 +409,7 @@ export default function FinanceClientPage({
         <div className="flex justify-between items-center mb-4 px-2">
           <div>
             <h3 className="font-bold text-gray-700">
-              {showMetrics ? "Métricas do período" : t("transactionsTitle")}
+              {showMetrics ? t("metricsTitle") : t("transactionsTitle")}
             </h3>
             {!showMetrics && (
               <span className="text-xs text-gray-400">
@@ -422,22 +422,24 @@ export default function FinanceClientPage({
             <button
               type="button"
               onClick={() => setShowMetrics(false)}
-              className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500"
-                }`}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                !showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
             >
-              Lista
+              {t("tabListLabel")}
             </button>
             <button
               type="button"
               onClick={() => setShowMetrics(true)}
-              className={`px-3 py-1 rounded-lg transition-all ${showMetrics
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500"
-                }`}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
             >
-              Métricas
+              {t("tabMetricsLabel")}
             </button>
           </div>
         </div>
@@ -460,7 +462,7 @@ export default function FinanceClientPage({
                     {currency(overdueTotal)}
                   </p>
                   <p className="text-[10px] text-amber-700 mt-0.5">
-                    {t("overdueSummaryLabel") ?? "Saldo em atraso"}
+                    {t("overdueSummaryLabel")}
                   </p>
                 </div>
               </summary>

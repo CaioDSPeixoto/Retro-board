@@ -124,6 +124,7 @@
     "workload848": "Carga diária: 8h48"
   },
   "Finance": {
+    "backToBoard": "Voltar para o quadro",
     "hello": "Olá",
     "title": "Financeiro",
     "expenses": "Despesas",
@@ -161,6 +162,39 @@
       "toggleFailed": "Erro ao atualizar status. Tente novamente.",
       "itemNotFound": "Item não encontrado."
     }
+  },
+  "FinanceMetrics": {
+    "noData": "Nenhum lançamento neste período para calcular métricas.",
+    "summaryTitle": "Resumo de {period}",
+    "balanceLabel": "Saldo do período",
+
+    "incomesTitle": "Receitas",
+    "expensesTitle": "Despesas",
+    "totalPaidAndPending": "Total (pagas + pendentes)",
+    "onlyFinished": "Apenas finalizadas:",
+    "onlyPending": "Apenas pendentes:",
+    "incomesCountLabel": "{count} lançamento(s)",
+    "incomesOverdueLabel": "{count} em atraso",
+    "expensesCountLabel": "{count} lançamento(s)",
+    "expensesOverdueLabel": "{count} em atraso",
+
+    "expensesDistributionTitle": "Distribuição de despesas por categoria",
+    "noExpensesInPeriod": "Nenhuma despesa registrada neste período.",
+    "incomesDistributionTitle": "Distribuição de receitas por categoria",
+    "categoryLine": "{total} · {percent}%",
+
+    "mostActivePeriodTitle": "Período mais ativo",
+    "mostActiveDayLine": "{count} lançamento(s) · movimentação de {amount}",
+    "daysWithMovements": "Dias com movimentação no período: {count}",
+    "notEnoughData": "Não há dados suficientes para calcular.",
+
+    "quickIndicatorsTitle": "Indicadores rápidos",
+    "totalTransactionsLabel": "Total de lançamentos",
+    "avgExpenseTicketLabel": "Ticket médio das despesas",
+    "avgIncomeTicketLabel": "Ticket médio das receitas",
+    "overdueCountLabel": "Lançamentos em atraso",
+
+    "othersCategory": "Outros"
   },
   "UserMenu": {
     "account": "Conta",
@@ -258,7 +292,15 @@
     "accept": "Aceitar",
     "reject": "Recusar",
     "joinRequestSent": "Solicitação enviada com sucesso!",
+    "prevMonthAria": "Mês anterior",
+    "nextMonthAria": "Próximo mês",
+    "goTodayLabel": "Hoje",
 
+    "metricsTitle": "Métricas do período",
+    "tabListLabel": "Lista",
+    "tabMetricsLabel": "Métricas",
+
+    "overdueSummaryLabel": "Saldo em atraso",
     "errors": {
       "boardNotFound": "Quadro não encontrado.",
       "inviteSend": "Erro ao enviar convite. Tente novamente.",
@@ -295,7 +337,32 @@
       "codeRequired": "Informe o código do quadro para entrar.",
       "boardNotFound": "Quadro não encontrado ou você ainda não foi aceito.",
       "general": "Ocorreu um erro. Tente novamente."
-    }
+    },
+    "createButtonLoading": "Criando...",
+    "joinTabLabel": "Entrar por código",
+    "boardMenuAriaLabel": "Abrir opções do quadro",
+    "menuRename": "Editar nome",
+    "menuViewMembers": "Ver membros",
+    "menuDeleteBoard": "Excluir quadro",
+
+    "renameModalTitle": "Renomear quadro",
+    "renameModalDescription": "Digite o novo nome para este quadro.",
+    "renameModalCancel": "Cancelar",
+    "renameModalSave": "Salvar",
+    "renameModalSaving": "Salvando...",
+
+    "deleteModalTitle": "Excluir quadro",
+    "deleteModalDescription": "Essa ação é permanente. Para confirmar, digite o nome do quadro abaixo.",
+    "deleteModalPlaceholder": "Digite o nome do quadro",
+    "deleteModalCancel": "Cancelar",
+    "deleteModalConfirm": "Excluir quadro",
+    "deleteModalConfirming": "Excluindo...",
+
+    "membersModalTitle": "Membros do quadro",
+    "membersModalSubtitle": "Somente o dono pode remover membros.",
+    "membersModalOwnerTag": "Dono do quadro",
+    "membersModalRemove": "Remover",
+    "membersModalClose": "Fechar"
   },
   "FinanceForm": {
     "newTransactionTitle": "Novo lançamento",
@@ -334,6 +401,11 @@
     "paidLabel": "Já foi pago/recebido?",
     "fixedLabel": "Despesa fixa (repetir todo mês)",
     "submit": "Salvar lançamento",
-    "saving": "Salvando..."
+    "saving": "Salvando...",
+    "fixedCategoryName": "Contas Fixas",
+    "useInstallmentsLabel": "Pagar em parcelas",
+    "installmentsLabel": "Número de parcelas",
+    "installmentsHint": "O valor informado é o valor de cada parcela.",
+    "fixedNotAllowedWithInstallments": "Não é possível marcar como conta fixa em lançamentos parcelados."
   }
 }

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { FinanceItem } from "@/types/finance";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 type Props = {
   items: FinanceItem[];
@@ -18,6 +19,8 @@ export default function FinanceMetricsPanel({
   rangeFrom,
   rangeTo,
 }: Props) {
+  const t = useTranslations("FinanceMetrics");
+
   const baseItems = useMemo(
     () => items.filter((i) => !i.isSynthetic),
     [items],
@@ -93,14 +96,16 @@ export default function FinanceMetricsPanel({
     overdueCount,
   } = metrics;
 
-  // Despesas por categoria (continua igual, usando totalExpense)
+  const othersLabel = t("othersCategory");
+
+  // Despesas por categoria
   const expenseByCategory = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
 
     for (const item of baseItems) {
       if (item.type !== "expense") continue;
 
-      const key = item.category || "Outros";
+      const key = item.category || othersLabel;
       const prev = map.get(key) || { total: 0, count: 0 };
       prev.total += item.amount;
       prev.count += 1;
@@ -119,7 +124,7 @@ export default function FinanceMetricsPanel({
     result.sort((a, b) => b.total - a.total);
 
     return result;
-  }, [baseItems, totalExpense]);
+  }, [baseItems, totalExpense, othersLabel]);
 
   // Receitas por categoria
   const incomeByCategory = useMemo(() => {
@@ -128,7 +133,7 @@ export default function FinanceMetricsPanel({
     for (const item of baseItems) {
       if (item.type !== "income") continue;
 
-      const key = item.category || "Outros";
+      const key = item.category || othersLabel;
       const prev = map.get(key) || { total: 0, count: 0 };
       prev.total += item.amount;
       prev.count += 1;
@@ -147,16 +152,13 @@ export default function FinanceMetricsPanel({
     result.sort((a, b) => b.total - a.total);
 
     return result;
-  }, [baseItems, totalIncome]);
+  }, [baseItems, totalIncome, othersLabel]);
 
-  // Dia mais ativo (mantém lógica anterior)
+  // Dia mais ativo
   const mostActiveDayData = useMemo(() => {
     if (baseItems.length === 0) return null;
 
-    const dailyMap = new Map<
-      string,
-      { count: number; totalAbs: number }
-    >();
+    const dailyMap = new Map<string, { count: number; totalAbs: number }>();
 
     for (const item of baseItems) {
       const date = item.date;
@@ -211,7 +213,7 @@ export default function FinanceMetricsPanel({
   if (!hasData) {
     return (
       <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center text-sm text-gray-500">
-        Nenhum lançamento neste período para calcular métricas.
+        {t("noData")}
       </div>
     );
   }
@@ -221,12 +223,14 @@ export default function FinanceMetricsPanel({
       {/* Resumo geral */}
       <div className="bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-          Resumo de {periodLabel}
+          {t("summaryTitle", { period: periodLabel })}
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 mt-2">
           <div className="flex-1">
-            <p className="text-xs text-gray-500 mb-1">Saldo do período</p>
+            <p className="text-xs text-gray-500 mb-1">
+              {t("balanceLabel")}
+            </p>
             <p
               className={`text-2xl font-extrabold ${
                 balance >= 0 ? "text-green-600" : "text-red-600"
@@ -240,34 +244,36 @@ export default function FinanceMetricsPanel({
             {/* Receitas */}
             <div className="flex-1 bg-green-50 border border-green-100 rounded-xl p-3">
               <p className="text-[11px] text-green-700 font-semibold mb-1">
-                Receitas
+                {t("incomesTitle")}
               </p>
               <p className="text-[11px] text-gray-500">
-                Total (pagas + pendentes)
+                {t("totalPaidAndPending")}
               </p>
               <p className="text-sm font-bold text-green-700 mt-1">
                 {currency(totalIncome)}
               </p>
               <p className="text-[11px] text-green-700 mt-1">
-                Apenas finalizadas:{" "}
+                {t("onlyFinished")}{" "}
                 <span className="font-semibold">
                   {currency(finishedIncomeTotal)}
                 </span>
               </p>
               <p className="text-[11px] text-green-700">
-                Apenas pendentes:{" "}
+                {t("onlyPending")}{" "}
                 <span className="font-semibold">
                   {currency(pendingIncomeTotal)}
                 </span>
               </p>
               <p className="text-[11px] text-green-700 mt-1">
-                {incomeCount} lançamento(s)
+                {t("incomesCountLabel", { count: incomeCount })}
                 {overdueIncomeCount > 0 && (
                   <>
                     {" "}
                     ·{" "}
                     <span className="font-semibold">
-                      {overdueIncomeCount} em atraso
+                      {t("incomesOverdueLabel", {
+                        count: overdueIncomeCount,
+                      })}
                     </span>
                   </>
                 )}
@@ -277,34 +283,36 @@ export default function FinanceMetricsPanel({
             {/* Despesas */}
             <div className="flex-1 bg-red-50 border border-red-100 rounded-xl p-3">
               <p className="text-[11px] text-red-700 font-semibold mb-1">
-                Despesas
+                {t("expensesTitle")}
               </p>
               <p className="text-[11px] text-gray-500">
-                Total (pagas + pendentes)
+                {t("totalPaidAndPending")}
               </p>
               <p className="text-sm font-bold text-red-700 mt-1">
                 {currency(totalExpense)}
               </p>
               <p className="text-[11px] text-red-700 mt-1">
-                Apenas finalizadas:{" "}
+                {t("onlyFinished")}{" "}
                 <span className="font-semibold">
                   {currency(finishedExpenseTotal)}
                 </span>
               </p>
               <p className="text-[11px] text-red-700">
-                Apenas pendentes:{" "}
+                {t("onlyPending")}{" "}
                 <span className="font-semibold">
                   {currency(pendingExpenseTotal)}
                 </span>
               </p>
               <p className="text-[11px] text-red-700 mt-1">
-                {expenseCount} lançamento(s)
+                {t("expensesCountLabel", { count: expenseCount })}
                 {overdueExpenseCount > 0 && (
                   <>
                     {" "}
                     ·{" "}
                     <span className="font-semibold">
-                      {overdueExpenseCount} em atraso
+                      {t("expensesOverdueLabel", {
+                        count: overdueExpenseCount,
+                      })}
                     </span>
                   </>
                 )}
@@ -317,12 +325,12 @@ export default function FinanceMetricsPanel({
       {/* Despesas por categoria */}
       <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Distribuição de despesas por categoria
+          {t("expensesDistributionTitle")}
         </p>
 
         {expenseByCategory.length === 0 ? (
           <p className="text-xs text-gray-400">
-            Nenhuma despesa registrada neste período.
+            {t("noExpensesInPeriod")}
           </p>
         ) : (
           <div className="space-y-2">
@@ -333,7 +341,10 @@ export default function FinanceMetricsPanel({
                     {cat.category}
                   </span>
                   <span className="text-gray-500">
-                    {currency(cat.total)} · {cat.percent.toFixed(1)}%
+                    {t("categoryLine", {
+                      total: currency(cat.total),
+                      percent: cat.percent.toFixed(1),
+                    })}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
@@ -354,7 +365,7 @@ export default function FinanceMetricsPanel({
       {incomeByCategory.length > 0 && (
         <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            Distribuição de receitas por categoria
+            {t("incomesDistributionTitle")}
           </p>
 
           <div className="space-y-2">
@@ -365,7 +376,10 @@ export default function FinanceMetricsPanel({
                     {cat.category}
                   </span>
                   <span className="text-gray-500">
-                    {currency(cat.total)} · {cat.percent.toFixed(1)}%
+                    {t("categoryLine", {
+                      total: currency(cat.total),
+                      percent: cat.percent.toFixed(1),
+                    })}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
@@ -387,7 +401,7 @@ export default function FinanceMetricsPanel({
         {/* Dia mais ativo */}
         <div className="bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Período mais ativo
+            {t("mostActivePeriodTitle")}
           </p>
 
           {mostActiveDayData?.top ? (
@@ -398,21 +412,20 @@ export default function FinanceMetricsPanel({
                 })}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {mostActiveDayData.top.count} lançamento(s) · movimentação de{" "}
-                <span className="font-semibold">
-                  {currency(mostActiveDayData.top.totalAbs)}
-                </span>
+                {t("mostActiveDayLine", {
+                  count: mostActiveDayData.top.count,
+                  amount: currency(mostActiveDayData.top.totalAbs),
+                })}
               </p>
               <p className="text-[11px] text-gray-400 mt-2">
-                Dias com movimentação no período:{" "}
-                <span className="font-semibold">
-                  {mostActiveDayData.daysWithMovements}
-                </span>
+                {t("daysWithMovements", {
+                  count: mostActiveDayData.daysWithMovements,
+                })}
               </p>
             </>
           ) : (
             <p className="text-xs text-gray-400">
-              Não há dados suficientes para calcular.
+              {t("notEnoughData")}
             </p>
           )}
         </div>
@@ -420,31 +433,31 @@ export default function FinanceMetricsPanel({
         {/* Indicadores rápidos */}
         <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Indicadores rápidos
+            {t("quickIndicatorsTitle")}
           </p>
 
           <div className="space-y-2 text-xs text-gray-700">
             <div className="flex justify-between">
-              <span>Total de lançamentos</span>
+              <span>{t("totalTransactionsLabel")}</span>
               <span className="font-semibold">{totalTransactions}</span>
             </div>
 
             <div className="flex justify-between">
-              <span>Ticket médio das despesas</span>
+              <span>{t("avgExpenseTicketLabel")}</span>
               <span className="font-semibold">
                 {expenseCount ? currency(avgExpense) : "—"}
               </span>
             </div>
 
             <div className="flex justify-between">
-              <span>Ticket médio das receitas</span>
+              <span>{t("avgIncomeTicketLabel")}</span>
               <span className="font-semibold">
                 {incomeCount ? currency(avgIncome) : "—"}
               </span>
             </div>
 
             <div className="flex justify-between">
-              <span>Lançamentos em atraso</span>
+              <span>{t("overdueCountLabel")}</span>
               <span className="font-semibold">
                 {overdueCount > 0 ? overdueCount : 0}
               </span>

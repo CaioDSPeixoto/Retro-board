@@ -42,7 +42,7 @@ export default async function CategoryPage({
           className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
         >
           <span className="text-lg leading-none">←</span>
-          <span>Voltar para o quadro</span>
+          <span>{t("backToBoard")}</span>
         </Link>
       </div>
 

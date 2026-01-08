@@ -70,8 +70,8 @@ export default function FinanceBoardsClient({
   const [activeTab, setActiveTab] = useState<"create" | "join">("create");
 
   const membersLabel = useMemo(
-    () => (count: number) => (count > 1 ? "membros" : "membro"),
-    [],
+    () => (count: number) => tBoards("membersLabel", { count }),
+    [tBoards],
   );
 
   // ====== FETCH INVITES / APPROVALS (CLIENT) ======
@@ -213,9 +213,9 @@ export default function FinanceBoardsClient({
     setMembersBoard((prev) =>
       prev && prev.id === board.id
         ? {
-          ...prev,
-          memberIds: (prev.memberIds || []).filter((id) => id !== memberId),
-        }
+            ...prev,
+            memberIds: (prev.memberIds || []).filter((id) => id !== memberId),
+          }
         : prev,
     );
 
@@ -247,21 +247,23 @@ export default function FinanceBoardsClient({
         <div className="flex border-b border-gray-100 bg-gray-50/50">
           <button
             onClick={() => setActiveTab("create")}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "create"
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              activeTab === "create"
                 ? "bg-white text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-              }`}
+            }`}
           >
-            {tBoards("createButton")} {/* Ou uma tradução como "Novo Quadro" */}
+            {tBoards("createButton")}
           </button>
           <button
             onClick={() => setActiveTab("join")}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "join"
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              activeTab === "join"
                 ? "bg-white text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-              }`}
+            }`}
           >
-            Entrar por Código
+            {tBoards("joinTabLabel")}
           </button>
         </div>
 
@@ -290,7 +292,7 @@ export default function FinanceBoardsClient({
                   disabled={creating || !newBoardName.trim()}
                   className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
                 >
-                  {creating ? tBoards("createButton") + "..." : tBoards("createButton")}
+                  {creating ? tBoards("createButtonLoading") : tBoards("createButton")}
                 </button>
               </div>
             </form>
@@ -341,6 +343,7 @@ export default function FinanceBoardsClient({
                       e.preventDefault();
                       setMenuBoardId((prev) => (prev === board.id ? null : board.id));
                     }}
+                    aria-label={tBoards("boardMenuAriaLabel")}
                   >
                     <FiSettings size={18} />
                   </button>
@@ -358,7 +361,7 @@ export default function FinanceBoardsClient({
                         setRenameName(board.name);
                       }}
                     >
-                      Editar nome
+                      {tBoards("menuRename")}
                     </button>
                     <button
                       type="button"
@@ -369,7 +372,7 @@ export default function FinanceBoardsClient({
                         setMembersError(null);
                       }}
                     >
-                      Ver membros
+                      {tBoards("menuViewMembers")}
                     </button>
                     <button
                       type="button"
@@ -380,7 +383,7 @@ export default function FinanceBoardsClient({
                         setDeleteNameConfirm("");
                       }}
                     >
-                      Excluir quadro
+                      {tBoards("menuDeleteBoard")}
                     </button>
                   </div>
                 )}
@@ -403,7 +406,6 @@ export default function FinanceBoardsClient({
 
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs text-gray-400">
-                      {board.memberIds?.length || 1}{" "}
                       {membersLabel(board.memberIds?.length || 1)}
                     </span>
                     <span className="text-sm font-semibold text-blue-600">
@@ -421,9 +423,11 @@ export default function FinanceBoardsClient({
       {renameBoardState && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">Renomear quadro</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              {tBoards("renameModalTitle")}
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Digite o novo nome para este quadro.
+              {tBoards("renameModalDescription")}
             </p>
             <form onSubmit={handleRenameSubmit} className="space-y-4">
               <input
@@ -441,14 +445,16 @@ export default function FinanceBoardsClient({
                   }}
                   className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
                 >
-                  Cancelar
+                  {tBoards("renameModalCancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={renameLoading || !renameName.trim()}
                   className="px-4 py-2 text-sm rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {renameLoading ? "Salvando..." : "Salvar"}
+                  {renameLoading
+                    ? tBoards("renameModalSaving")
+                    : tBoards("renameModalSave")}
                 </button>
               </div>
             </form>
@@ -460,9 +466,11 @@ export default function FinanceBoardsClient({
       {deleteBoardState && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-semibold text-red-600 mb-2">Excluir quadro</h2>
+            <h2 className="text-lg font-semibold text-red-600 mb-2">
+              {tBoards("deleteModalTitle")}
+            </h2>
             <p className="text-sm text-gray-600 mb-3">
-              Essa ação é permanente. Para confirmar, digite o nome do quadro abaixo.
+              {tBoards("deleteModalDescription")}
             </p>
             <p className="text-sm font-semibold text-gray-800 mb-3">
               {deleteBoardState.name}
@@ -473,7 +481,7 @@ export default function FinanceBoardsClient({
                 value={deleteNameConfirm}
                 onChange={(e) => setDeleteNameConfirm(e.target.value)}
                 className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:outline-none text-gray-900"
-                placeholder="Digite o nome do quadro"
+                placeholder={tBoards("deleteModalPlaceholder")}
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -484,7 +492,7 @@ export default function FinanceBoardsClient({
                   }}
                   className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
                 >
-                  Cancelar
+                  {tBoards("deleteModalCancel")}
                 </button>
                 <button
                   type="submit"
@@ -492,11 +500,13 @@ export default function FinanceBoardsClient({
                     deleteLoading ||
                     !deleteNameConfirm.trim() ||
                     deleteNameConfirm.trim().toLowerCase() !==
-                    deleteBoardState.name.trim().toLowerCase()
+                      deleteBoardState.name.trim().toLowerCase()
                   }
                   className="px-4 py-2 text-sm rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
                 >
-                  {deleteLoading ? "Excluindo..." : "Excluir quadro"}
+                  {deleteLoading
+                    ? tBoards("deleteModalConfirming")
+                    : tBoards("deleteModalConfirm")}
                 </button>
               </div>
             </form>
@@ -509,10 +519,10 @@ export default function FinanceBoardsClient({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">
-              Membros do quadro
+              {tBoards("membersModalTitle")}
             </h2>
             <p className="text-sm text-gray-500 mb-3">
-              Somente o dono pode remover membros.
+              {tBoards("membersModalSubtitle")}
             </p>
 
             {membersError && (
@@ -528,7 +538,9 @@ export default function FinanceBoardsClient({
                   <div className="min-w-0">
                     <p className="text-sm text-gray-800 truncate">{memberId}</p>
                     {memberId === membersBoard.ownerId && (
-                      <p className="text-[11px] text-blue-600">Dono do quadro</p>
+                      <p className="text-[11px] text-blue-600">
+                        {tBoards("membersModalOwnerTag")}
+                      </p>
                     )}
                   </div>
 
@@ -540,7 +552,7 @@ export default function FinanceBoardsClient({
                         onClick={() => handleRemoveMember(membersBoard, memberId)}
                         className="px-3 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
                       >
-                        Remover
+                        {tBoards("membersModalRemove")}
                       </button>
                     )}
                 </div>
@@ -556,7 +568,7 @@ export default function FinanceBoardsClient({
                 }}
                 className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
               >
-                Fechar
+                {tBoards("membersModalClose")}
               </button>
             </div>
           </div>

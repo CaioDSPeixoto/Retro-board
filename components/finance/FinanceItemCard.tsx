@@ -2,7 +2,7 @@
 
 import { FinanceItem, FinanceStatus } from "@/types/finance";
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es } from "date-fns/locale";
 import {
   FiArrowDown,
   FiArrowUp,
@@ -41,6 +41,14 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   const monthParam = item.date.slice(0, 7);
   const boardParam = item.boardId ? `&boardId=${encodeURIComponent(item.boardId)}` : "";
 
+  // locale para o date-fns, de acordo com o locale atual da app
+  const dateLocale =
+    locale === "pt"
+      ? ptBR
+      : locale === "es"
+      ? es
+      : enUS;
+
   const handleDelete = async () => {
     if (isSynthetic) return;
 
@@ -54,7 +62,6 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
       }
       router.refresh();
     } catch (err) {
-      console.error("Erro ao deletar item:", err);
       alert(t("errors.deleteFailed"));
     }
   };
@@ -100,7 +107,6 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
       router.refresh();
     } catch (err) {
-      console.error("Erro ao alternar status:", err);
       alert(t("errors.toggleFailed"));
     }
   };
@@ -144,7 +150,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
         </div>
 
         <p className="text-xs text-gray-400 capitalize">
-          {format(parseISO(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+          {format(parseISO(item.date), "P", { locale: dateLocale })}
         </p>
 
         <Link

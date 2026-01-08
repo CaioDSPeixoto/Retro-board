@@ -124,6 +124,7 @@
     "workload848": "Daily load: 8h48"
   },
   "Finance": {
+    "backToBoard": "Back to board",
     "hello": "Hello",
     "title": "Finance",
     "expenses": "Expenses",
@@ -161,6 +162,39 @@
       "toggleFailed": "Error updating status. Please try again.",
       "itemNotFound": "Item not found."
     }
+  },
+  "FinanceMetrics": {
+    "noData": "No transactions in this period to calculate metrics.",
+    "summaryTitle": "Summary for {period}",
+    "balanceLabel": "Period balance",
+
+    "incomesTitle": "Income",
+    "expensesTitle": "Expenses",
+    "totalPaidAndPending": "Total (paid + pending)",
+    "onlyFinished": "Only finished:",
+    "onlyPending": "Only pending:",
+    "incomesCountLabel": "{count} transaction(s)",
+    "incomesOverdueLabel": "{count} overdue",
+    "expensesCountLabel": "{count} transaction(s)",
+    "expensesOverdueLabel": "{count} overdue",
+
+    "expensesDistributionTitle": "Expense distribution by category",
+    "noExpensesInPeriod": "No expenses registered in this period.",
+    "incomesDistributionTitle": "Income distribution by category",
+    "categoryLine": "{total} · {percent}%",
+
+    "mostActivePeriodTitle": "Most active period",
+    "mostActiveDayLine": "{count} transaction(s) · movement of {amount}",
+    "daysWithMovements": "Days with movements in the period: {count}",
+    "notEnoughData": "There is not enough data to calculate.",
+
+    "quickIndicatorsTitle": "Quick indicators",
+    "totalTransactionsLabel": "Total transactions",
+    "avgExpenseTicketLabel": "Average expense amount",
+    "avgIncomeTicketLabel": "Average income amount",
+    "overdueCountLabel": "Overdue transactions",
+
+    "othersCategory": "Others"
   },
   "UserMenu": {
     "account": "Account",
@@ -257,6 +291,15 @@
     "accept": "Accept",
     "reject": "Reject",
     "joinRequestSent": "Request sent successfully!",
+    "prevMonthAria": "Mês anterior",
+    "nextMonthAria": "Próximo mês",
+    "goTodayLabel": "Hoje",
+
+    "metricsTitle": "Métricas do período",
+    "tabListLabel": "Lista",
+    "tabMetricsLabel": "Métricas",
+
+    "overdueSummaryLabel": "Saldo em atraso",
     "errors": {
       "boardNotFound": "Board not found.",
       "inviteSend": "Error sending invite. Please try again.",
@@ -293,7 +336,32 @@
       "codeRequired": "Enter the board code to join.",
       "boardNotFound": "Board not found or you haven't been accepted yet.",
       "general": "An error occurred. Please try again."
-    }
+    },
+    "createButtonLoading": "Creating...",
+    "joinTabLabel": "Join by code",
+    "boardMenuAriaLabel": "Open board options",
+    "menuRename": "Rename board",
+    "menuViewMembers": "View members",
+    "menuDeleteBoard": "Delete board",
+
+    "renameModalTitle": "Rename board",
+    "renameModalDescription": "Enter the new name for this board.",
+    "renameModalCancel": "Cancel",
+    "renameModalSave": "Save",
+    "renameModalSaving": "Saving...",
+
+    "deleteModalTitle": "Delete board",
+    "deleteModalDescription": "This action is permanent. To confirm, type the board name below.",
+    "deleteModalPlaceholder": "Type the board name",
+    "deleteModalCancel": "Cancel",
+    "deleteModalConfirm": "Delete board",
+    "deleteModalConfirming": "Deleting...",
+
+    "membersModalTitle": "Board members",
+    "membersModalSubtitle": "Only the owner can remove members.",
+    "membersModalOwnerTag": "Board owner",
+    "membersModalRemove": "Remove",
+    "membersModalClose": "Close"
   },
   "FinanceForm": {
     "newTransactionTitle": "New transaction",
@@ -332,6 +400,11 @@
     "paidLabel": "Already paid/received?",
     "fixedLabel": "Fixed expense (repeat every month)",
     "submit": "Save entry",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "fixedCategoryName": "Fixed Bills",
+    "useInstallmentsLabel": "Pay in installments",
+    "installmentsLabel": "Number of installments",
+    "installmentsHint": "The amount entered is the value of each installment.",
+    "fixedNotAllowedWithInstallments": "You cannot mark an installment transaction as a fixed bill."
   }
 }

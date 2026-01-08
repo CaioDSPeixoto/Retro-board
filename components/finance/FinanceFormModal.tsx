@@ -37,6 +37,8 @@ export default function FinanceFormModal({
 
   const isEditMode = !!initialItem;
 
+  const fixedCategoryName = t("fixedCategoryName");
+
   const [type, setType] = useState<"income" | "expense">(
     initialItem?.type ?? "expense",
   );
@@ -44,7 +46,7 @@ export default function FinanceFormModal({
 
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [category, setCategory] = useState<string>(
-    initialItem?.category || initialCategories[0] || "Contas Fixas",
+    initialItem?.category || initialCategories[0] || fixedCategoryName,
   );
 
   const [newCategory, setNewCategory] = useState("");
@@ -74,7 +76,7 @@ export default function FinanceFormModal({
     } else if (!initialCategories.includes(category)) {
       setCategory(initialCategories[0]);
     }
-  }, [initialCategories, initialItem, isOpen]);
+  }, [initialCategories, initialItem, isOpen, category]);
 
   // Foca no input quando o formulário de nova categoria abre
   useEffect(() => {
@@ -109,7 +111,7 @@ export default function FinanceFormModal({
     startTransition(() => router.refresh());
   };
 
-  const showFixedBase = category === "Contas Fixas" || initialItem?.isFixed;
+  const showFixedBase = category === fixedCategoryName || initialItem?.isFixed;
   const disableFixedForInstallments = !isEditMode && useInstallments;
   const canUseFixed = showFixedBase && !disableFixedForInstallments;
 
@@ -214,11 +216,11 @@ export default function FinanceFormModal({
               >
                 {showNewCategoryForm ? (
                   <>
-                    <FiX size={14} /> {t("cancel") || "Cancelar"}
+                    <FiX size={14} /> {t("cancel")}
                   </>
                 ) : (
                   <>
-                    <FiPlus size={14} /> {t("addCategory") || "Nova"}
+                    <FiPlus size={14} /> {t("addCategory")}
                   </>
                 )}
               </button>
@@ -305,7 +307,7 @@ export default function FinanceFormModal({
                   type="number"
                   step="0.01"
                   required
-                  placeholder="0,00"
+                  placeholder="0.00"
                   defaultValue={initialItem ? String(initialItem.amount) : ""}
                   className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
                 />
@@ -343,14 +345,14 @@ export default function FinanceFormModal({
                     htmlFor="useInstallments"
                     className="text-sm font-medium text-gray-700 cursor-pointer select-none"
                   >
-                    Pagar em parcelas
+                    {t("useInstallmentsLabel")}
                   </label>
                 </div>
 
                 {useInstallments && (
                   <div className="pl-1">
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                      Número de parcelas
+                      {t("installmentsLabel")}
                     </label>
                     <input
                       name="installments"
@@ -361,7 +363,7 @@ export default function FinanceFormModal({
                       className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
                     />
                     <p className="text-[11px] text-gray-400 mt-1 px-1">
-                      O valor informado é o valor de cada parcela.
+                      {t("installmentsHint")}
                     </p>
                   </div>
                 )}
@@ -411,8 +413,7 @@ export default function FinanceFormModal({
                 </div>
                 {disableFixedForInstallments && (
                   <p className="text-[11px] text-gray-400 pl-1">
-                    Não é possível marcar como conta fixa em lançamentos
-                    parcelados.
+                    {t("fixedNotAllowedWithInstallments")}
                   </p>
                 )}
               </div>
