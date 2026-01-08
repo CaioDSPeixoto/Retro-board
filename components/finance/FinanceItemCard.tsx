@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { FinanceItem, FinanceStatus } from "@/types/finance";
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR, enUS, es } from "date-fns/locale";
 import {
   FiArrowDown,
   FiArrowUp,
@@ -28,6 +29,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   const router = useRouter();
   const t = useTranslations("Finance");
 
+  const [toggling, setToggling] = useState(false);
+
   const isIncome = item.type === "income";
   const isPaid = item.status === "paid";
   const isPartial = item.status === "partial";
@@ -40,6 +43,13 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
   const monthParam = item.date.slice(0, 7);
   const boardParam = item.boardId ? `&boardId=${encodeURIComponent(item.boardId)}` : "";
+
+const dateLocale =
+    locale === "pt"
+      ? ptBR
+      : locale === "es"
+      ? es
+      : enUS;
 
   const handleDelete = async () => {
     if (isSynthetic) return;
@@ -54,13 +64,12 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
       }
       router.refresh();
     } catch (err) {
-      console.error("Erro ao deletar item:", err);
       alert(t("errors.deleteFailed"));
     }
   };
 
   const handleToggle = async () => {
-    if (isSynthetic) return;
+    if (isSynthetic || toggling) return;
 
     const user = auth.currentUser;
     if (!user) {
@@ -69,6 +78,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
     }
 
     try {
+      setToggling(true);
+
       const itemRef = doc(db, "finance_items", item.id);
       const snap = await getDoc(itemRef);
       if (!snap.exists()) {
@@ -100,8 +111,9 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
       router.refresh();
     } catch (err) {
-      console.error("Erro ao alternar status:", err);
       alert(t("errors.toggleFailed"));
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -144,7 +156,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
         </div>
 
         <p className="text-xs text-gray-400 capitalize">
-          {format(parseISO(item.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+          {format(parseISO(item.date), "P", { locale: dateLocale })}
         </p>
 
         <Link
@@ -220,18 +232,26 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
           <div className="flex items-center gap-3 mt-1">
             <button
               onClick={handleToggle}
+              disabled={toggling}
               className={`${
                 isPaid ? "text-green-500" : "text-gray-300"
-              } hover:text-green-600 transition`}
+              } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
               aria-label={t("togglePaidAria")}
             >
-              {isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
+              {toggling ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : isPaid ? (
+                <FiCheckCircle size={18} />
+              ) : (
+                <FiCircle size={18} />
+              )}
             </button>
 
             {onEdit && (
               <button
                 onClick={handleEditClick}
-                className="text-gray-300 hover:text-blue-500 transition"
+                disabled={toggling}
+                className="text-gray-300 hover:text-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={t("editAria")}
               >
                 <FiEdit2 size={16} />
@@ -240,7 +260,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
             <button
               onClick={handleDelete}
-              className="text-gray-300 hover:text-red-500 transition"
+              disabled={toggling}
+              className="text-gray-300 hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label={t("deleteAria")}
             >
               <FiTrash2 size={16} />

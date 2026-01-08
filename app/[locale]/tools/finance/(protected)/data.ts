@@ -208,17 +208,18 @@ export async function getFinanceItemsData(
 
   const { start, end } = getMonthRange(month);
 
-  let query = adminDb
+  let queryRef = adminDb
     .collection("finance_items")
-    .where("userId", "==", sessionUserId)
     .where("date", ">=", start)
     .where("date", "<=", end);
 
   if (boardId) {
-    query = query.where("boardId", "==", boardId);
+    queryRef = queryRef.where("boardId", "==", boardId);
+  } else {
+    queryRef = queryRef.where("userId", "==", sessionUserId);
   }
 
-  const snap = await query.get();
+  const snap = await queryRef.get();
 
   const items: FinanceItem[] = [];
   snap.forEach((doc) => {
@@ -250,7 +251,8 @@ export async function getFinanceItemsData(
     });
   });
 
-  // garante que as contas fixas deste mês existam
+  // garante que as contas fixas deste mês existam PARA ESSE USUÁRIO
+  // (mas a query já trouxe tudo do quadro, inclusive de outros membros)
   const withFixed = await ensureFixedItemsForMonth(
     sessionUserId,
     month,
@@ -258,7 +260,6 @@ export async function getFinanceItemsData(
     items,
   );
 
-  // ordena por data e depois título
   return withFixed.sort((a, b) => {
     if (a.date === b.date) return a.title.localeCompare(b.title);
     return a.date.localeCompare(b.date);

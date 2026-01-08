@@ -124,6 +124,7 @@
     "workload848": "Daily load: 8h48"
   },
   "Finance": {
+    "backToBoard": "Back to board",
     "hello": "Hello",
     "title": "Finance",
     "expenses": "Expenses",
@@ -161,6 +162,49 @@
       "toggleFailed": "Error updating status. Please try again.",
       "itemNotFound": "Item not found."
     }
+  },
+  "FinanceMetrics": {
+    "userTotalIncomeShort": "Incomes",
+    "incomesLaunchesLabel": "{count, plural, one {{count} income} other {{count} incomes}}",
+    "expensesLaunchesLabel": "{count, plural, one {{count} expense} other {{count} expenses}}",
+    "noData": "No transactions in this period to calculate metrics.",
+    "summaryTitle": "Summary for {period}",
+    "balanceLabel": "Period balance",
+    "unknownUserLabel": "Unidentified user",
+    "perUserTitle": "Metrics by user",
+    "perUserSubtitle": "See how much each person moved in this period on the shared board.",
+    "topSpenderBadge": "Highest spender in this period",
+    "userTotalExpenseLabel": "Total expenses",
+    "userTotalIncome": "Total income: {value}",
+    "userExpensesCountLabel": "Number of expenses",
+    "userIncomesCountLabel": "Number of incomes",
+    "userTopCategoriesTitle": "Top spending categories",
+    "incomesTitle": "Income",
+    "expensesTitle": "Expenses",
+    "totalPaidAndPending": "Total:",
+    "onlyFinished": "Finished:",
+    "onlyPending": "Pending:",
+    "incomesCountLabel": "{count} transaction(s)",
+    "incomesOverdueLabel": "{count} overdue",
+    "expensesCountLabel": "{count} transaction(s)",
+    "expensesOverdueLabel": "{count} overdue",
+
+    "expensesDistributionTitle": "Expense distribution by category",
+    "noExpensesInPeriod": "No expenses registered in this period.",
+    "incomesDistributionTitle": "Income distribution by category",
+    "categoryLine": "{total} · {percent}%",
+
+    "mostActivePeriodTitle": "Most active period",
+    "mostActiveDayLine": "{count} transaction(s) · movement of {amount}",
+    "daysWithMovements": "Days with movements in the period: {count}",
+    "notEnoughData": "There is not enough data to calculate.",
+
+    "quickIndicatorsTitle": "Quick indicators",
+    "totalTransactionsLabel": "Total transactions",
+    "avgExpenseTicketLabel": "Average expense amount",
+    "avgIncomeTicketLabel": "Average income amount",
+
+    "othersCategory": "Others"
   },
   "UserMenu": {
     "account": "Account",
@@ -257,6 +301,15 @@
     "accept": "Accept",
     "reject": "Reject",
     "joinRequestSent": "Request sent successfully!",
+    "prevMonthAria": "Mês anterior",
+    "nextMonthAria": "Próximo mês",
+    "goTodayLabel": "Hoje",
+
+   "metricsTitle": "Metrics",
+    "tabListLabel": "List",
+    "tabMetricsLabel": "Metrics",
+
+    "overdueSummaryLabel": "Overdue balance",
     "errors": {
       "boardNotFound": "Board not found.",
       "inviteSend": "Error sending invite. Please try again.",
@@ -293,7 +346,32 @@
       "codeRequired": "Enter the board code to join.",
       "boardNotFound": "Board not found or you haven't been accepted yet.",
       "general": "An error occurred. Please try again."
-    }
+    },
+    "createButtonLoading": "Creating...",
+    "joinTabLabel": "Join by code",
+    "boardMenuAriaLabel": "Open board options",
+    "menuRename": "Rename board",
+    "menuViewMembers": "View members",
+    "menuDeleteBoard": "Delete board",
+
+    "renameModalTitle": "Rename board",
+    "renameModalDescription": "Enter the new name for this board.",
+    "renameModalCancel": "Cancel",
+    "renameModalSave": "Save",
+    "renameModalSaving": "Saving...",
+
+    "deleteModalTitle": "Delete board",
+    "deleteModalDescription": "This action is permanent. To confirm, type the board name below.",
+    "deleteModalPlaceholder": "Type the board name",
+    "deleteModalCancel": "Cancel",
+    "deleteModalConfirm": "Delete board",
+    "deleteModalConfirming": "Deleting...",
+
+    "membersModalTitle": "Board members",
+    "membersModalSubtitle": "Only the owner can remove members.",
+    "membersModalOwnerTag": "Board owner",
+    "membersModalRemove": "Remove",
+    "membersModalClose": "Close"
   },
   "FinanceForm": {
     "newTransactionTitle": "New transaction",
@@ -332,6 +410,11 @@
     "paidLabel": "Already paid/received?",
     "fixedLabel": "Fixed expense (repeat every month)",
     "submit": "Save entry",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "fixedCategoryName": "Fixed Bills",
+    "useInstallmentsLabel": "Pay in installments",
+    "installmentsLabel": "Number of installments",
+    "installmentsHint": "The amount entered is the value of each installment.",
+    "fixedNotAllowedWithInstallments": "You cannot mark an installment transaction as a fixed bill."
   }
 }

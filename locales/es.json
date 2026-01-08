@@ -124,6 +124,7 @@
     "workload848": "Carga diaria: 8h48"
   },
   "Finance": {
+    "backToBoard": "Volver al tablero",
     "hello": "Hola",
     "title": "Finanzas",
     "expenses": "Gastos",
@@ -161,6 +162,49 @@
       "toggleFailed": "Error al actualizar estado. Inténtelo de nuevo.",
       "itemNotFound": "Elemento no encontrado."
     }
+  },
+  "FinanceMetrics": {
+    "userTotalIncomeShort": "Ingresos",
+    "incomesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
+    "expensesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
+    "noData": "No hay lanzamientos en este período para calcular métricas.",
+    "summaryTitle": "Resumen de {period}",
+    "balanceLabel": "Saldo del período",
+    "unknownUserLabel": "Usuario no identificado",
+    "perUserTitle": "Métricas por persona",
+    "perUserSubtitle": "Mira cuánto movió cada persona en este período en el tablero compartido.",
+    "topSpenderBadge": "Quien más gastó en el período",
+    "userTotalExpenseLabel": "Total en gastos",
+    "userTotalIncome": "Total en ingresos: {value}",
+    "userExpensesCountLabel": "N.º de gastos",
+    "userIncomesCountLabel": "N.º de ingresos",
+    "userTopCategoriesTitle": "Categorías con más gasto",
+    "incomesTitle": "Ingresos",
+    "expensesTitle": "Gastos",
+    "totalPaidAndPending": "Total:",
+    "onlyFinished": "Finalizados:",
+    "onlyPending": "Pendientes:",
+    "incomesCountLabel": "{count} lanzamiento(s)",
+    "incomesOverdueLabel": "{count} en atraso",
+    "expensesCountLabel": "{count} lanzamiento(s)",
+    "expensesOverdueLabel": "{count} en atraso",
+
+    "expensesDistributionTitle": "Distribución de gastos por categoría",
+    "noExpensesInPeriod": "No hay gastos registrados en este período.",
+    "incomesDistributionTitle": "Distribución de ingresos por categoría",
+    "categoryLine": "{total} · {percent}%",
+
+    "mostActivePeriodTitle": "Período más activo",
+    "mostActiveDayLine": "{count} lanzamiento(s) · movimiento de {amount}",
+    "daysWithMovements": "Días con movimiento en el período: {count}",
+    "notEnoughData": "No hay datos suficientes para calcular.",
+
+    "quickIndicatorsTitle": "Indicadores rápidos",
+    "totalTransactionsLabel": "Total de lanzamientos",
+    "avgExpenseTicketLabel": "Ticket medio de gastos",
+    "avgIncomeTicketLabel": "Ticket medio de ingresos",
+
+    "othersCategory": "Otros"
   },
   "UserMenu": {
     "account": "Cuenta",
@@ -257,6 +301,15 @@
     "accept": "Aceptar",
     "reject": "Rechazar",
     "joinRequestSent": "¡Solicitud enviada con éxito!",
+    "prevMonthAria": "Mes anterior",
+    "nextMonthAria": "Mes siguiente",
+    "goTodayLabel": "Hoy",
+
+    "metricsTitle": "Métricas",
+    "tabListLabel": "Lista",
+    "tabMetricsLabel": "Métricas",
+
+    "overdueSummaryLabel": "Saldo vencido",
     "errors": {
       "boardNotFound": "Tablero no encontrado.",
       "inviteSend": "Error al enviar invitación. Inténtelo de nuevo.",
@@ -293,7 +346,33 @@
       "codeRequired": "Indique el código del tablero para entrar.",
       "boardNotFound": "Tablero no encontrado o aún no ha sido aceptado.",
       "general": "Ocurrió un error. Inténtelo de nuevo."
-    }
+    },
+    "createButtonLoading": "Creando...",
+    "joinTabLabel": "Entrar con código",
+
+    "boardMenuAriaLabel": "Abrir opciones del tablero",
+    "menuRename": "Editar nombre",
+    "menuViewMembers": "Ver miembros",
+    "menuDeleteBoard": "Eliminar tablero",
+
+    "renameModalTitle": "Renombrar tablero",
+    "renameModalDescription": "Escribe el nuevo nombre para este tablero.",
+    "renameModalCancel": "Cancelar",
+    "renameModalSave": "Guardar",
+    "renameModalSaving": "Guardando...",
+
+    "deleteModalTitle": "Eliminar tablero",
+    "deleteModalDescription": "Esta acción es permanente. Para confirmar, escribe el nombre del tablero abajo.",
+    "deleteModalPlaceholder": "Escribe el nombre del tablero",
+    "deleteModalCancel": "Cancelar",
+    "deleteModalConfirm": "Eliminar tablero",
+    "deleteModalConfirming": "Eliminando...",
+
+    "membersModalTitle": "Miembros del tablero",
+    "membersModalSubtitle": "Solo el dueño puede eliminar miembros.",
+    "membersModalOwnerTag": "Dueño del tablero",
+    "membersModalRemove": "Eliminar",
+    "membersModalClose": "Cerrar"
   },
   "FinanceForm": {
     "newTransactionTitle": "Nuevo registro",
@@ -332,6 +411,11 @@
     "paidLabel": "¿Ya ha sido pagado/recibido?",
     "fixedLabel": "Gasto fijo (repetir cada mes)",
     "submit": "Guardar registro",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "fixedCategoryName": "Cuentas fijas",
+    "useInstallmentsLabel": "Pagar en cuotas",
+    "installmentsLabel": "Número de cuotas",
+    "installmentsHint": "El valor ingresado es el valor de cada cuota.",
+    "fixedNotAllowedWithInstallments": "No es posible marcar como cuenta fija un lanzamiento en cuotas."
   }
 }

@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/FinanceClientPage.tsx
 "use client";
 
 import type { FinanceBoard, FinanceItem } from "@/types/finance";
@@ -15,8 +14,10 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
+import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 
 import { sendInviteByEmail } from "./invite-actions";
@@ -28,8 +29,20 @@ type Props = {
   locale: string;
   boards: FinanceBoard[];
   currentBoardId?: string | null;
-  sessionUserId: string; // vem do server (cookie)
+  sessionUserId: string;
 };
+
+function getMonthRange(month: string): { start: string; end: string } {
+  const [yearStr, monthStr] = month.split("-");
+  const year = parseInt(yearStr, 10);
+  const m = parseInt(monthStr, 10);
+
+  const start = `${yearStr}-${monthStr}-01`;
+  const lastDay = new Date(year, m, 0).getDate();
+  const end = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
+
+  return { start, end };
+}
 
 export default function FinanceClientPage({
   initialItems,
@@ -47,12 +60,19 @@ export default function FinanceClientPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState<string>(t("defaultUserName"));
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
+  const [items, setItems] = useState<FinanceItem[]>(initialItems);
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+
+  const [showMetrics, setShowMetrics] = useState(false);
+
+  // range opcional (quando vier from/to na URL)
+  const rangeFrom = searchParams?.get("from") || null;
+  const rangeTo = searchParams?.get("to") || null;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -62,6 +82,75 @@ export default function FinanceClientPage({
     });
     return () => unsubscribe();
   }, [t]);
+
+  useEffect(() => {
+    if (rangeFrom || rangeTo) {
+      setItems(initialItems);
+      return;
+    }
+
+    const { start, end } = getMonthRange(currentMonth);
+
+    let q = query(
+      collection(db, "finance_items"),
+      where("date", ">=", start),
+      where("date", "<=", end),
+    );
+
+    if (currentBoardId) {
+      q = query(q, where("boardId", "==", currentBoardId));
+    } else {
+      q = query(q, where("userId", "==", sessionUserId));
+    }
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const docs: FinanceItem[] = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data() as any;
+        docs.push({
+          id: docSnap.id,
+          userId: data.userId,
+          boardId: data.boardId,
+          title: data.title,
+          amount: data.amount,
+          date: data.date,
+          type: data.type,
+          status: data.status,
+          category: data.category,
+          createdAt: data.createdAt,
+          isFixed: data.isFixed,
+          isSynthetic: data.isSynthetic,
+          createdBy: data.createdBy,
+          createdByName: data.createdByName,
+          paidAmount: data.paidAmount,
+          openAmount: data.openAmount,
+          carriedFromMonth: data.carriedFromMonth,
+          carriedFromItemId: data.carriedFromItemId,
+          fixedTemplateId: data.fixedTemplateId,
+          installmentGroupId: data.installmentGroupId,
+          installmentIndex: data.installmentIndex,
+          installmentTotal: data.installmentTotal,
+          originalAmount: data.originalAmount,
+        });
+      });
+
+      docs.sort((a, b) => {
+        if (a.date === b.date) return a.title.localeCompare(b.title);
+        return a.date.localeCompare(b.date);
+      });
+
+      setItems(docs);
+    });
+
+    return () => unsub();
+  }, [
+    currentMonth,
+    currentBoardId,
+    sessionUserId,
+    rangeFrom,
+    rangeTo,
+    initialItems,
+  ]);
 
   const currentBoard = useMemo(
     () => boards.find((b) => b.id === currentBoardId),
@@ -75,6 +164,8 @@ export default function FinanceClientPage({
   const isOwner = !!currentBoard && currentBoard.ownerId === sessionUserId;
 
   const currentDate = parseISO(currentMonth + "-01");
+  const isShowingRealCurrentMonth =
+    currentMonth === format(new Date(), "yyyy-MM");
 
   const handlePrevMonth = () => {
     const newMonth = format(subMonths(currentDate, 1), "yyyy-MM");
@@ -82,7 +173,11 @@ export default function FinanceClientPage({
     params.set("month", newMonth);
     if (currentBoardId) params.set("boardId", currentBoardId);
     else params.delete("boardId");
+    // ao navegar de mês, volta para a LISTA
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
   const handleNextMonth = () => {
@@ -91,16 +186,22 @@ export default function FinanceClientPage({
     params.set("month", newMonth);
     if (currentBoardId) params.set("boardId", currentBoardId);
     else params.delete("boardId");
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
-  const handleGoToToday = () => {
+  const handleGoToCurrentMonth = () => {
     const todayMonth = format(new Date(), "yyyy-MM");
     const params = new URLSearchParams(searchParams?.toString());
     params.set("month", todayMonth);
     if (currentBoardId) params.set("boardId", currentBoardId);
     else params.delete("boardId");
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
   const handleBoardChange = (boardId: string) => {
@@ -108,11 +209,14 @@ export default function FinanceClientPage({
     if (boardId) params.set("boardId", boardId);
     else params.delete("boardId");
     params.set("month", currentMonth);
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
   const totals = useMemo(() => {
-    return initialItems.reduce(
+    return items.reduce(
       (acc, item) => {
         const isPaid = item.status === "paid";
 
@@ -128,7 +232,7 @@ export default function FinanceClientPage({
       },
       { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 },
     );
-  }, [initialItems]);
+  }, [items]);
 
   const balance = totals.incomes - totals.expenses;
 
@@ -136,14 +240,13 @@ export default function FinanceClientPage({
 
   const overdueItems = useMemo(
     () =>
-      initialItems.filter(
+      items.filter(
         (item) =>
           !item.isSynthetic &&
           item.date < todayStr &&
-          item.status !== "paid" &&
-          item.date.startsWith(currentMonth),
+          item.status !== "paid",
       ),
-    [initialItems, todayStr, currentMonth],
+    [items, todayStr],
   );
 
   const overdueTotal = useMemo(
@@ -188,6 +291,12 @@ export default function FinanceClientPage({
     setInviteLoading(false);
   };
 
+  const currency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+
   return (
     <div className="pb-24">
       {/* SELECT DE QUADRO */}
@@ -215,107 +324,84 @@ export default function FinanceClientPage({
       <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        {/* manter variáveis usadas sem aparecer */}
         <span className="sr-only">
           {userName} {boardName}
         </span>
 
-                {/* CONTROLE DE MÊS + BOTÃO HOJE */}
-        <div className="mb-4 flex items-center justify-between gap-3">
-          {/* Barra de navegação de mês */}
-          <div className="flex-1">
-            <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
-              <button
-                onClick={handlePrevMonth}
-                aria-label="Mês anterior"
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
-              >
-                <FiChevronLeft />
-              </button>
+        {/* CONTROLE DE MÊS */}
+        <div className="mb-4">
+          <div className="w-full bg-blue-700/40 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center justify-between shadow-sm">
+            <button
+              onClick={handlePrevMonth}
+              aria-label={t("prevMonthAria")}
+              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+            >
+              <FiChevronLeft />
+            </button>
 
-              <div className="flex-1 text-center">
-                <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
-                  {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-                </span>
-              </div>
+            <div className="flex-1 flex items-center justify-center gap-2">
+              <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
+                {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+              </span>
+            </div>
 
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleNextMonth}
-                aria-label="Próximo mês"
+                aria-label={t("nextMonthAria")}
                 className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
               >
                 <FiChevronRight />
               </button>
+
+              {!isShowingRealCurrentMonth && (
+                <button
+                  type="button"
+                  onClick={handleGoToCurrentMonth}
+                  className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide"
+                >
+                  {t("goTodayLabel")}
+                </button>
+              )}
             </div>
           </div>
-
-          {/* Botão HOJE ao lado */}
-          <button
-            type="button"
-            onClick={handleGoToToday}
-            className="px-3 py-2 text-xs font-semibold rounded-xl border border-white/40 bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          >
-            Hoje
-          </button>
         </div>
-
 
         <div className="text-center mb-4">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
-          <h2 className="text-4xl font-extrabold">
-            {new Intl.NumberFormat("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            }).format(balance)}
-          </h2>
+          <h2 className="text-4xl font-extrabold">{currency(balance)}</h2>
         </div>
 
         <div className="flex gap-4 mt-6">
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("entriesLabel")}
+            </p>
             <p className="text-lg font-bold text-green-300">
-              +
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.incomes)}
+              + {currency(totals.incomes)}
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("entriesForecastLabel")}
             </p>
             <p className="text-lg font-bold text-green-300">
-              +
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.incomesForecast)}
+              + {currency(totals.incomesForecast)}
             </p>
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("exitsLabel")}
+            </p>
             <p className="text-lg font-bold text-red-300">
-              -
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.expenses)}
+              - {currency(totals.expenses)}
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("exitsForecastLabel")}
             </p>
             <p className="text-lg font-bold text-red-300">
-              -
-              {" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.expensesForecast)}
+              - {currency(totals.expensesForecast)}
             </p>
           </div>
         </div>
@@ -400,82 +486,115 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {/* CONTAS EM ATRASO */}
-      {overdueItems.length > 0 && (
-        <div className="px-6 mt-2 mb-4">
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3">
-            <div className="flex justify-between items-center mb-2">
-              <div>
-                <p className="text-xs text-amber-700 font-semibold">
-                  {t("overdueTitle")}
-                </p>
-                <p className="text-[11px] text-amber-600">
-                  {t("overdueSubtitle", { count: overdueItems.length })}
-                </p>
-              </div>
-              <p className="text-sm font-bold text-amber-800">
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(overdueTotal)}
-              </p>
-            </div>
-
-            <div className="max-h-52 overflow-y-auto mt-2 space-y-2">
-              {overdueItems.map((item) => {
-                const openAmount = item.amount - (item.paidAmount || 0);
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
-                        {item.title}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {format(new Date(item.date), "dd 'de' MMM, yyyy", {
-                          locale: ptBR,
-                        })}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-[11px] text-amber-700 font-semibold">
-                        {new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(Math.max(openAmount, 0))}
-                      </p>
-                      <p className="text-[10px] text-gray-400">
-                        {t("openAmountLabel")}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LISTA */}
+      {/* LISTA / MÉTRICAS */}
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
-          <h3 className="font-bold text-gray-700">
-            {t("transactionsTitle")}
-          </h3>
-          <span className="text-xs text-gray-400">
-            {t("transactionsCount", { count: initialItems.length })}
-          </span>
+          <div>
+            <h3 className="font-bold text-gray-700">
+              {showMetrics ? t("metricsTitle") : t("transactionsTitle")}
+            </h3>
+            {!showMetrics && (
+              <span className="text-xs text-gray-400">
+                {t("transactionsCount", { count: items.length })}
+              </span>
+            )}
+          </div>
+
+          <div className="inline-flex bg-gray-100 rounded-xl p-1 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setShowMetrics(false)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                !showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
+            >
+              {t("tabListLabel")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMetrics(true)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+              }`}
+            >
+              {t("tabMetricsLabel")}
+            </button>
+          </div>
         </div>
 
-        {initialItems.length === 0 ? (
+        {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
+        {!showMetrics && overdueItems.length > 0 && (
+          <div className="mb-4">
+            <details className="bg-amber-50 border border-amber-100 rounded-2xl p-3 group">
+              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
+                <div>
+                  <p className="text-xs text-amber-700 font-semibold">
+                    {t("overdueTitle")}
+                  </p>
+                  <p className="text-[11px] text-amber-600">
+                    {t("overdueSubtitle", { count: overdueItems.length })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-amber-800">
+                    {currency(overdueTotal)}
+                  </p>
+                  <p className="text-[10px] text-amber-700 mt-0.5">
+                    {t("overdueSummaryLabel")}
+                  </p>
+                </div>
+              </summary>
+
+              <div className="mt-3 max-h-52 overflow-y-auto space-y-2">
+                {overdueItems.map((item) => {
+                  const openAmount = item.amount - (item.paidAmount || 0);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">
+                          {item.title}
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          {format(new Date(item.date), "dd 'de' MMM, yyyy", {
+                            locale: ptBR,
+                          })}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-[11px] text-amber-700 font-semibold">
+                          {currency(Math.max(openAmount, 0))}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {t("openAmountLabel")}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
+          </div>
+        )}
+
+        {showMetrics ? (
+          <FinanceMetricsPanel
+            items={items}
+            currentMonth={currentMonth}
+            rangeFrom={rangeFrom}
+            rangeTo={rangeTo}
+          />
+        ) : items.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-400 mb-2">
-              {t("noTransactions")}
-            </p>
+            <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
             <button
               onClick={handleOpenCreateModal}
               className="text-blue-600 font-bold text-sm"
@@ -485,7 +604,7 @@ export default function FinanceClientPage({
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {initialItems.map((item) => (
+            {items.map((item) => (
               <FinanceItemCard
                 key={item.id}
                 item={item}
@@ -497,14 +616,16 @@ export default function FinanceClientPage({
         )}
       </div>
 
-      {/* BOTÃO FLOAT */}
-      <button
-        onClick={handleOpenCreateModal}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
-        aria-label={t("addNow")}
-      >
-        <FiPlus size={28} />
-      </button>
+      {/* BOTÃO FLOAT – só na LISTA */}
+      {!showMetrics && (
+        <button
+          onClick={handleOpenCreateModal}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
+          aria-label={t("addNow")}
+        >
+          <FiPlus size={28} />
+        </button>
+      )}
 
       {/* MODAL */}
       <FinanceFormModal
