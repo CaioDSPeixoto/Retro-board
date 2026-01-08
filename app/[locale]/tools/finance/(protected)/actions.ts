@@ -150,8 +150,7 @@ export async function removeMemberFromBoard(boardId: string, memberId: string, l
 /**
  * Cria 1 ou várias transações.
  * - Sem parcelamento (parcelas=1): mantém o comportamento atual.
- * - Com parcelamento (parcelas>1): cria N lançamentos, um em cada mês,
- *   com sufixo no título: "Compra X (1/3)", "Compra X (2/3)"...
+ * - Com parcelamento (parcelas>1): cria N lançamentos, um em cada mês.
  */
 export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
@@ -214,20 +213,13 @@ export async function addFinanceItem(formData: FormData) {
     const status: FinanceStatus = baseStatus;
     const paidAmount = status === "paid" ? amount : 0;
 
-    const newItem: Omit<FinanceItem, "id"> = {
-      ...baseCommon,
-      amount,
-      date,
-      status,
-      paidAmount,
-    };
+    let fixedTemplateId: string | undefined;
 
-    await adminDb.collection("finance_items").add(newItem);
-
-    // fixa => template (apenas quando NÃO é parcelado)
+    // se for "Contas Fixas" com lançamento fixo, cria o template primeiro
     if (category === "Contas Fixas" && isFixedFlag) {
       const day = parseInt(date.split("-")[2] || "1", 10);
-      await adminDb.collection("finance_fixed_templates").add({
+
+      const tplRef = await adminDb.collection("finance_fixed_templates").add({
         userId: sessionUser,
         title,
         amount,
@@ -238,15 +230,26 @@ export async function addFinanceItem(formData: FormData) {
         active: true,
         ...(boardId ? { boardId } : {}),
       });
+
+      fixedTemplateId = tplRef.id;
     }
+
+    const newItem: Omit<FinanceItem, "id"> = {
+      ...baseCommon,
+      amount,
+      date,
+      status,
+      paidAmount,
+      ...(fixedTemplateId ? { fixedTemplateId } : {}),
+    };
+
+    await adminDb.collection("finance_items").add(newItem);
 
     revalidatePath(`/${locale}/tools/finance`);
     return { success: true };
   }
 
   // ========== PARCELADO (N parcelas) ==========
-  // Interpretamos o "amount" como valor de CADA parcela.
-  // Criamos N lançamentos, um por mês, com título "X (1/3)", "X (2/3)", etc.
   const [yearStr, monthStr, dayStr] = date.split("-");
   const baseYear = Number(yearStr);
   const baseMonthIndex = Number(monthStr) - 1; // Date: 0-11
@@ -278,8 +281,6 @@ export async function addFinanceItem(formData: FormData) {
   }
 
   // Para lançamentos parcelados, NÃO criamos template de "Contas Fixas"
-  // para evitar confusão de duplicidade futura.
-
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
 }

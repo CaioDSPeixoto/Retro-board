@@ -207,6 +207,10 @@ export default function FinanceBoardsClient({
       return;
     }
 
+    // atualiza os membros no modal imediatamente
+    const updatedMembers = (board.memberIds || []).filter((id) => id !== memberId);
+    setMembersBoard({ ...board, memberIds: updatedMembers });
+
     setMembersLoading(false);
     router.refresh();
   };
@@ -260,7 +264,7 @@ export default function FinanceBoardsClient({
         </form>
       </div>
 
-      {/* APROVAÇÕES + CONVITES (já carregados, sem novo skeleton) */}
+      {/* APROVAÇÕES + CONVITES */}
       <FinanceInvitesPanel
         locale={locale}
         loading={invitesLoading}
@@ -289,11 +293,11 @@ export default function FinanceBoardsClient({
                 key={board.id}
                 className="relative border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition bg-white flex flex-col justify-between"
               >
-                {/* BOTÃO ENGRENAGEM – apenas para o DONO */}
+                {/* ENGRENAGEM – apenas dono */}
                 {isOwner && (
                   <button
                     type="button"
-                    className="absolute top-3 right-3 text-gray-400 hover:text-blue-600"
+                    className="absolute top-3 right-3 text-gray-500 hover:text-blue-600"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -304,12 +308,12 @@ export default function FinanceBoardsClient({
                   </button>
                 )}
 
-                {/* MENU DROPDOWN (só aparece se isOwner) */}
+                {/* MENU DROPDOWN (só dono) */}
                 {isOwner && menuBoardId === board.id && (
                   <div className="absolute z-20 top-9 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden">
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setMenuBoardId(null);
                         setRenameBoardState(board);
@@ -320,7 +324,7 @@ export default function FinanceBoardsClient({
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setMenuBoardId(null);
                         setMembersBoard(board);
@@ -331,7 +335,7 @@ export default function FinanceBoardsClient({
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600"
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
                       onClick={() => {
                         setMenuBoardId(null);
                         setDeleteBoardState(board);
