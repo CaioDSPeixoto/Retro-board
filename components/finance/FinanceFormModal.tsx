@@ -51,6 +51,13 @@ export default function FinanceFormModal({
 
   const [currentUserName, setCurrentUserName] = useState<string>("");
 
+  // ⚙️ Estados para fixa x parcelado
+  const [isFixedChecked, setIsFixedChecked] = useState<boolean>(initialItem?.isFixed ?? false);
+  const [isInstallmentEnabled, setIsInstallmentEnabled] = useState<boolean>(false);
+
+  // Bloqueio geral dos outros campos enquanto cria categoria
+  const formLocked = isPending || addingCategory || showNewCategoryForm;
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user?.displayName) setCurrentUserName(user.displayName.split(" ")[0]);
@@ -67,10 +74,19 @@ export default function FinanceFormModal({
     if (initialItem?.category) {
       setCategory(initialItem.category);
       setType(initialItem.type);
+      setIsFixedChecked(initialItem.isFixed ?? false);
     } else if (!initialCategories.includes(category)) {
       setCategory(initialCategories[0]);
     }
   }, [initialCategories, initialItem, isOpen]);
+
+  // Reseta estados de categoria nova e parcelamento ao abrir / trocar item
+  useEffect(() => {
+    setShowNewCategoryForm(false);
+    setNewCategory("");
+    setIsInstallmentEnabled(false);
+    setError(null);
+  }, [isOpen, initialItem]);
 
   // Foca no input quando o formulário de nova categoria abre
   useEffect(() => {
@@ -114,7 +130,10 @@ export default function FinanceFormModal({
           <h2 className="text-xl font-bold text-gray-800">
             {isEditMode ? t("editTransactionTitle") : t("newTransactionTitle")}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
             <FiX size={24} />
           </button>
         </div>
@@ -134,6 +153,10 @@ export default function FinanceFormModal({
             if (boardId) fd.set("boardId", boardId);
             if (currentUserName) fd.set("createdByName", currentUserName);
 
+            if (!isInstallmentEnabled) {
+              fd.delete("installments");
+            }
+
             const res = isEditMode ? await updateFinanceItem(fd) : await addFinanceItem(fd);
 
             if (res && "error" in res && res.error) {
@@ -152,19 +175,21 @@ export default function FinanceFormModal({
           <div className="flex bg-gray-100 p-1 rounded-xl">
             <button
               type="button"
+              disabled={formLocked}
               onClick={() => setType("income")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                 type === "income" ? "bg-white text-green-600 shadow-sm" : "text-gray-500"
-              }`}
+              } ${formLocked ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               {t("typeIncome")}
             </button>
             <button
               type="button"
+              disabled={formLocked}
               onClick={() => setType("expense")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                 type === "expense" ? "bg-white text-red-600 shadow-sm" : "text-gray-500"
-              }`}
+              } ${formLocked ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               {t("typeExpense")}
             </button>
@@ -179,7 +204,15 @@ export default function FinanceFormModal({
 
               <button
                 type="button"
-                onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
+                onClick={() => {
+                  if (showNewCategoryForm) {
+                    // cancelando -> limpa e destrava o form
+                    setShowNewCategoryForm(false);
+                    setNewCategory("");
+                  } else {
+                    setShowNewCategoryForm(true);
+                  }
+                }}
                 className={`text-xs font-bold flex items-center gap-1 transition-colors ${
                   showNewCategoryForm ? "text-red-500" : "text-blue-600 hover:text-blue-700"
                 }`}
@@ -201,7 +234,10 @@ export default function FinanceFormModal({
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none"
+                disabled={formLocked} // trava quando estiver no fluxo de nova categoria
+                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none ${
+                  formLocked ? "opacity-60 cursor-not-allowed" : ""
+                }`}
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                   backgroundRepeat: "no-repeat",
@@ -230,11 +266,12 @@ export default function FinanceFormModal({
                       handleAddCategory();
                     }
                   }}
+                  disabled={isPending}
                 />
                 <button
                   type="button"
                   onClick={handleAddCategory}
-                  disabled={!newCategory.trim() || addingCategory}
+                  disabled={!newCategory.trim() || addingCategory || isPending}
                   className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
                   {addingCategory ? (
@@ -257,7 +294,10 @@ export default function FinanceFormModal({
               required
               placeholder={t("descriptionPlaceholder")}
               defaultValue={initialItem?.title ?? ""}
-              className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+              disabled={formLocked}
+              className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
+                formLocked ? "opacity-60 cursor-not-allowed" : ""
+              }`}
             />
           </div>
 
@@ -274,7 +314,10 @@ export default function FinanceFormModal({
                 required
                 placeholder="0,00"
                 defaultValue={initialItem ? String(initialItem.amount) : ""}
-                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                disabled={formLocked}
+                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
+                  formLocked ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               />
             </div>
             <div className="flex-1">
@@ -288,25 +331,61 @@ export default function FinanceFormModal({
                 defaultValue={
                   initialItem ? initialItem.date : new Date().toISOString().split("T")[0]
                 }
-                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                disabled={formLocked}
+                className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
+                  formLocked ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               />
             </div>
           </div>
 
-          {/* Parcelamento (somente na criação) */}
+          {/* Parcelamento (discreto + bloqueio com fixa) - apenas na criação */}
           {!isEditMode && (
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                Número de parcelas
-              </label>
-              <input
-                name="installments"
-                type="number"
-                min={1}
-                max={60}
-                defaultValue={1}
-                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
-              />
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-1">
+                <input
+                  type="checkbox"
+                  id="installmentsEnabled"
+                  className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  checked={isInstallmentEnabled}
+                  disabled={formLocked || isFixedChecked}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsInstallmentEnabled(checked);
+                    if (checked) {
+                      // se parcelado = true, desmarca fixa
+                      setIsFixedChecked(false);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="installmentsEnabled"
+                  className={`text-sm font-medium cursor-pointer select-none ${
+                    formLocked || isFixedChecked ? "text-gray-400" : "text-gray-700"
+                  }`}
+                >
+                  Lançamento parcelado?
+                </label>
+              </div>
+
+              {isInstallmentEnabled && (
+                <div className="pl-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                    Número de parcelas
+                  </label>
+                  <input
+                    name="installments"
+                    type="number"
+                    min={1}
+                    max={60}
+                    defaultValue={1}
+                    disabled={formLocked}
+                    className={`w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 ${
+                      formLocked ? "opacity-60 cursor-not-allowed" : ""
+                    }`}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -318,28 +397,37 @@ export default function FinanceFormModal({
                 name="status"
                 value="paid"
                 id="paid"
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                disabled={formLocked}
+                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               />
-              <label htmlFor="paid" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+              <label
+                htmlFor="paid"
+                className={`text-sm font-medium cursor-pointer select-none ${
+                  formLocked ? "text-gray-400" : "text-gray-700"
+                }`}
+              >
                 {t("alreadyPaidLabel")}
               </label>
             </div>
           )}
 
-          {/* Fixa */}
+          {/* Fixa (bloqueada se parcelado estiver ativo) */}
           {showFixedOption && (
             <div className="flex items-center gap-3 p-1">
               <input
                 type="checkbox"
                 name="isFixed"
-                value="true"
                 id="isFixed"
-                defaultChecked={initialItem?.isFixed ?? false}
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                checked={isFixedChecked}
+                onChange={(e) => setIsFixedChecked(e.target.checked)}
+                disabled={formLocked || isInstallmentEnabled}
+                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               />
               <label
                 htmlFor="isFixed"
-                className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                className={`text-sm font-medium cursor-pointer select-none ${
+                  formLocked || isInstallmentEnabled ? "text-gray-400" : "text-gray-700"
+                }`}
               >
                 {t("fixedCheckboxLabel")}
               </label>
@@ -348,12 +436,12 @@ export default function FinanceFormModal({
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || showNewCategoryForm || addingCategory}
             className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${
               type === "income"
                 ? "bg-green-600 hover:bg-green-700 shadow-green-100"
                 : "bg-red-600 hover:bg-red-700 shadow-red-100"
-            } disabled:opacity-70`}
+            } disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             {isPending ? (
               <span className="flex items-center justify-center gap-2">

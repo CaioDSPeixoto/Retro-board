@@ -7,6 +7,7 @@ export default function ReleasesPage() {
   const t = useTranslations("Release");
 
   const releases = [
+    { version: "0.6.7", date: "08/01/2026", changes: ["REFACT: ajustes visuais/bloqueios/tratativas de seguranca"] },
     { version: "0.6.6", date: "02/01/2026", changes: ["REFACT: ajustes visuais"] },
     { version: "0.6.5", date: "02/01/2026", changes: ["FIX: correcao atras de correcao"] },
     { version: "0.6.4", date: "02/01/2026", changes: ["FIX: mais um commit de correcao"] },
