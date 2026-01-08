@@ -28,17 +28,20 @@ type Props = {
   locale: string;
   currentMonth: string;
   initialBoards: FinanceBoard[];
+  sessionUserId: string;
 };
 
 export default function FinanceBoardsClient({
   locale,
   currentMonth,
   initialBoards,
+  sessionUserId,
 }: Props) {
   const tBoards = useTranslations("FinanceBoards");
   const router = useRouter();
 
-  const [boards] = useState<FinanceBoard[]>(initialBoards);
+  const boards = initialBoards;
+
   const [newBoardName, setNewBoardName] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +118,6 @@ export default function FinanceBoardsClient({
     setRespondingId(null);
   };
 
-  // Enquanto ainda está carregando convites/aprovações, mantém o SKELETON
   if (invitesLoading) {
     return <FinanceBoardsLoading />;
   }
@@ -258,7 +260,7 @@ export default function FinanceBoardsClient({
         </form>
       </div>
 
-      {/* APROVAÇÕES + CONVITES (agora já vem carregados) */}
+      {/* APROVAÇÕES + CONVITES (já carregados, sem novo skeleton) */}
       <FinanceInvitesPanel
         locale={locale}
         loading={invitesLoading}
@@ -279,93 +281,97 @@ export default function FinanceBoardsClient({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {boards.map((board) => (
-            <div
-              key={board.id}
-              className="relative border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition bg-white flex flex-col justify-between"
-            >
-              {/* BOTÃO ENGRENAGEM (apenas dono: se quiser filtrar, aqui é o lugar) */}
-              {board.ownerId && (
-                <button
-                  type="button"
-                  className="absolute top-3 right-3 text-gray-300 hover:text-blue-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setMenuBoardId((prev) => (prev === board.id ? null : board.id));
-                  }}
-                >
-                  <FiSettings size={18} />
-                </button>
-              )}
+          {boards.map((board) => {
+            const isOwner = board.ownerId === sessionUserId;
 
-              {/* MENU DROPDOWN */}
-              {menuBoardId === board.id && (
-                <div className="absolute z-20 top-9 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden">
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50"
-                    onClick={() => {
-                      setMenuBoardId(null);
-                      setRenameBoardState(board);
-                      setRenameName(board.name);
-                    }}
-                  >
-                    Editar nome
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50"
-                    onClick={() => {
-                      setMenuBoardId(null);
-                      setMembersBoard(board);
-                      setMembersError(null);
-                    }}
-                  >
-                    Ver membros
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600"
-                    onClick={() => {
-                      setMenuBoardId(null);
-                      setDeleteBoardState(board);
-                      setDeleteNameConfirm("");
-                    }}
-                  >
-                    Excluir quadro
-                  </button>
-                </div>
-              )}
-
-              {/* LINK PARA O QUADRO */}
-              <Link
-                href={`/${locale}/tools/finance?boardId=${encodeURIComponent(
-                  board.id,
-                )}&month=${encodeURIComponent(currentMonth)}`}
-                className="block"
+            return (
+              <div
+                key={board.id}
+                className="relative border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition bg-white flex flex-col justify-between"
               >
-                <div>
-                  <h2 className="font-semibold text-lg text-gray-800 mb-1 truncate">
-                    {board.name}
-                  </h2>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {board.isPersonal ? tBoards("personalTag") : tBoards("sharedTag")}
-                  </p>
-                </div>
+                {/* BOTÃO ENGRENAGEM – apenas para o DONO */}
+                {isOwner && (
+                  <button
+                    type="button"
+                    className="absolute top-3 right-3 text-gray-400 hover:text-blue-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setMenuBoardId((prev) => (prev === board.id ? null : board.id));
+                    }}
+                  >
+                    <FiSettings size={18} />
+                  </button>
+                )}
 
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-gray-400">
-                    {board.memberIds?.length || 1}{" "}
-                    {membersLabel(board.memberIds?.length || 1)}
-                  </span>
-                  <span className="text-sm font-semibold text-blue-600">
-                    {tBoards("openBoard")} →
-                  </span>
-                </div>
-              </Link>
-            </div>
-          ))}
+                {/* MENU DROPDOWN (só aparece se isOwner) */}
+                {isOwner && menuBoardId === board.id && (
+                  <div className="absolute z-20 top-9 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden">
+                    <button
+                      type="button"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      onClick={() => {
+                        setMenuBoardId(null);
+                        setRenameBoardState(board);
+                        setRenameName(board.name);
+                      }}
+                    >
+                      Editar nome
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      onClick={() => {
+                        setMenuBoardId(null);
+                        setMembersBoard(board);
+                        setMembersError(null);
+                      }}
+                    >
+                      Ver membros
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600"
+                      onClick={() => {
+                        setMenuBoardId(null);
+                        setDeleteBoardState(board);
+                        setDeleteNameConfirm("");
+                      }}
+                    >
+                      Excluir quadro
+                    </button>
+                  </div>
+                )}
+
+                {/* LINK PARA O QUADRO */}
+                <Link
+                  href={`/${locale}/tools/finance?boardId=${encodeURIComponent(
+                    board.id,
+                  )}&month=${encodeURIComponent(currentMonth)}`}
+                  className="block"
+                >
+                  <div>
+                    <h2 className="font-semibold text-lg text-gray-800 mb-1 truncate">
+                      {board.name}
+                    </h2>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {board.isPersonal ? tBoards("personalTag") : tBoards("sharedTag")}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-gray-400">
+                      {board.memberIds?.length || 1}{" "}
+                      {membersLabel(board.memberIds?.length || 1)}
+                    </span>
+                    <span className="text-sm font-semibold text-blue-600">
+                      {tBoards("openBoard")} →
+                    </span>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -475,30 +481,35 @@ export default function FinanceBoardsClient({
             )}
 
             <div className="max-h-56 overflow-y-auto space-y-2 mb-4">
-              {(membersBoard.memberIds || []).map((memberId) => (
-                <div
-                  key={memberId}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{memberId}</p>
-                    {memberId === membersBoard.ownerId && (
-                      <p className="text-[11px] text-blue-600">Dono do quadro</p>
+              {(membersBoard.memberIds || []).map((memberId) => {
+                const isOwner = memberId === membersBoard.ownerId;
+                const canRemove = sessionUserId === membersBoard.ownerId && !isOwner;
+
+                return (
+                  <div
+                    key={memberId}
+                    className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm text-gray-800 truncate">{memberId}</p>
+                      {isOwner && (
+                        <p className="text-[11px] text-blue-600">Dono do quadro</p>
+                      )}
+                    </div>
+
+                    {canRemove && (
+                      <button
+                        type="button"
+                        disabled={membersLoading}
+                        onClick={() => handleRemoveMember(membersBoard, memberId)}
+                        className="px-3 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
+                      >
+                        Remover
+                      </button>
                     )}
                   </div>
-
-                  {memberId !== membersBoard.ownerId && (
-                    <button
-                      type="button"
-                      disabled={membersLoading}
-                      onClick={() => handleRemoveMember(membersBoard, memberId)}
-                      className="px-3 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex justify-end">

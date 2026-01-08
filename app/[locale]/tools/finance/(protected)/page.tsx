@@ -4,9 +4,10 @@ export const dynamic = "force-dynamic";
 import { format } from "date-fns";
 import FinanceClientPage from "./FinanceClientPage";
 import FinanceBoardsClient from "../FinanceBoardsClient";
-import { getFinanceItemsData, getCategoriesData, getBoardsData, getInvitesData } from "./data";
+import { getFinanceItemsData, getCategoriesData, getBoardsData } from "./data";
 import type { FinanceBoard } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
 export default async function FinancePage({
   searchParams,
@@ -33,9 +34,16 @@ export default async function FinancePage({
           locale={locale}
           currentMonth={currentMonth}
           initialBoards={boards}
+          sessionUserId={safeSessionUserId}
         />
       </div>
     );
+  }
+
+  // Se o boardId não existir na lista (não é membro ou foi deletado), redireciona
+  const currentBoard = boards.find((b) => b.id === boardId);
+  if (!currentBoard) {
+    redirect(`/${locale}/tools/finance`);
   }
 
   // VISUALIZAÇÃO DO QUADRO (com boardId)

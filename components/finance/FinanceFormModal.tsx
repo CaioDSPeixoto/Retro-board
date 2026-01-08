@@ -307,10 +307,6 @@ export default function FinanceFormModal({
                 defaultValue={1}
                 className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
               />
-              <p className="mt-1 text-[11px] text-gray-400 px-1">
-                Use 1 para lançamento normal. Ex: 3 parcelas cria 3 lançamentos mensais
-                (1/3, 2/3, 3/3).
-              </p>
             </div>
           )}
 
