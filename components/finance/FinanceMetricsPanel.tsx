@@ -18,78 +18,82 @@ export default function FinanceMetricsPanel({
   rangeFrom,
   rangeTo,
 }: Props) {
-  // Ignora lançamentos sintéticos (se houver)
   const baseItems = useMemo(
     () => items.filter((i) => !i.isSynthetic),
     [items],
   );
 
   const hasData = baseItems.length > 0;
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const metrics = useMemo(() => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let incomeCount = 0;
+    let expenseCount = 0;
+
+    let finishedIncomeTotal = 0;
+    let pendingIncomeTotal = 0;
+    let finishedExpenseTotal = 0;
+    let pendingExpenseTotal = 0;
+
+    let overdueIncomeCount = 0;
+    let overdueExpenseCount = 0;
+
+    for (const item of baseItems) {
+      const isPaid = item.status === "paid";
+      const isOverdue = !isPaid && item.date < todayStr;
+
+      if (item.type === "income") {
+        totalIncome += item.amount;
+        incomeCount++;
+        if (isPaid) finishedIncomeTotal += item.amount;
+        else pendingIncomeTotal += item.amount;
+        if (isOverdue) overdueIncomeCount++;
+      } else {
+        totalExpense += item.amount;
+        expenseCount++;
+        if (isPaid) finishedExpenseTotal += item.amount;
+        else pendingExpenseTotal += item.amount;
+        if (isOverdue) overdueExpenseCount++;
+      }
+    }
+
+    const balance = totalIncome - totalExpense;
+    const overdueCount = overdueIncomeCount + overdueExpenseCount;
+
+    return {
+      totalIncome,
+      totalExpense,
+      balance,
+      incomeCount,
+      expenseCount,
+      finishedIncomeTotal,
+      pendingIncomeTotal,
+      finishedExpenseTotal,
+      pendingExpenseTotal,
+      overdueIncomeCount,
+      overdueExpenseCount,
+      overdueCount,
+    };
+  }, [baseItems, todayStr]);
 
   const {
     totalIncome,
     totalExpense,
     balance,
-    incomeFinished,
-    incomePending,
-    expenseFinished,
-    expensePending,
-  } = useMemo(() => {
-    let income = 0;
-    let expense = 0;
+    incomeCount,
+    expenseCount,
+    finishedIncomeTotal,
+    pendingIncomeTotal,
+    finishedExpenseTotal,
+    pendingExpenseTotal,
+    overdueIncomeCount,
+    overdueExpenseCount,
+    overdueCount,
+  } = metrics;
 
-    let incomeFinished = 0;
-    let incomePending = 0;
-
-    let expenseFinished = 0;
-    let expensePending = 0;
-
-    for (const item of baseItems) {
-      const amount = item.amount || 0;
-      const paidAmount = item.paidAmount || 0;
-      const openAmount = Math.max(amount - paidAmount, 0);
-      const isPaid = item.status === "paid";
-      const isPartial = item.status === "partial";
-      const isPendingOnly = item.status === "pending";
-
-      if (item.type === "income") {
-        // TOTAL = pagas + pendentes
-        income += amount;
-
-        if (isPaid) {
-          incomeFinished += amount;
-        } else if (isPartial) {
-          incomeFinished += paidAmount;
-          incomePending += openAmount;
-        } else if (isPendingOnly) {
-          incomePending += amount;
-        }
-      } else if (item.type === "expense") {
-        expense += amount;
-
-        if (isPaid) {
-          expenseFinished += amount;
-        } else if (isPartial) {
-          expenseFinished += paidAmount;
-          expensePending += openAmount;
-        } else if (isPendingOnly) {
-          expensePending += amount;
-        }
-      }
-    }
-
-    return {
-      totalIncome: income,
-      totalExpense: expense,
-      balance: income - expense,
-      incomeFinished,
-      incomePending,
-      expenseFinished,
-      expensePending,
-    };
-  }, [baseItems]);
-
-  // Despesas por categoria (TOTAL, independente de pago/pendente)
+  // Despesas por categoria (continua igual, usando totalExpense)
   const expenseByCategory = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
 
@@ -103,7 +107,7 @@ export default function FinanceMetricsPanel({
       map.set(key, prev);
     }
 
-    const totalExpenses = totalExpense || 1; // evita divisão por zero
+    const totalExpenses = totalExpense || 1;
 
     const result = Array.from(map.entries()).map(([category, info]) => ({
       category,
@@ -117,7 +121,7 @@ export default function FinanceMetricsPanel({
     return result;
   }, [baseItems, totalExpense]);
 
-  // Receitas por categoria (TOTAL)
+  // Receitas por categoria
   const incomeByCategory = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
 
@@ -145,11 +149,14 @@ export default function FinanceMetricsPanel({
     return result;
   }, [baseItems, totalIncome]);
 
-  // Dia mais ativo
+  // Dia mais ativo (mantém lógica anterior)
   const mostActiveDayData = useMemo(() => {
     if (baseItems.length === 0) return null;
 
-    const dailyMap = new Map<string, { count: number; totalAbs: number }>();
+    const dailyMap = new Map<
+      string,
+      { count: number; totalAbs: number }
+    >();
 
     for (const item of baseItems) {
       const date = item.date;
@@ -177,9 +184,6 @@ export default function FinanceMetricsPanel({
   }, [baseItems]);
 
   const totalTransactions = baseItems.length;
-  const expenseCount = baseItems.filter((i) => i.type === "expense").length;
-  const incomeCount = baseItems.filter((i) => i.type === "income").length;
-
   const avgExpense = expenseCount ? totalExpense / expenseCount : 0;
   const avgIncome = incomeCount ? totalIncome / incomeCount : 0;
 
@@ -214,7 +218,7 @@ export default function FinanceMetricsPanel({
 
   return (
     <div className="space-y-4">
-      {/* Resumo geral (TOTAL + FINALIZADOS + PENDENTES) */}
+      {/* Resumo geral */}
       <div className="bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
           Resumo de {periodLabel}
@@ -224,73 +228,86 @@ export default function FinanceMetricsPanel({
           <div className="flex-1">
             <p className="text-xs text-gray-500 mb-1">Saldo do período</p>
             <p
-              className={`text-2xl font-extrabold ${balance >= 0 ? "text-green-600" : "text-red-600"
-                }`}
+              className={`text-2xl font-extrabold ${
+                balance >= 0 ? "text-green-600" : "text-red-600"
+              }`}
             >
               {currency(balance)}
             </p>
           </div>
 
           <div className="flex-1 flex gap-3">
-            {/* RECEITAS */}
+            {/* Receitas */}
             <div className="flex-1 bg-green-50 border border-green-100 rounded-xl p-3">
               <p className="text-[11px] text-green-700 font-semibold mb-1">
                 Receitas
               </p>
-
-              <p className="text-[11px] text-gray-500">Total (pagas + pendentes)</p>
-              <p className="text-sm font-bold text-green-700">
+              <p className="text-[11px] text-gray-500">
+                Total (pagas + pendentes)
+              </p>
+              <p className="text-sm font-bold text-green-700 mt-1">
                 {currency(totalIncome)}
               </p>
-
-              <div className="mt-2 space-y-1 text-[11px] text-gray-600">
-                <p>
-                  <span className="text-gray-500">Apenas finalizadas: </span>
-                  <span className="font-semibold text-emerald-700">
-                    {currency(incomeFinished)}
-                  </span>
-                </p>
-                <p>
-                  <span className="text-gray-500">Apenas pendentes: </span>
-                  <span className="font-semibold text-amber-700">
-                    {currency(incomePending)}
-                  </span>
-                </p>
-              </div>
-
-              <p className="text-[11px] text-green-600 mt-1">
+              <p className="text-[11px] text-green-700 mt-1">
+                Apenas finalizadas:{" "}
+                <span className="font-semibold">
+                  {currency(finishedIncomeTotal)}
+                </span>
+              </p>
+              <p className="text-[11px] text-green-700">
+                Apenas pendentes:{" "}
+                <span className="font-semibold">
+                  {currency(pendingIncomeTotal)}
+                </span>
+              </p>
+              <p className="text-[11px] text-green-700 mt-1">
                 {incomeCount} lançamento(s)
+                {overdueIncomeCount > 0 && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <span className="font-semibold">
+                      {overdueIncomeCount} em atraso
+                    </span>
+                  </>
+                )}
               </p>
             </div>
 
-            {/* DESPESAS */}
+            {/* Despesas */}
             <div className="flex-1 bg-red-50 border border-red-100 rounded-xl p-3">
               <p className="text-[11px] text-red-700 font-semibold mb-1">
                 Despesas
               </p>
-
-              <p className="text-[11px] text-gray-500">Total (pagas + pendentes)</p>
-              <p className="text-sm font-bold text-red-700">
+              <p className="text-[11px] text-gray-500">
+                Total (pagas + pendentes)
+              </p>
+              <p className="text-sm font-bold text-red-700 mt-1">
                 {currency(totalExpense)}
               </p>
-
-              <div className="mt-2 space-y-1 text-[11px] text-gray-600">
-                <p>
-                  <span className="text-gray-500">Apenas finalizadas: </span>
-                  <span className="font-semibold text-emerald-700">
-                    {currency(expenseFinished)}
-                  </span>
-                </p>
-                <p>
-                  <span className="text-gray-500">Apenas pendentes: </span>
-                  <span className="font-semibold text-amber-700">
-                    {currency(expensePending)}
-                  </span>
-                </p>
-              </div>
-
-              <p className="text-[11px] text-red-600 mt-1">
+              <p className="text-[11px] text-red-700 mt-1">
+                Apenas finalizadas:{" "}
+                <span className="font-semibold">
+                  {currency(finishedExpenseTotal)}
+                </span>
+              </p>
+              <p className="text-[11px] text-red-700">
+                Apenas pendentes:{" "}
+                <span className="font-semibold">
+                  {currency(pendingExpenseTotal)}
+                </span>
+              </p>
+              <p className="text-[11px] text-red-700 mt-1">
                 {expenseCount} lançamento(s)
+                {overdueExpenseCount > 0 && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <span className="font-semibold">
+                      {overdueExpenseCount} em atraso
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -400,7 +417,7 @@ export default function FinanceMetricsPanel({
           )}
         </div>
 
-        {/* Outros indicadores */}
+        {/* Indicadores rápidos */}
         <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Indicadores rápidos
@@ -423,6 +440,13 @@ export default function FinanceMetricsPanel({
               <span>Ticket médio das receitas</span>
               <span className="font-semibold">
                 {incomeCount ? currency(avgIncome) : "—"}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Lançamentos em atraso</span>
+              <span className="font-semibold">
+                {overdueCount > 0 ? overdueCount : 0}
               </span>
             </div>
           </div>

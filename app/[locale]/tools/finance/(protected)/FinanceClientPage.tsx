@@ -29,7 +29,7 @@ type Props = {
   locale: string;
   boards: FinanceBoard[];
   currentBoardId?: string | null;
-  sessionUserId: string; // vem do server (cookie)
+  sessionUserId: string;
 };
 
 export default function FinanceClientPage({
@@ -56,7 +56,10 @@ export default function FinanceClientPage({
   const [shareOpen, setShareOpen] = useState(false);
 
   const [showMetrics, setShowMetrics] = useState(false);
-  const [overdueOpen, setOverdueOpen] = useState(false);
+
+  // range opcional (quando vier from/to na URL)
+  const rangeFrom = searchParams?.get("from") || null;
+  const rangeTo = searchParams?.get("to") || null;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -79,6 +82,8 @@ export default function FinanceClientPage({
   const isOwner = !!currentBoard && currentBoard.ownerId === sessionUserId;
 
   const currentDate = parseISO(currentMonth + "-01");
+  const isShowingRealCurrentMonth =
+    currentMonth === format(new Date(), "yyyy-MM");
 
   const handlePrevMonth = () => {
     const newMonth = format(subMonths(currentDate, 1), "yyyy-MM");
@@ -86,7 +91,11 @@ export default function FinanceClientPage({
     params.set("month", newMonth);
     if (currentBoardId) params.set("boardId", currentBoardId);
     else params.delete("boardId");
+    // ao navegar de mês, volta para a LISTA
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
   const handleNextMonth = () => {
@@ -95,7 +104,22 @@ export default function FinanceClientPage({
     params.set("month", newMonth);
     if (currentBoardId) params.set("boardId", currentBoardId);
     else params.delete("boardId");
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
+  };
+
+  const handleGoToCurrentMonth = () => {
+    const todayMonth = format(new Date(), "yyyy-MM");
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("month", todayMonth);
+    if (currentBoardId) params.set("boardId", currentBoardId);
+    else params.delete("boardId");
+    params.delete("from");
+    params.delete("to");
+    router.push(`/${locale}/tools/finance?${params.toString()}`);
+    setShowMetrics(false);
   };
 
   const handleBoardChange = (boardId: string) => {
@@ -103,8 +127,10 @@ export default function FinanceClientPage({
     if (boardId) params.set("boardId", boardId);
     else params.delete("boardId");
     params.set("month", currentMonth);
+    params.delete("from");
+    params.delete("to");
     router.push(`/${locale}/tools/finance?${params.toString()}`);
-    setShowMetrics(false); // volta pra lista ao trocar de quadro
+    setShowMetrics(false);
   };
 
   const totals = useMemo(() => {
@@ -136,10 +162,9 @@ export default function FinanceClientPage({
         (item) =>
           !item.isSynthetic &&
           item.date < todayStr &&
-          item.status !== "paid" &&
-          item.date.startsWith(currentMonth),
+          item.status !== "paid",
       ),
-    [initialItems, todayStr, currentMonth],
+    [initialItems, todayStr],
   );
 
   const overdueTotal = useMemo(
@@ -184,6 +209,12 @@ export default function FinanceClientPage({
     setInviteLoading(false);
   };
 
+  const currency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+
   return (
     <div className="pb-24">
       {/* SELECT DE QUADRO */}
@@ -211,7 +242,6 @@ export default function FinanceClientPage({
       <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
-        {/* mantém valores usados sem aparecer */}
         <span className="sr-only">
           {userName} {boardName}
         </span>
@@ -227,74 +257,70 @@ export default function FinanceClientPage({
               <FiChevronLeft />
             </button>
 
-            <div className="flex-1 text-center">
+            <div className="flex-1 flex items-center justify-center gap-2">
               <span className="inline-flex items-center justify-center text-sm font-semibold capitalize tracking-wide">
                 {format(currentDate, "MMMM yyyy", { locale: ptBR })}
               </span>
             </div>
 
-            <button
-              onClick={handleNextMonth}
-              aria-label="Próximo mês"
-              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
-            >
-              <FiChevronRight />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleNextMonth}
+                aria-label="Próximo mês"
+                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 transition flex items-center justify-center"
+              >
+                <FiChevronRight />
+              </button>
+
+              {!isShowingRealCurrentMonth && (
+                <button
+                  type="button"
+                  onClick={handleGoToCurrentMonth}
+                  className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide"
+                >
+                  Hoje
+                </button>
+              )}
+              
+            </div>
           </div>
         </div>
 
         <div className="text-center mb-4">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
-          <h2 className="text-4xl font-extrabold">
-            {new Intl.NumberFormat("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            }).format(balance)}
-          </h2>
+          <h2 className="text-4xl font-extrabold">{currency(balance)}</h2>
         </div>
 
         <div className="flex gap-4 mt-6">
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("entriesLabel")}
+            </p>
             <p className="text-lg font-bold text-green-300">
-              +{" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.incomes)}
+              + {currency(totals.incomes)}
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("entriesForecastLabel")}
             </p>
             <p className="text-lg font-bold text-green-300">
-              +{" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.incomesForecast)}
+              + {currency(totals.incomesForecast)}
             </p>
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
+            <p className="text-xs text-blue-100 mb-1">
+              {t("exitsLabel")}
+            </p>
             <p className="text-lg font-bold text-red-300">
-              -{" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.expenses)}
+              - {currency(totals.expenses)}
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("exitsForecastLabel")}
             </p>
             <p className="text-lg font-bold text-red-300">
-              -{" "}
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(totals.expensesForecast)}
+              - {currency(totals.expensesForecast)}
             </p>
           </div>
         </div>
@@ -383,7 +409,7 @@ export default function FinanceClientPage({
         <div className="flex justify-between items-center mb-4 px-2">
           <div>
             <h3 className="font-bold text-gray-700">
-              {showMetrics ? "Métricas do mês" : t("transactionsTitle")}
+              {showMetrics ? "Métricas do período" : t("transactionsTitle")}
             </h3>
             {!showMetrics && (
               <span className="text-xs text-gray-400">
@@ -397,8 +423,8 @@ export default function FinanceClientPage({
               type="button"
               onClick={() => setShowMetrics(false)}
               className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500"
                 }`}
             >
               Lista
@@ -407,8 +433,8 @@ export default function FinanceClientPage({
               type="button"
               onClick={() => setShowMetrics(true)}
               className={`px-3 py-1 rounded-lg transition-all ${showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500"
                 }`}
             >
               Métricas
@@ -416,80 +442,62 @@ export default function FinanceClientPage({
           </div>
         </div>
 
-                {/* CONTAS EM ATRASO (colapse, apenas na aba Lista) */}
+        {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
         {!showMetrics && overdueItems.length > 0 && (
           <div className="mb-4">
-            <div className="bg-amber-50 border border-amber-100 rounded-2xl shadow-sm">
-              {/* Cabeçalho clicável */}
-              <button
-                type="button"
-                onClick={() => setOverdueOpen((prev) => !prev)}
-                className="w-full px-3 py-2 flex items-center justify-between gap-3"
-              >
-                <div className="min-w-0 text-left">
-                  <p className="text-xs text-amber-800 font-semibold">
+            <details className="bg-amber-50 border border-amber-100 rounded-2xl p-3 group">
+              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
+                <div>
+                  <p className="text-xs text-amber-700 font-semibold">
                     {t("overdueTitle")}
                   </p>
-                  <p className="text-[11px] text-amber-700">
+                  <p className="text-[11px] text-amber-600">
                     {t("overdueSubtitle", { count: overdueItems.length })}
                   </p>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-amber-800 whitespace-nowrap">
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(overdueTotal)}
+                <div className="text-right">
+                  <p className="text-sm font-bold text-amber-800">
+                    {currency(overdueTotal)}
                   </p>
-                  <FiChevronDown
-                    className={`text-amber-800 transition-transform ${
-                      overdueOpen ? "rotate-180" : ""
-                    }`}
-                    size={16}
-                  />
+                  <p className="text-[10px] text-amber-700 mt-0.5">
+                    {t("overdueSummaryLabel") ?? "Saldo em atraso"}
+                  </p>
                 </div>
-              </button>
+              </summary>
 
-              {/* Lista expandida */}
-              {overdueOpen && (
-                <div className="border-t border-amber-100 px-3 pb-3 pt-2 max-h-52 overflow-y-auto space-y-2">
-                  {overdueItems.map((item) => {
-                    const openAmount = item.amount - (item.paidAmount || 0);
+              <div className="mt-3 max-h-52 overflow-y-auto space-y-2">
+                {overdueItems.map((item) => {
+                  const openAmount = item.amount - (item.paidAmount || 0);
 
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">
-                            {item.title}
-                          </p>
-                          <p className="text-[11px] text-gray-500">
-                            {format(new Date(item.date), "dd 'de' MMM, yyyy", {
-                              locale: ptBR,
-                            })}
-                          </p>
-                        </div>
-
-                        <div className="text-right">
-                          <p className="text-[11px] text-amber-700 font-semibold">
-                            {new Intl.NumberFormat("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            }).format(Math.max(openAmount, 0))}
-                          </p>
-                          <p className="text-[10px] text-gray-400">
-                            {t("openAmountLabel")}
-                          </p>
-                        </div>
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">
+                          {item.title}
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          {format(new Date(item.date), "dd 'de' MMM, yyyy", {
+                            locale: ptBR,
+                          })}
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+
+                      <div className="text-right">
+                        <p className="text-[11px] text-amber-700 font-semibold">
+                          {currency(Math.max(openAmount, 0))}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {t("openAmountLabel")}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
           </div>
         )}
 
@@ -497,6 +505,8 @@ export default function FinanceClientPage({
           <FinanceMetricsPanel
             items={initialItems}
             currentMonth={currentMonth}
+            rangeFrom={rangeFrom}
+            rangeTo={rangeTo}
           />
         ) : initialItems.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -522,14 +532,16 @@ export default function FinanceClientPage({
         )}
       </div>
 
-      {/* BOTÃO FLOAT */}
-      <button
-        onClick={handleOpenCreateModal}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
-        aria-label={t("addNow")}
-      >
-        <FiPlus size={28} />
-      </button>
+      {/* BOTÃO FLOAT – só na LISTA */}
+      {!showMetrics && (
+        <button
+          onClick={handleOpenCreateModal}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
+          aria-label={t("addNow")}
+        >
+          <FiPlus size={28} />
+        </button>
+      )}
 
       {/* MODAL */}
       <FinanceFormModal
