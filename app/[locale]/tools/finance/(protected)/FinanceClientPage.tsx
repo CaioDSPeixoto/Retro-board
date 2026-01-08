@@ -1,4 +1,3 @@
-// app/[locale]/tools/finance/(protected)/FinanceClientPage.tsx
 "use client";
 
 import type { FinanceBoard, FinanceItem } from "@/types/finance";
@@ -17,7 +16,8 @@ import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 
 import { sendInviteByEmail } from "./invite-actions";
@@ -31,6 +31,18 @@ type Props = {
   currentBoardId?: string | null;
   sessionUserId: string;
 };
+
+function getMonthRange(month: string): { start: string; end: string } {
+  const [yearStr, monthStr] = month.split("-");
+  const year = parseInt(yearStr, 10);
+  const m = parseInt(monthStr, 10);
+
+  const start = `${yearStr}-${monthStr}-01`;
+  const lastDay = new Date(year, m, 0).getDate();
+  const end = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
+
+  return { start, end };
+}
 
 export default function FinanceClientPage({
   initialItems,
@@ -48,6 +60,7 @@ export default function FinanceClientPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState<string>(t("defaultUserName"));
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
+  const [items, setItems] = useState<FinanceItem[]>(initialItems);
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -69,6 +82,75 @@ export default function FinanceClientPage({
     });
     return () => unsubscribe();
   }, [t]);
+
+  useEffect(() => {
+    if (rangeFrom || rangeTo) {
+      setItems(initialItems);
+      return;
+    }
+
+    const { start, end } = getMonthRange(currentMonth);
+
+    let q = query(
+      collection(db, "finance_items"),
+      where("date", ">=", start),
+      where("date", "<=", end),
+    );
+
+    if (currentBoardId) {
+      q = query(q, where("boardId", "==", currentBoardId));
+    } else {
+      q = query(q, where("userId", "==", sessionUserId));
+    }
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const docs: FinanceItem[] = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data() as any;
+        docs.push({
+          id: docSnap.id,
+          userId: data.userId,
+          boardId: data.boardId,
+          title: data.title,
+          amount: data.amount,
+          date: data.date,
+          type: data.type,
+          status: data.status,
+          category: data.category,
+          createdAt: data.createdAt,
+          isFixed: data.isFixed,
+          isSynthetic: data.isSynthetic,
+          createdBy: data.createdBy,
+          createdByName: data.createdByName,
+          paidAmount: data.paidAmount,
+          openAmount: data.openAmount,
+          carriedFromMonth: data.carriedFromMonth,
+          carriedFromItemId: data.carriedFromItemId,
+          fixedTemplateId: data.fixedTemplateId,
+          installmentGroupId: data.installmentGroupId,
+          installmentIndex: data.installmentIndex,
+          installmentTotal: data.installmentTotal,
+          originalAmount: data.originalAmount,
+        });
+      });
+
+      docs.sort((a, b) => {
+        if (a.date === b.date) return a.title.localeCompare(b.title);
+        return a.date.localeCompare(b.date);
+      });
+
+      setItems(docs);
+    });
+
+    return () => unsub();
+  }, [
+    currentMonth,
+    currentBoardId,
+    sessionUserId,
+    rangeFrom,
+    rangeTo,
+    initialItems,
+  ]);
 
   const currentBoard = useMemo(
     () => boards.find((b) => b.id === currentBoardId),
@@ -134,7 +216,7 @@ export default function FinanceClientPage({
   };
 
   const totals = useMemo(() => {
-    return initialItems.reduce(
+    return items.reduce(
       (acc, item) => {
         const isPaid = item.status === "paid";
 
@@ -150,7 +232,7 @@ export default function FinanceClientPage({
       },
       { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 },
     );
-  }, [initialItems]);
+  }, [items]);
 
   const balance = totals.incomes - totals.expenses;
 
@@ -158,13 +240,13 @@ export default function FinanceClientPage({
 
   const overdueItems = useMemo(
     () =>
-      initialItems.filter(
+      items.filter(
         (item) =>
           !item.isSynthetic &&
           item.date < todayStr &&
           item.status !== "paid",
       ),
-    [initialItems, todayStr],
+    [items, todayStr],
   );
 
   const overdueTotal = useMemo(
@@ -413,7 +495,7 @@ export default function FinanceClientPage({
             </h3>
             {!showMetrics && (
               <span className="text-xs text-gray-400">
-                {t("transactionsCount", { count: initialItems.length })}
+                {t("transactionsCount", { count: items.length })}
               </span>
             )}
           </div>
@@ -505,12 +587,12 @@ export default function FinanceClientPage({
 
         {showMetrics ? (
           <FinanceMetricsPanel
-            items={initialItems}
+            items={items}
             currentMonth={currentMonth}
             rangeFrom={rangeFrom}
             rangeTo={rangeTo}
           />
-        ) : initialItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
             <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
             <button
@@ -522,7 +604,7 @@ export default function FinanceClientPage({
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {initialItems.map((item) => (
+            {items.map((item) => (
               <FinanceItemCard
                 key={item.id}
                 item={item}
