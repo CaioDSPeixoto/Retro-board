@@ -124,6 +124,11 @@
     "workload848": "Carga diária: 8h48"
   },
   "Finance": {
+    "modalReceiveTitle": "Registrar recebimento",
+  "modalPayTitle": "Registrar pagamento",
+  "confirmReceive": "Confirmar recebimento",
+  "confirmPay": "Confirmar pagamento",
+  "cancel": "Cancelar",
     "backToBoard": "Voltar para o quadro",
     "hello": "Olá",
     "title": "Financeiro",

@@ -38,7 +38,8 @@ export async function createCategory(name: string, locale: string) {
   const trimmed = name.trim();
   if (!trimmed) return { error: "Nome de categoria inválido" };
 
-  if (BUILTIN_CATEGORIES.includes(trimmed)) return { error: "Essa categoria já existe" };
+  if (BUILTIN_CATEGORIES.includes(trimmed))
+    return { error: "Essa categoria já existe" };
 
   await adminDb.collection("finance_categories").add({
     userId: sessionUser,
@@ -71,7 +72,11 @@ export async function createFinanceBoard(name: string, locale: string) {
   return { success: true, boardId: ref.id };
 }
 
-export async function renameFinanceBoard(boardId: string, newName: string, locale: string) {
+export async function renameFinanceBoard(
+  boardId: string,
+  newName: string,
+  locale: string,
+) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
@@ -83,7 +88,8 @@ export async function renameFinanceBoard(boardId: string, newName: string, local
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
-  if (board.ownerId !== sessionUser) return { error: "Somente o dono pode renomear" };
+  if (board.ownerId !== sessionUser)
+    return { error: "Somente o dono pode renomear" };
 
   await ref.update({ name: trimmed });
 
@@ -91,7 +97,11 @@ export async function renameFinanceBoard(boardId: string, newName: string, local
   return { success: true };
 }
 
-export async function deleteFinanceBoard(boardId: string, confirmName: string, locale: string) {
+export async function deleteFinanceBoard(
+  boardId: string,
+  confirmName: string,
+  locale: string,
+) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
@@ -100,7 +110,8 @@ export async function deleteFinanceBoard(boardId: string, confirmName: string, l
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
-  if (board.ownerId !== sessionUser) return { error: "Somente o dono pode excluir" };
+  if (board.ownerId !== sessionUser)
+    return { error: "Somente o dono pode excluir" };
 
   if (board.name.trim().toLowerCase() !== confirmName.trim().toLowerCase()) {
     return { error: "Nome do quadro não confere" };
@@ -122,7 +133,11 @@ export async function deleteFinanceBoard(boardId: string, confirmName: string, l
   return { success: true };
 }
 
-export async function removeMemberFromBoard(boardId: string, memberId: string, locale: string) {
+export async function removeMemberFromBoard(
+  boardId: string,
+  memberId: string,
+  locale: string,
+) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
@@ -131,7 +146,8 @@ export async function removeMemberFromBoard(boardId: string, memberId: string, l
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
-  if (board.ownerId !== sessionUser) return { error: "Somente o dono pode remover membros" };
+  if (board.ownerId !== sessionUser)
+    return { error: "Somente o dono pode remover membros" };
 
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];
   const newMembers = members.filter((id) => id !== memberId);
@@ -150,7 +166,8 @@ export async function removeMemberFromBoard(boardId: string, memberId: string, l
 /**
  * Cria 1 ou várias transações.
  * - Sem parcelamento (parcelas=1): mantém o comportamento atual.
- * - Com parcelamento (parcelas>1): cria N lançamentos, um em cada mês.
+ * - Com parcelamento (parcelas>1): cria N lançamentos, um em cada mês,
+ *   com o VALOR DIVIDIDO entre as parcelas e metadados de grupo.
  */
 export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
@@ -188,7 +205,8 @@ export async function addFinanceItem(formData: FormData) {
   if (boardIdRaw) {
     const board = await getBoard(boardIdRaw);
     if (!board) return { error: "Quadro não encontrado" };
-    if (!isMember(board, sessionUser)) return { error: "Sem permissão para lançar neste quadro" };
+    if (!isMember(board, sessionUser))
+      return { error: "Sem permissão para lançar neste quadro" };
     boardId = boardIdRaw;
   }
 
@@ -255,6 +273,14 @@ export async function addFinanceItem(formData: FormData) {
   const baseMonthIndex = Number(monthStr) - 1; // Date: 0-11
   const baseDay = Number(dayStr) || 1;
 
+  // distribui o valor entre as parcelas em centavos (para não “perder” 1 centavo)
+  const totalCents = Math.round(amount * 100);
+  const baseCents = Math.floor(totalCents / installments);
+  const remainder = totalCents - baseCents * installments;
+
+  // group id para todas as parcelas
+  const installmentGroupId = adminDb.collection("finance_items").doc().id;
+
   for (let i = 0; i < installments; i++) {
     const d = new Date(baseYear, baseMonthIndex + i, baseDay);
     const y = d.getFullYear();
@@ -262,19 +288,27 @@ export async function addFinanceItem(formData: FormData) {
     const day = String(d.getDate()).padStart(2, "0");
     const dateStr = `${y}-${m}-${day}`;
 
+    // parcela i recebe baseCents + 1 centavo enquanto tiver “resto”
+    const thisCents = baseCents + (i < remainder ? 1 : 0);
+    const installmentAmount = thisCents / 100;
+
     const isFirst = i === 0;
     const status: FinanceStatus = isFirst ? baseStatus : "pending";
-    const paidAmount = status === "paid" ? amount : 0;
+    const paidAmount = status === "paid" ? installmentAmount : 0;
 
     const titleWithInstallment = `${title} (${i + 1}/${installments})`;
 
     const item: Omit<FinanceItem, "id"> = {
       ...baseCommon,
       title: titleWithInstallment,
-      amount,
+      amount: installmentAmount,
       date: dateStr,
       status,
       paidAmount,
+      installmentGroupId,
+      installmentIndex: i + 1,
+      installmentTotal: installments,
+      originalAmount: amount,
     };
 
     await adminDb.collection("finance_items").add(item);
@@ -301,7 +335,14 @@ export async function updateFinanceItem(formData: FormData) {
   const amount = parseFloat(amountStr);
   const paidAmountRaw = paidAmountStr ? parseFloat(paidAmountStr) : 0;
 
-  if (!id || !title.trim() || Number.isNaN(amount) || !date || !category.trim() || !type) {
+  if (
+    !id ||
+    !title.trim() ||
+    Number.isNaN(amount) ||
+    !date ||
+    !category.trim() ||
+    !type
+  ) {
     return { error: "Dados incompletos" };
   }
 
@@ -349,7 +390,11 @@ export async function deleteFinanceItem(id: string, locale: string) {
   return { success: true };
 }
 
-export async function toggleStatus(id: string, currentStatus: FinanceStatus, locale: string) {
+export async function toggleStatus(
+  id: string,
+  currentStatus: FinanceStatus,
+  locale: string,
+) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
@@ -362,7 +407,8 @@ export async function toggleStatus(id: string, currentStatus: FinanceStatus, loc
   if (!allowed) return { error: "Unauthorized" };
 
   const amount = existing.amount;
-  const newStatus: FinanceStatus = currentStatus === "paid" ? "pending" : "paid";
+  const newStatus: FinanceStatus =
+    currentStatus === "paid" ? "pending" : "paid";
   const paidAmount = newStatus === "paid" ? amount : 0;
 
   await ref.update({ status: newStatus, paidAmount });
@@ -370,3 +416,132 @@ export async function toggleStatus(id: string, currentStatus: FinanceStatus, loc
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
 }
+
+export async function applyPaymentToFinanceItem(
+  id: string,
+  mode: "full" | "partial",
+  partialAmountInput: string | null,
+  locale: string,
+) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+
+  const ref = adminDb.collection("finance_items").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Item não encontrado" };
+
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: "Unauthorized" };
+
+  const totalAmount = existing.amount;
+  if (typeof totalAmount !== "number" || Number.isNaN(totalAmount)) {
+    return { error: "Valor inválido no lançamento" };
+  }
+
+  // 🔹 Caso 1: marcar como totalmente pago / recebido
+  if (mode === "full" || !partialAmountInput) {
+    await ref.update({
+      status: "paid",
+      paidAmount: totalAmount,
+      originalAmount: existing.originalAmount ?? totalAmount,
+    });
+
+    revalidatePath(`/${locale}/tools/finance`);
+    return { success: true };
+  }
+
+  // 🔹 Caso 2: pagamento parcial
+  const parsed = parseFloat(
+    partialAmountInput.replace(".", "").replace(",", "."),
+  );
+
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    return { error: "Valor parcial inválido" };
+  }
+
+  // Se o valor informado for >= total, trata como total
+  if (parsed >= totalAmount) {
+    await ref.update({
+      status: "paid",
+      paidAmount: totalAmount,
+      originalAmount: existing.originalAmount ?? totalAmount,
+    });
+
+    revalidatePath(`/${locale}/tools/finance`);
+    return { success: true };
+  }
+
+  const remaining = Number((totalAmount - parsed).toFixed(2));
+  if (remaining <= 0) {
+    await ref.update({
+      status: "paid",
+      paidAmount: totalAmount,
+      originalAmount: existing.originalAmount ?? totalAmount,
+    });
+
+    revalidatePath(`/${locale}/tools/finance`);
+    return { success: true };
+  }
+
+  await ref.update({
+    status: "paid",
+    amount: parsed,
+    paidAmount: parsed,
+    originalAmount: existing.originalAmount ?? totalAmount,
+  });
+
+  const [yStr, mStr, dStr] = (existing.date || "").split("-");
+  const year = Number(yStr);
+  const month = Number(mStr) - 1; // 0–11
+  const day = Number(dStr) || 1;
+
+  const baseDate = new Date(year, month, day);
+  const nextDate = new Date(baseDate);
+  nextDate.setMonth(nextDate.getMonth() + 1);
+
+  const ny = nextDate.getFullYear();
+  const nm = String(nextDate.getMonth() + 1).padStart(2, "0");
+  const nd = String(nextDate.getDate()).padStart(2, "0");
+  const newDateStr = `${ny}-${nm}-${nd}`;
+
+  const newItemData: any = {
+    userId: existing.userId,
+    title: existing.title,
+    amount: remaining,
+    date: newDateStr,
+    type: existing.type,
+    status: "pending",
+    category: existing.category,
+    createdAt: new Date().toISOString(),
+    isFixed: existing.isFixed ?? false,
+    isSynthetic: false,
+    paidAmount: 0,
+    carriedFromMonth: (existing.date || "").slice(0, 7),
+    carriedFromItemId: existing.id,
+    originalAmount: existing.originalAmount ?? totalAmount,
+  };
+
+  if (existing.boardId) newItemData.boardId = existing.boardId;
+  if (existing.createdBy) newItemData.createdBy = existing.createdBy;
+  if (existing.createdByName) newItemData.createdByName = existing.createdByName;
+  if (existing.fixedTemplateId) {
+    newItemData.fixedTemplateId = existing.fixedTemplateId;
+  }
+  if (existing.installmentGroupId) {
+    newItemData.installmentGroupId = existing.installmentGroupId;
+  }
+  if (typeof existing.installmentIndex === "number") {
+    newItemData.installmentIndex = existing.installmentIndex;
+  }
+  if (typeof existing.installmentTotal === "number") {
+    newItemData.installmentTotal = existing.installmentTotal;
+  }
+
+  await adminDb.collection("finance_items").add(newItemData);
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+

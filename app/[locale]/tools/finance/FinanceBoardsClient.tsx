@@ -18,7 +18,7 @@ import {
   getOwnerPendingApprovalsCount,
 } from "@/app/[locale]/tools/finance/(protected)/invite-actions";
 
-import { FiSettings } from "react-icons/fi";
+import { FiSettings, FiEdit2, FiUsers, FiTrash2 } from "react-icons/fi";
 
 import FinanceJoinByCode from "./(protected)/FinanceJoinByCode";
 import FinanceInvitesPanel from "./(protected)/FinanceInvitePanel";
@@ -337,7 +337,7 @@ export default function FinanceBoardsClient({
                 {isOwner && (
                   <button
                     type="button"
-                    className="absolute top-3 right-3 text-gray-300 hover:text-blue-600"
+                    className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 bg-white/90 rounded-full p-1 shadow-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -351,39 +351,42 @@ export default function FinanceBoardsClient({
 
                 {/* MENU DROPDOWN */}
                 {isOwner && menuBoardId === board.id && (
-                  <div className="absolute z-20 top-9 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden">
+                  <div className="absolute z-20 top-10 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden min-w-[190px]">
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => {
                         setMenuBoardId(null);
                         setRenameBoardState(board);
                         setRenameName(board.name);
                       }}
                     >
-                      {tBoards("menuRename")}
+                      <FiEdit2 size={14} className="text-gray-500" />
+                      <span>{tBoards("menuRename")}</span>
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => {
                         setMenuBoardId(null);
                         setMembersBoard(board);
                         setMembersError(null);
                       }}
                     >
-                      {tBoards("menuViewMembers")}
+                      <FiUsers size={14} className="text-gray-500" />
+                      <span>{tBoards("menuViewMembers")}</span>
                     </button>
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 border-t border-red-50 transition-colors"
                       onClick={() => {
                         setMenuBoardId(null);
                         setDeleteBoardState(board);
                         setDeleteNameConfirm("");
                       }}
                     >
-                      {tBoards("menuDeleteBoard")}
+                      <FiTrash2 size={14} />
+                      <span>{tBoards("menuDeleteBoard")}</span>
                     </button>
                   </div>
                 )}
@@ -500,7 +503,7 @@ export default function FinanceBoardsClient({
                     deleteLoading ||
                     !deleteNameConfirm.trim() ||
                     deleteNameConfirm.trim().toLowerCase() !==
-                    deleteBoardState.name.trim().toLowerCase()
+                      deleteBoardState.name.trim().toLowerCase()
                   }
                   className="px-4 py-2 text-sm rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
                 >

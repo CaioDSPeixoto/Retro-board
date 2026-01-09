@@ -124,6 +124,11 @@
     "workload848": "Daily load: 8h48"
   },
   "Finance": {
+    "modalReceiveTitle": "Register receipt",
+"modalPayTitle": "Register payment",
+"confirmReceive": "Confirm receipt",
+"confirmPay": "Confirm payment",
+"cancel": "Cancel",
     "backToBoard": "Back to board",
     "hello": "Hello",
     "title": "Finance",

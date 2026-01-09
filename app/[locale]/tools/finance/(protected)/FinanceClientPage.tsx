@@ -635,6 +635,7 @@ export default function FinanceClientPage({
         initialCategories={initialCategories}
         initialItem={editingItem}
         boardId={currentBoardId ?? null}
+        currentMonth={currentMonth}
       />
     </div>
   );

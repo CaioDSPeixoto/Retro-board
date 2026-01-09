@@ -124,6 +124,11 @@
     "workload848": "Carga diaria: 8h48"
   },
   "Finance": {
+    "modalReceiveTitle": "Registrar recibo",
+"modalPayTitle": "Registrar pago",
+"confirmReceive": "Confirmar recibo",
+"confirmPay": "Confirmar pago",
+"cancel": "Cancelar",
     "backToBoard": "Volver al tablero",
     "hello": "Hola",
     "title": "Finanzas",
