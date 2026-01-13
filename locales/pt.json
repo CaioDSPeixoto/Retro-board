@@ -7,7 +7,8 @@
     "author": "Autor"
   },
   "CreateCard": {
-    "new": "Novo card..."
+    "new": "Novo card...",
+    "author": "Seu nome..."
   },
   "Export": {
     "defaultTitle": "Resultados do Board",
@@ -121,14 +122,18 @@
     "extra": "Horas extras",
     "workload6": "Carga diária: 6h",
     "workload8": "Carga diária: 8h",
-    "workload848": "Carga diária: 8h48"
+    "workload848": "Carga diária: 8h48",
+    "suggestedExit": "Sugestão de saída"
   },
   "Finance": {
     "modalReceiveTitle": "Registrar recebimento",
-  "modalPayTitle": "Registrar pagamento",
-  "confirmReceive": "Confirmar recebimento",
-  "confirmPay": "Confirmar pagamento",
-  "cancel": "Cancelar",
+    "modalPayTitle": "Registrar pagamento",
+    "paymentModalTotal": "Valor total",
+    "paymentModalPartial": "Valor parcial",
+    "paymentModalPartialHint": "O valor informado será considerado como pago agora e o restante será lançado automaticamente no mês seguinte.",
+    "confirmReceive": "Confirmar recebimento",
+    "confirmPay": "Confirmar pagamento",
+    "cancel": "Cancelar",
     "backToBoard": "Voltar para o quadro",
     "hello": "Olá",
     "title": "Financeiro",
@@ -177,8 +182,10 @@
     "balanceLabel": "Saldo do período",
     "unknownUserLabel": "Usuário não identificado",
     "perUserTitle": "Métricas por pessoa",
-    "perUserSubtitle":"Veja quanto cada pessoa movimentou neste período no quadro compartilhado.",
+    "perUserSubtitle": "Veja quanto cada pessoa movimentou neste período no quadro compartilhado.",
     "topSpenderBadge": "Quem mais gastou no período",
+    "mostBigSpender": "Quem mais gastou no período",
+    "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total em despesas",
     "userTotalIncome": "Total em receitas: {value}",
     "userExpensesCountLabel": "Nº de despesas",
@@ -193,27 +200,28 @@
     "incomesOverdueLabel": "{count} em atraso",
     "expensesCountLabel": "{count} lançamento(s)",
     "expensesOverdueLabel": "{count} em atraso",
-
     "expensesDistributionTitle": "Distribuição de despesas por categoria",
     "noExpensesInPeriod": "Nenhuma despesa registrada neste período.",
     "incomesDistributionTitle": "Distribuição de receitas por categoria",
     "categoryLine": "{total} · {percent}%",
-
     "mostActivePeriodTitle": "Período mais ativo",
     "mostActiveDayLine": "{count} lançamento(s) · movimentação de {amount}",
+    "mostActiveDateFormat": "dd 'de' MMM",
     "daysWithMovements": "Dias com movimentação no período: {count}",
     "notEnoughData": "Não há dados suficientes para calcular.",
-
     "quickIndicatorsTitle": "Indicadores rápidos",
     "totalTransactionsLabel": "Total de lançamentos",
     "avgExpenseTicketLabel": "Ticket médio das despesas",
     "avgIncomeTicketLabel": "Ticket médio das receitas",
-
+    "avgTicketLabel": "Ticket médio:",
     "othersCategory": "Outros"
   },
   "UserMenu": {
     "account": "Conta",
     "logout": "Sair",
+    "login": "Entrar",
+    "language": "Idioma",
+    "releases": "Releases",
     "versionTitle": "Ver notas da versão {version}"
   },
   "TodoList": {
@@ -269,7 +277,6 @@
     "loadingInvites": "Carregando convites e solicitações...",
     "inviteByEmail": "Convite por email para {email}",
     "requestByCode": "Pedido de acesso via código",
-
     "hello": "Olá",
     "boardLabel": "Quadro de finanças",
     "allBoardsLabel": "Todos os quadros",
@@ -310,11 +317,9 @@
     "prevMonthAria": "Mês anterior",
     "nextMonthAria": "Próximo mês",
     "goTodayLabel": "Hoje",
-
     "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-
     "overdueSummaryLabel": "Saldo em atraso",
     "errors": {
       "boardNotFound": "Quadro não encontrado.",
@@ -359,20 +364,17 @@
     "menuRename": "Editar nome",
     "menuViewMembers": "Ver membros",
     "menuDeleteBoard": "Excluir quadro",
-
     "renameModalTitle": "Renomear quadro",
     "renameModalDescription": "Digite o novo nome para este quadro.",
     "renameModalCancel": "Cancelar",
     "renameModalSave": "Salvar",
     "renameModalSaving": "Salvando...",
-
     "deleteModalTitle": "Excluir quadro",
     "deleteModalDescription": "Essa ação é permanente. Para confirmar, digite o nome do quadro abaixo.",
     "deleteModalPlaceholder": "Digite o nome do quadro",
     "deleteModalCancel": "Cancelar",
     "deleteModalConfirm": "Excluir quadro",
     "deleteModalConfirming": "Excluindo...",
-
     "membersModalTitle": "Membros do quadro",
     "membersModalSubtitle": "Somente o dono pode remover membros.",
     "membersModalOwnerTag": "Dono do quadro",
@@ -414,6 +416,7 @@
     "categoryNamePlaceholder": "Nome da categoria",
     "categoryAddButton": "Adicionar",
     "paidLabel": "Já foi pago/recebido?",
+    "partialPaymentHint": "Se o pagamento foi <strong>parcial</strong>, você pode registrar o valor exato depois pelo botão de confirmação na lista de lançamentos.",
     "fixedLabel": "Despesa fixa (repetir todo mês)",
     "submit": "Salvar lançamento",
     "saving": "Salvando...",

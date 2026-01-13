@@ -10,7 +10,7 @@ import { auth } from "@/lib/firebase";
 
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { Locale, routing } from "@/i18n/routing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 
 type Props = {
@@ -20,6 +20,7 @@ type Props = {
 };
 
 export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }: Props) {
+  const t = useTranslations("UserMenu");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -40,7 +41,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
         setUserLabel(user.email.split("@")[0]);
         return;
       }
-      setUserLabel("Conta");
+      setUserLabel(t("account"));
     });
 
     return () => unsub();
@@ -60,7 +61,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
-  const buttonLabel = isLoggedIn ? (userLabel || "Conta") : "Entrar";
+  const buttonLabel = isLoggedIn ? (userLabel || t("account")) : t("login");
 
   // Idioma (dentro do menu)
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
           <div className="px-4 py-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase">
               <FiGlobe size={14} />
-              Idioma
+              {t("language")}
             </div>
 
             <div className="mt-2 flex flex-wrap gap-2">
@@ -158,7 +159,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
                   "
                 >
                   <FiLogOut size={16} />
-                  <span className="font-medium">Sair</span>
+                  <span className="font-medium">{t("logout")}</span>
                 </button>
               </form>
             ) : (
@@ -174,7 +175,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
                 "
               >
                 <FiLogIn size={16} />
-                <span className="font-medium">Entrar</span>
+                <span className="font-medium">{t("login")}</span>
               </Link>
             )}
           </div>
@@ -191,11 +192,11 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
               text-sm text-gray-700
               hover:bg-gray-50 transition
             "
-            title={`Ver releases (v${appVersion})`}
+            title={t("versionTitle", { version: appVersion })}
           >
             <div className="flex items-center gap-2">
               <FiTag size={16} className="text-gray-500" />
-              <span className="font-medium">Releases</span>
+              <span className="font-medium">{t("releases")}</span>
             </div>
             <span className="text-xs text-gray-500">v{appVersion}</span>
           </Link>

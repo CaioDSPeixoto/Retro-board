@@ -159,7 +159,7 @@ export default function TimeTracker() {
 
       {result.suggestedExit && (
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <Result label="Sugestão de saída" value={result.suggestedExit} />
+          <Result label={t("suggestedExit")} value={result.suggestedExit} />
         </div>
       )}
     </div>

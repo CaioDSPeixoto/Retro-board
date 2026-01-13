@@ -314,9 +314,8 @@ export default function FinanceMetricsPanel({
               {t("balanceLabel")}
             </p>
             <p
-              className={`text-2xl font-extrabold ${
-                balance >= 0 ? "text-green-600" : "text-red-600"
-              }`}
+              className={`text-2xl font-extrabold ${balance >= 0 ? "text-green-600" : "text-red-600"
+                }`}
             >
               {currency(balance)}
             </p>
@@ -331,13 +330,13 @@ export default function FinanceMetricsPanel({
               </p>
               <div className="mt-1 space-y-0.5 text-[11px] text-green-700">
                 <p>
-                  <span className="font-medium">Total: </span>
+                  <span className="font-medium">{t("totalPaidAndPending")} </span>
                   <span className="font-semibold">
                     {currency(totalIncome)}
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium">Ticket médio: </span>
+                  <span className="font-medium">{t("avgTicketLabel")} </span>
                   <span className="font-semibold">
                     {incomeCount ? currency(avgIncome) : "—"}
                   </span>
@@ -373,13 +372,13 @@ export default function FinanceMetricsPanel({
               </p>
               <div className="mt-1 space-y-0.5 text-[11px] text-red-700">
                 <p>
-                  <span className="font-medium">Total: </span>
+                  <span className="font-medium">{t("totalPaidAndPending")} </span>
                   <span className="font-semibold">
                     {currency(totalExpense)}
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium">Ticket médio: </span>
+                  <span className="font-medium">{t("avgTicketLabel")} </span>
                   <span className="font-semibold">
                     {expenseCount ? currency(avgExpense) : "—"}
                   </span>
@@ -494,7 +493,7 @@ export default function FinanceMetricsPanel({
         {mostActiveDayData?.top ? (
           <>
             <p className="text-sm font-semibold text-gray-800">
-              {format(parseISO(mostActiveDayData.top.date), "dd 'de' MMM", {
+              {format(parseISO(mostActiveDayData.top.date), t("mostActiveDateFormat"), {
                 locale: ptBR,
               })}
             </p>
@@ -528,7 +527,7 @@ export default function FinanceMetricsPanel({
           </p>
 
           <p className="text-[11px] text-purple-700 font-semibold mb-3">
-            Quem mais gastou no período
+            {t("topSpenderBadge")}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
@@ -543,7 +542,7 @@ export default function FinanceMetricsPanel({
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800">
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap">
-                            ⭐ #{index + 1} {user.name}
+                          {t("rankFormat", { index: index + 1, name: user.name })}
                         </span>
                       </p>
                     </div>
@@ -561,7 +560,7 @@ export default function FinanceMetricsPanel({
                     </div>
                     <div className="bg-green-50 border border-green-100 rounded-lg px-2 py-1.5">
                       <p className="text-[10px] font-semibold text-green-700 mb-0.5">
-                        {t("userTotalIncomeShort") ?? "Receitas"}
+                        {t("userTotalIncomeShort")}
                       </p>
                       <p className="font-bold text-green-700 text-xs">
                         {currency(user.totalIncome)}

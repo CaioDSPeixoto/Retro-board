@@ -1,4 +1,19 @@
 {
+  "Common": {
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "hello": "Hola",
+    "author": "Autor",
+    "anonymous": "Anónimo",
+    "version": "Versión",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No"
+  },
   "Release": {
     "title": "📌 Versiones y Lanzamientos",
     "version": "Versión"
@@ -125,10 +140,13 @@
   },
   "Finance": {
     "modalReceiveTitle": "Registrar recibo",
-"modalPayTitle": "Registrar pago",
-"confirmReceive": "Confirmar recibo",
-"confirmPay": "Confirmar pago",
-"cancel": "Cancelar",
+    "modalPayTitle": "Registrar pago",
+    "paymentModalTotal": "Valor total",
+    "paymentModalPartial": "Valor parcial",
+    "paymentModalPartialHint": "El valor ingresado se considerará pagado ahora y el resto se pasará automáticamente al mes siguiente.",
+    "confirmReceive": "Confirmar recibo",
+    "confirmPay": "Confirmar pago",
+    "cancel": "Cancelar",
     "backToBoard": "Volver al tablero",
     "hello": "Hola",
     "title": "Finanzas",
@@ -179,6 +197,8 @@
     "perUserTitle": "Métricas por persona",
     "perUserSubtitle": "Mira cuánto movió cada persona en este período en el tablero compartido.",
     "topSpenderBadge": "Quien más gastó en el período",
+    "mostBigSpender": "Quien más gastó en el período",
+    "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total en gastos",
     "userTotalIncome": "Total en ingresos: {value}",
     "userExpensesCountLabel": "N.º de gastos",
@@ -193,22 +213,18 @@
     "incomesOverdueLabel": "{count} en atraso",
     "expensesCountLabel": "{count} lanzamiento(s)",
     "expensesOverdueLabel": "{count} en atraso",
-
     "expensesDistributionTitle": "Distribución de gastos por categoría",
     "noExpensesInPeriod": "No hay gastos registrados en este período.",
     "incomesDistributionTitle": "Distribución de ingresos por categoría",
     "categoryLine": "{total} · {percent}%",
-
     "mostActivePeriodTitle": "Período más activo",
     "mostActiveDayLine": "{count} lanzamiento(s) · movimiento de {amount}",
     "daysWithMovements": "Días con movimiento en el período: {count}",
     "notEnoughData": "No hay datos suficientes para calcular.",
-
     "quickIndicatorsTitle": "Indicadores rápidos",
     "totalTransactionsLabel": "Total de lanzamientos",
     "avgExpenseTicketLabel": "Ticket medio de gastos",
     "avgIncomeTicketLabel": "Ticket medio de ingresos",
-
     "othersCategory": "Otros"
   },
   "UserMenu": {
@@ -309,11 +325,9 @@
     "prevMonthAria": "Mes anterior",
     "nextMonthAria": "Mes siguiente",
     "goTodayLabel": "Hoy",
-
     "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-
     "overdueSummaryLabel": "Saldo vencido",
     "errors": {
       "boardNotFound": "Tablero no encontrado.",
@@ -354,25 +368,21 @@
     },
     "createButtonLoading": "Creando...",
     "joinTabLabel": "Entrar con código",
-
     "boardMenuAriaLabel": "Abrir opciones del tablero",
     "menuRename": "Editar nombre",
     "menuViewMembers": "Ver miembros",
     "menuDeleteBoard": "Eliminar tablero",
-
     "renameModalTitle": "Renombrar tablero",
     "renameModalDescription": "Escribe el nuevo nombre para este tablero.",
     "renameModalCancel": "Cancelar",
     "renameModalSave": "Guardar",
     "renameModalSaving": "Guardando...",
-
     "deleteModalTitle": "Eliminar tablero",
     "deleteModalDescription": "Esta acción es permanente. Para confirmar, escribe el nombre del tablero abajo.",
     "deleteModalPlaceholder": "Escribe el nombre del tablero",
     "deleteModalCancel": "Cancelar",
     "deleteModalConfirm": "Eliminar tablero",
     "deleteModalConfirming": "Eliminando...",
-
     "membersModalTitle": "Miembros del tablero",
     "membersModalSubtitle": "Solo el dueño puede eliminar miembros.",
     "membersModalOwnerTag": "Dueño del tablero",
@@ -414,6 +424,7 @@
     "categoryNamePlaceholder": "Nombre de la categoría",
     "categoryAddButton": "Añadir",
     "paidLabel": "¿Ya ha sido pagado/recibido?",
+    "partialPaymentHint": "Si el pago fue <strong>parcial</strong>, puede registrar el valor exacto después usando el botón de confirmación en la lista de registros.",
     "fixedLabel": "Gasto fijo (repetir cada mes)",
     "submit": "Guardar registro",
     "saving": "Guardando...",

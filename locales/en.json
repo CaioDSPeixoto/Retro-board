@@ -1,4 +1,19 @@
 {
+  "Common": {
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "loading": "Loading...",
+    "hello": "Hello",
+    "author": "Author",
+    "anonymous": "Anonymous",
+    "version": "Version",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
   "Release": {
     "title": "📌 Versions & Releases",
     "version": "Version"
@@ -125,10 +140,13 @@
   },
   "Finance": {
     "modalReceiveTitle": "Register receipt",
-"modalPayTitle": "Register payment",
-"confirmReceive": "Confirm receipt",
-"confirmPay": "Confirm payment",
-"cancel": "Cancel",
+    "modalPayTitle": "Register payment",
+    "paymentModalTotal": "Total amount",
+    "paymentModalPartial": "Partial amount",
+    "paymentModalPartialHint": "The entered amount will be considered paid now, and the remainder will be automatically carried over to the next month.",
+    "confirmReceive": "Confirm receipt",
+    "confirmPay": "Confirm payment",
+    "cancel": "Cancel",
     "backToBoard": "Back to board",
     "hello": "Hello",
     "title": "Finance",
@@ -179,6 +197,8 @@
     "perUserTitle": "Metrics by user",
     "perUserSubtitle": "See how much each person moved in this period on the shared board.",
     "topSpenderBadge": "Highest spender in this period",
+    "mostBigSpender": "Highest spender in this period",
+    "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total expenses",
     "userTotalIncome": "Total income: {value}",
     "userExpensesCountLabel": "Number of expenses",
@@ -193,22 +213,18 @@
     "incomesOverdueLabel": "{count} overdue",
     "expensesCountLabel": "{count} transaction(s)",
     "expensesOverdueLabel": "{count} overdue",
-
     "expensesDistributionTitle": "Expense distribution by category",
     "noExpensesInPeriod": "No expenses registered in this period.",
     "incomesDistributionTitle": "Income distribution by category",
     "categoryLine": "{total} · {percent}%",
-
     "mostActivePeriodTitle": "Most active period",
     "mostActiveDayLine": "{count} transaction(s) · movement of {amount}",
     "daysWithMovements": "Days with movements in the period: {count}",
     "notEnoughData": "There is not enough data to calculate.",
-
     "quickIndicatorsTitle": "Quick indicators",
     "totalTransactionsLabel": "Total transactions",
     "avgExpenseTicketLabel": "Average expense amount",
     "avgIncomeTicketLabel": "Average income amount",
-
     "othersCategory": "Others"
   },
   "UserMenu": {
@@ -309,11 +325,9 @@
     "prevMonthAria": "Mês anterior",
     "nextMonthAria": "Próximo mês",
     "goTodayLabel": "Hoje",
-
-   "metricsTitle": "Metrics",
+    "metricsTitle": "Metrics",
     "tabListLabel": "List",
     "tabMetricsLabel": "Metrics",
-
     "overdueSummaryLabel": "Overdue balance",
     "errors": {
       "boardNotFound": "Board not found.",
@@ -358,20 +372,17 @@
     "menuRename": "Rename board",
     "menuViewMembers": "View members",
     "menuDeleteBoard": "Delete board",
-
     "renameModalTitle": "Rename board",
     "renameModalDescription": "Enter the new name for this board.",
     "renameModalCancel": "Cancel",
     "renameModalSave": "Save",
     "renameModalSaving": "Saving...",
-
     "deleteModalTitle": "Delete board",
     "deleteModalDescription": "This action is permanent. To confirm, type the board name below.",
     "deleteModalPlaceholder": "Type the board name",
     "deleteModalCancel": "Cancel",
     "deleteModalConfirm": "Delete board",
     "deleteModalConfirming": "Deleting...",
-
     "membersModalTitle": "Board members",
     "membersModalSubtitle": "Only the owner can remove members.",
     "membersModalOwnerTag": "Board owner",
@@ -413,6 +424,7 @@
     "categoryNamePlaceholder": "Category name",
     "categoryAddButton": "Add",
     "paidLabel": "Already paid/received?",
+    "partialPaymentHint": "If the payment was <strong>partial</strong>, you can record the exact amount later using the confirmation button in the entry list.",
     "fixedLabel": "Fixed expense (repeat every month)",
     "submit": "Save entry",
     "saving": "Saving...",
