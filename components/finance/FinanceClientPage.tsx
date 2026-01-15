@@ -20,7 +20,7 @@ import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 
-import { sendInviteByEmail } from "./invite-actions";
+import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
 type Props = {
   initialItems: FinanceItem[];
