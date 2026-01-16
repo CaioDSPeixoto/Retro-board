@@ -38,7 +38,8 @@
   "Navbar": {
     "home": "Inicio",
     "versionTitle": "Versión: v{version}",
-    "tools": "Herramientas"
+    "tools": "Herramientas",
+    "language": "Idioma"
   },
   "Column": {
     "new": "Añadir una nueva tarjeta..."

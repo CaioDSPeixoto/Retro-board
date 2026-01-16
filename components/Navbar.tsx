@@ -3,12 +3,13 @@ import { FiHome, FiTool } from "react-icons/fi";
 import UserMenu from "./UserMenu";
 import { getTranslations } from "next-intl/server";
 import { getSession } from "@/lib/auth/session";
+import packageInfo from '../package.json';
 
 export default async function Navbar({ locale }: { locale: string }) {
   const t = await getTranslations("Navbar");
   const session = await getSession();
 
-  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || "0.0.0";
+  const appVersion = packageInfo.version || "0.0.0";
 
   return (
     <nav className="px-4 py-3 border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50">

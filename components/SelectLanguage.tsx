@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FiGlobe, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { Locale, routing } from "@/i18n/routing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 
 export default function SelectLanguage() {
@@ -12,6 +12,7 @@ export default function SelectLanguage() {
   const locale = useLocale();
   const pathname = usePathname();
   const params = useParams();
+  const t = useTranslations("Navbar");
 
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -51,7 +52,7 @@ export default function SelectLanguage() {
           text-gray-700
           transition
         "
-        title="Idioma"
+        title={t("language")}
       >
         <FiGlobe size={16} />
         <span className="hidden sm:inline text-sm font-medium">{locale.toUpperCase()}</span>

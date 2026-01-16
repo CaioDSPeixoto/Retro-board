@@ -38,7 +38,8 @@
   "Navbar": {
     "home": "Home",
     "versionTitle": "Version: v{version}",
-    "tools": "Tools"
+    "tools": "Tools",
+    "language": "Language"
   },
   "Column": {
     "new": "Add a new card..."

@@ -24,7 +24,8 @@
   "Navbar": {
     "home": "Início",
     "versionTitle": "Versão: v{version}",
-    "tools": "Ferramentas"
+    "tools": "Ferramentas",
+    "language": "Idioma"
   },
   "Column": {
     "new": "Adicionar um novo card..."
