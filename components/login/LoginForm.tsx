@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { loginAction } from "./actions";
+import { loginAction } from "@/app/[locale]/tools/finance/login/actions";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -33,8 +33,6 @@ export default function LoginForm({ locale }: Props) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
-      console.error("Firebase Login Error", firebaseError);
-
       const code = firebaseError?.code;
       if (
         code === "auth/invalid-credential" ||

@@ -126,6 +126,9 @@
     "suggestedExit": "Sugestão de saída"
   },
   "Finance": {
+    "statusMoved": "Lançado no mês seguinte",
+    "movedBadge": "Movido para o próximo mês",
+    "paymentModalMoveOption": "Mover para o próximo mês",
     "modalReceiveTitle": "Registrar recebimento",
     "modalPayTitle": "Registrar pagamento",
     "paymentModalTotal": "Valor total",
@@ -133,6 +136,7 @@
     "paymentModalPartialHint": "O valor informado será considerado como pago agora e o restante será lançado automaticamente no mês seguinte.",
     "confirmReceive": "Confirmar recebimento",
     "confirmPay": "Confirmar pagamento",
+    "confirmAction": "Confirmar",
     "cancel": "Cancelar",
     "backToBoard": "Voltar para o quadro",
     "hello": "Olá",
@@ -158,7 +162,7 @@
     "statusPartial": "Parcialmente pago",
     "fixedLabel": "Fixa",
     "overdueBadge": "Em atraso",
-    "overdueMoved": "Movida para o próximo mês",
+    "overdueMoved": "Lançado no mês seguinte",
     "confirmDelete": "Tem certeza que deseja apagar este lançamento?",
     "rolledFromMonth": "Movida de {month}",
     "partialPaid": "Pago {paid} de {total}",
@@ -174,6 +178,10 @@
     }
   },
   "FinanceMetrics": {
+    "movedTotalsTitle": "Lançamentos movidos para o próximo mês",
+    "movedIncomeLabel": "Receitas movidas",
+    "movedExpenseLabel": "Despesas movidas",
+    "movedCountLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
     "userTotalIncomeShort": "Receitas",
     "incomesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
     "expensesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
@@ -214,7 +222,10 @@
     "avgExpenseTicketLabel": "Ticket médio das despesas",
     "avgIncomeTicketLabel": "Ticket médio das receitas",
     "avgTicketLabel": "Ticket médio:",
-    "othersCategory": "Outros"
+    "othersCategory": "Outros",
+    "cardExpensesTitle": "Gastos no cartão",
+    "noCardExpensesInPeriod": "Nenhuma despesa registrada com cartão neste período.",
+    "cardModeTitle": "Gastos por tipo de cartão"
   },
   "UserMenu": {
     "account": "Conta",
@@ -382,6 +393,19 @@
     "membersModalClose": "Fechar"
   },
   "FinanceForm": {
+    "advancedOptionsShow": "Mostrar opções avançadas",
+    "advancedOptionsHide": "Ocultar opções avançadas",
+    "cardOtherOption": "Outro cartão",
+    "cardOtherPlaceholder": "Nome do cartão",
+    "cardTypeLabel": "Tipo",
+    "cardTypeCredit": "Crédito",
+    "cardTypeDebit": "Débito",
+    "cardAutoDescriptionLabel": "Descrição automática baseada no cartão",
+    "cardManualDescriptionToggle": "Editar descrição manualmente",
+    "cardBackToAutoDescription": "Voltar para descrição automática",
+    "cardGeneratedTitlePreview": "Descrição gerada:",
+    "cardTitlePattern": "Cartão {card} - {type}",
+    "partialPaymentHint": "Se o pagamento foi parcial, você pode registrar o valor exato depois pelo botão de confirmação na lista de lançamentos.",
     "newTransactionTitle": "Novo lançamento",
     "editTransactionTitle": "Editar lançamento",
     "typeIncome": "Receita",
@@ -416,7 +440,6 @@
     "categoryNamePlaceholder": "Nome da categoria",
     "categoryAddButton": "Adicionar",
     "paidLabel": "Já foi pago/recebido?",
-    "partialPaymentHint": "Se o pagamento foi <strong>parcial</strong>, você pode registrar o valor exato depois pelo botão de confirmação na lista de lançamentos.",
     "fixedLabel": "Despesa fixa (repetir todo mês)",
     "submit": "Salvar lançamento",
     "saving": "Salvando...",
@@ -424,6 +447,14 @@
     "useInstallmentsLabel": "Pagar em parcelas",
     "installmentsLabel": "Número de parcelas",
     "installmentsHint": "O valor informado é o valor de cada parcela.",
-    "fixedNotAllowedWithInstallments": "Não é possível marcar como conta fixa em lançamentos parcelados."
+    "fixedNotAllowedWithInstallments": "Não é possível marcar como conta fixa em lançamentos parcelados.",
+    "cardSectionTitle": "Detalhes do cartão",
+    "cardNameLabel": "Cartão",
+    "cardCustomOption": "Outro cartão...",
+    "cardCustomPlaceholder": "Nome do cartão (ex: Nubank, Santander...)",
+    "cardModeLabel": "Tipo de cartão",
+    "cardModeCredit": "Crédito",
+    "cardModeDebit": "Débito",
+    "cardModeHint": "Essas informações serão usadas nas métricas por cartão."
   }
 }

@@ -14,7 +14,6 @@ export default function AdBanner() {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (e: any) {
       if (e.message?.includes("already have ads")) return;
-      console.error("AdSense error:", e);
     }
   }, [adClient, adSlot]);
 

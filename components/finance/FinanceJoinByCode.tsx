@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
-import { requestJoinByCode } from "./invite-actions";
+import { requestJoinByCode } from "@/app/[locale]/tools/finance/(protected)/invite-actions";
 
 type Props = { locale: string };
 

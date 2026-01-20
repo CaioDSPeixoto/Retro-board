@@ -21,7 +21,6 @@ export function useTodos() {
             try {
                 setTasks(JSON.parse(saved));
             } catch (e) {
-                console.error("Failed to parse todos", e);
             }
         }
     }, []);

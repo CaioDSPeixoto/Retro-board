@@ -191,6 +191,14 @@ export async function addFinanceItem(formData: FormData) {
   if (Number.isNaN(installments) || installments < 1) installments = 1;
   if (installments > 60) installments = 60;
 
+  const cardNameRaw = String(formData.get("cardName") || "");
+  const cardModeRaw = String(formData.get("cardMode") || "");
+  const cardName = cardNameRaw.trim();
+  const cardMode =
+    cardModeRaw === "credit" || cardModeRaw === "debit"
+      ? (cardModeRaw as "credit" | "debit")
+      : undefined;
+
   const amount = parseFloat(amountStr);
   const title = titleRaw.trim();
   const category = categoryRaw.trim();
@@ -224,6 +232,8 @@ export async function addFinanceItem(formData: FormData) {
     ...(boardId ? { boardId } : {}),
     createdBy: sessionUser,
     ...(createdByNameFromForm ? { createdByName: createdByNameFromForm } : {}),
+    ...(cardName ? { cardName } : {}),
+    ...(cardMode ? { cardMode } : {}),
   };
 
   // ========== CASO SIMPLES (sem parcelamento) ==========
@@ -268,6 +278,7 @@ export async function addFinanceItem(formData: FormData) {
   }
 
   // ========== PARCELADO (N parcelas) ==========
+
   const [yearStr, monthStr, dayStr] = date.split("-");
   const baseYear = Number(yearStr);
   const baseMonthIndex = Number(monthStr) - 1; // Date: 0-11
@@ -332,6 +343,14 @@ export async function updateFinanceItem(formData: FormData) {
   const locale = String(formData.get("locale") || "pt").toLowerCase();
   const paidAmountStr = String(formData.get("paidAmount") || "");
 
+  const cardNameRaw = String(formData.get("cardName") || "");
+  const cardModeRaw = String(formData.get("cardMode") || "");
+  const cardName = cardNameRaw.trim();
+  const cardMode =
+    cardModeRaw === "credit" || cardModeRaw === "debit"
+      ? (cardModeRaw as "credit" | "debit")
+      : undefined;
+
   const amount = parseFloat(amountStr);
   const paidAmountRaw = paidAmountStr ? parseFloat(paidAmountStr) : 0;
 
@@ -359,7 +378,7 @@ export async function updateFinanceItem(formData: FormData) {
   if (paidAmount >= amount) status = "paid";
   else if (paidAmount > 0) status = "partial";
 
-  await ref.update({
+  const updateData: any = {
     title: title.trim(),
     amount,
     date,
@@ -367,7 +386,12 @@ export async function updateFinanceItem(formData: FormData) {
     type,
     status,
     paidAmount,
-  });
+  };
+
+  if (cardName) updateData.cardName = cardName;
+  if (cardMode) updateData.cardMode = cardMode;
+
+  await ref.update(updateData);
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
@@ -419,7 +443,7 @@ export async function toggleStatus(
 
 export async function applyPaymentToFinanceItem(
   id: string,
-  mode: "full" | "partial",
+  mode: "full" | "partial" | "move",
   partialAmountInput: string | null,
   locale: string,
 ) {
@@ -438,6 +462,70 @@ export async function applyPaymentToFinanceItem(
   const totalAmount = existing.amount;
   if (typeof totalAmount !== "number" || Number.isNaN(totalAmount)) {
     return { error: "Valor inválido no lançamento" };
+  }
+
+  // helper pra calcular data do próximo mês
+  const [yStr, mStr, dStr] = (existing.date || "").split("-");
+  const year = Number(yStr);
+  const month = Number(mStr) - 1; // 0–11
+  const day = Number(dStr) || 1;
+
+  const baseDate = new Date(year, month, day);
+  const nextDate = new Date(baseDate);
+  nextDate.setMonth(nextDate.getMonth() + 1);
+
+  const ny = nextDate.getFullYear();
+  const nm = String(nextDate.getMonth() + 1).padStart(2, "0");
+  const nd = String(nextDate.getDate()).padStart(2, "0");
+  const newDateStr = `${ny}-${nm}-${nd}`;
+
+  // 🔹 Caso 0: mover para o próximo mês (sem pagamento)
+  if (mode === "move") {
+    await ref.update({
+      status: "moved" as FinanceStatus,
+      paidAmount: 0,
+      originalAmount: existing.originalAmount ?? totalAmount,
+    });
+
+    const newItemData: any = {
+      userId: existing.userId,
+      title: existing.title,
+      amount: totalAmount,
+      date: newDateStr,
+      type: existing.type,
+      status: "pending" as FinanceStatus,
+      category: existing.category,
+      createdAt: new Date().toISOString(),
+      isFixed: existing.isFixed ?? false,
+      isSynthetic: false,
+      paidAmount: 0,
+      carriedFromMonth: (existing.date || "").slice(0, 7),
+      carriedFromItemId: existing.id,
+      originalAmount: existing.originalAmount ?? totalAmount,
+    };
+
+    if (existing.boardId) newItemData.boardId = existing.boardId;
+    if (existing.createdBy) newItemData.createdBy = existing.createdBy;
+    if (existing.createdByName) newItemData.createdByName = existing.createdByName;
+    if (existing.fixedTemplateId) {
+      newItemData.fixedTemplateId = existing.fixedTemplateId;
+    }
+    if (existing.installmentGroupId) {
+      newItemData.installmentGroupId = existing.installmentGroupId;
+    }
+    if (typeof existing.installmentIndex === "number") {
+      newItemData.installmentIndex = existing.installmentIndex;
+    }
+    if (typeof existing.installmentTotal === "number") {
+      newItemData.installmentTotal = existing.installmentTotal;
+    }
+    if (existing.cardName) newItemData.cardName = existing.cardName;
+    if (existing.cardMode) newItemData.cardMode = existing.cardMode;
+
+    await adminDb.collection("finance_items").add(newItemData);
+
+    revalidatePath(`/${locale}/tools/finance`);
+    return { success: true };
   }
 
   // 🔹 Caso 1: marcar como totalmente pago / recebido
@@ -485,6 +573,7 @@ export async function applyPaymentToFinanceItem(
     return { success: true };
   }
 
+  // original vira item pago com o valor parcial
   await ref.update({
     status: "paid",
     amount: parsed,
@@ -492,27 +581,14 @@ export async function applyPaymentToFinanceItem(
     originalAmount: existing.originalAmount ?? totalAmount,
   });
 
-  const [yStr, mStr, dStr] = (existing.date || "").split("-");
-  const year = Number(yStr);
-  const month = Number(mStr) - 1; // 0–11
-  const day = Number(dStr) || 1;
-
-  const baseDate = new Date(year, month, day);
-  const nextDate = new Date(baseDate);
-  nextDate.setMonth(nextDate.getMonth() + 1);
-
-  const ny = nextDate.getFullYear();
-  const nm = String(nextDate.getMonth() + 1).padStart(2, "0");
-  const nd = String(nextDate.getDate()).padStart(2, "0");
-  const newDateStr = `${ny}-${nm}-${nd}`;
-
+  // novo lançamento com o restante no mês seguinte
   const newItemData: any = {
     userId: existing.userId,
     title: existing.title,
     amount: remaining,
     date: newDateStr,
     type: existing.type,
-    status: "pending",
+    status: "pending" as FinanceStatus,
     category: existing.category,
     createdAt: new Date().toISOString(),
     isFixed: existing.isFixed ?? false,
@@ -538,10 +614,11 @@ export async function applyPaymentToFinanceItem(
   if (typeof existing.installmentTotal === "number") {
     newItemData.installmentTotal = existing.installmentTotal;
   }
+  if (existing.cardName) newItemData.cardName = existing.cardName;
+  if (existing.cardMode) newItemData.cardMode = existing.cardMode;
 
   await adminDb.collection("finance_items").add(newItemData);
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
 }
-

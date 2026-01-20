@@ -53,7 +53,6 @@ export default function HomePage() {
 
       router.push(`/${locale}/room/${roomId}`);
     } catch (error) {
-      console.error(t("logs.createError"), error);
       alert(t("alerts.createError"));
     } finally {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -67,7 +66,6 @@ export default function HomePage() {
       const roomDoc = await getDoc(doc(db, "rooms", roomId));
       return roomDoc.exists();
     } catch (error) {
-      console.error(t("logs.checkRoomError"), error);
       return false;
     }
   };

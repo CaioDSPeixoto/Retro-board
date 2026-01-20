@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition, useRef } from "react";
-import { FiX, FiPlus, FiCheck } from "react-icons/fi";
+import { FiX, FiPlus, FiCheck, FiChevronDown } from "react-icons/fi";
 import {
   addFinanceItem,
   createCategory,
@@ -12,6 +12,9 @@ import type { FinanceItem } from "@/types/finance";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
+
+const CARD_FIXED_CATEGORY_NAME = "Cartão Fixo";
+const DEFAULT_CARD_OPTIONS = ["Nubank", "Santander", "Inter", "C6", "Mercado Pago", "XP", "Will Bank", "Havan"];
 
 type Props = {
   isOpen: boolean;
@@ -79,8 +82,16 @@ export default function FinanceFormModal({
   const [addingCategory, setAddingCategory] = useState(false);
 
   const [useInstallments, setUseInstallments] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [currentUserName, setCurrentUserName] = useState<string>("");
+
+  // cartão
+  const [cardName, setCardName] = useState<string>(initialItem?.cardName || "");
+  const [cardMode, setCardMode] = useState<"" | "credit" | "debit">(
+    initialItem?.cardMode || "",
+  );
+  const [enableCustomDescription, setEnableCustomDescription] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -98,6 +109,9 @@ export default function FinanceFormModal({
     if (initialItem?.category) {
       setCategory(initialItem.category);
       setType(initialItem.type);
+      setCardName(initialItem.cardName || "");
+      setCardMode(initialItem.cardMode || "");
+      setEnableCustomDescription(false);
     } else if (!initialCategories.includes(category)) {
       setCategory(initialCategories[0]);
     }
@@ -109,6 +123,20 @@ export default function FinanceFormModal({
       newCatInputRef.current?.focus();
     }
   }, [showNewCategoryForm]);
+
+  const isCardFixedCategory = category === CARD_FIXED_CATEGORY_NAME;
+
+  // default pra cartão fixo
+  useEffect(() => {
+    if (!isCardFixedCategory || isEditMode) return;
+
+    if (!cardName) {
+      setCardName(DEFAULT_CARD_OPTIONS[0] || "");
+    }
+    if (!cardMode) {
+      setCardMode("credit");
+    }
+  }, [isCardFixedCategory, cardName, cardMode, isEditMode]);
 
   if (!isOpen) return null;
 
@@ -140,10 +168,19 @@ export default function FinanceFormModal({
   const disableFixedForInstallments = !isEditMode && useInstallments;
   const canUseFixed = showFixedBase && !disableFixedForInstallments;
 
+  const generatedCardDescription =
+    isCardFixedCategory && cardName && cardMode
+      ? `Cartão ${cardName} - ${
+          cardMode === "credit"
+            ? t("cardModeCreditLabel")
+            : t("cardModeDebitLabel")
+        }`
+      : "";
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">
             {isEditMode ? t("editTransactionTitle") : t("newTransactionTitle")}
           </h2>
@@ -170,6 +207,14 @@ export default function FinanceFormModal({
             if (boardId) fd.set("boardId", boardId);
             if (currentUserName) fd.set("createdByName", currentUserName);
 
+            if (isCardFixedCategory && !enableCustomDescription) {
+              if (generatedCardDescription) {
+                fd.set("title", generatedCardDescription);
+              }
+              if (cardName) fd.set("cardName", cardName);
+              if (cardMode) fd.set("cardMode", cardMode);
+            }
+
             const res = isEditMode
               ? await updateFinanceItem(fd)
               : await addFinanceItem(fd);
@@ -185,31 +230,42 @@ export default function FinanceFormModal({
           className="flex flex-col gap-4"
         >
           {isEditMode && initialItem && (
-            <input type="hidden" name="id" value={initialItem.id} />
+            <>
+              <input type="hidden" name="id" value={initialItem.id} />
+              {initialItem.cardName && (
+                <input type="hidden" name="cardName" value={initialItem.cardName} />
+              )}
+              {initialItem.cardMode && (
+                <input type="hidden" name="cardMode" value={initialItem.cardMode} />
+              )}
+            </>
           )}
 
           {/* Seletor de Tipo (Receita/Despesa) */}
           <div
-            className={`flex bg-gray-100 p-1 rounded-xl ${showNewCategoryForm ? "opacity-50 pointer-events-none" : ""
-              }`}
+            className={`flex bg-gray-100 p-1 rounded-xl ${
+              showNewCategoryForm ? "opacity-50 pointer-events-none" : ""
+            }`}
           >
             <button
               type="button"
               onClick={() => setType("income")}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === "income"
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                type === "income"
                   ? "bg-white text-green-600 shadow-sm"
                   : "text-gray-500"
-                }`}
+              }`}
             >
               {t("typeIncome")}
             </button>
             <button
               type="button"
               onClick={() => setType("expense")}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === "expense"
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                type === "expense"
                   ? "bg-white text-red-600 shadow-sm"
                   : "text-gray-500"
-                }`}
+              }`}
             >
               {t("typeExpense")}
             </button>
@@ -230,10 +286,11 @@ export default function FinanceFormModal({
                     setNewCategory("");
                   }
                 }}
-                className={`text-xs font-bold flex items-center gap-1 transition-colors ${showNewCategoryForm
+                className={`text-xs font-bold flex items-center gap-1 transition-colors ${
+                  showNewCategoryForm
                     ? "text-red-500"
                     : "text-blue-600 hover:text-blue-700"
-                  }`}
+                }`}
               >
                 {showNewCategoryForm ? (
                   <>
@@ -251,7 +308,15 @@ export default function FinanceFormModal({
               <select
                 required
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  // reset cartão ao trocar categoria
+                  if (e.target.value !== CARD_FIXED_CATEGORY_NAME) {
+                    setCardName("");
+                    setCardMode("");
+                    setEnableCustomDescription(false);
+                  }
+                }}
                 className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900 appearance-none"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
@@ -265,6 +330,11 @@ export default function FinanceFormModal({
                     {cat}
                   </option>
                 ))}
+                {!categories.includes(CARD_FIXED_CATEGORY_NAME) && (
+                  <option value={CARD_FIXED_CATEGORY_NAME}>
+                    {CARD_FIXED_CATEGORY_NAME}
+                  </option>
+                )}
               </select>
             ) : (
               <div className="flex gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -296,6 +366,88 @@ export default function FinanceFormModal({
                 </button>
               </div>
             )}
+
+            {/* Bloco de cartão fixo */}
+            {isCardFixedCategory && (
+              <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 p-3 space-y-2">
+                <p className="text-xs font-semibold text-gray-600">
+                  {t("cardSectionTitle")}
+                </p>
+
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                      {t("cardNameLabel")}
+                    </label>
+                    <select
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      className="w-full p-2.5 bg-white rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none text-sm text-gray-900"
+                    >
+                      <option value="">{t("cardNamePlaceholder")}</option>
+                      {DEFAULT_CARD_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                      {t("cardModeLabel")}
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCardMode("credit")}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
+                          cardMode === "credit"
+                            ? "bg-blue-50 border-blue-500 text-blue-600"
+                            : "bg-white border-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {t("cardModeCreditLabel")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCardMode("debit")}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
+                          cardMode === "debit"
+                            ? "bg-blue-50 border-blue-500 text-blue-600"
+                            : "bg-white border-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {t("cardModeDebitLabel")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {generatedCardDescription && (
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <div className="flex-1 text-[11px] text-gray-700 bg-white border border-dashed border-gray-300 rounded-lg px-2 py-1.5">
+                      {generatedCardDescription}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEnableCustomDescription((prev) => !prev)
+                      }
+                      className="text-[11px] font-semibold text-blue-600"
+                    >
+                      {enableCustomDescription
+                        ? t("useAutoDescription")
+                        : t("editDescriptionButton")}
+                    </button>
+                  </div>
+                )}
+
+                {/* inputs escondidos pra servidor */}
+                <input type="hidden" name="cardName" value={cardName} />
+                <input type="hidden" name="cardMode" value={cardMode} />
+              </div>
+            )}
           </div>
 
           {/* Restante do formulário fica "travado" enquanto cria nova categoria */}
@@ -308,13 +460,23 @@ export default function FinanceFormModal({
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
                 {t("descriptionLabel")}
               </label>
-              <input
-                name="title"
-                required
-                placeholder={t("descriptionPlaceholder")}
-                defaultValue={initialItem?.title ?? ""}
-                className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
-              />
+
+              {isCardFixedCategory && !enableCustomDescription ? (
+                <>
+                  <div className="w-full p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-sm text-gray-800">
+                    {generatedCardDescription || t("descriptionPlaceholder")}
+                  </div>
+                  {/* título vem do generatedCardDescription via form action */}
+                </>
+              ) : (
+                <input
+                  name="title"
+                  required
+                  placeholder={t("descriptionPlaceholder")}
+                  defaultValue={initialItem?.title ?? ""}
+                  className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                />
+              )}
             </div>
 
             {/* Valor + Data */}
@@ -351,107 +513,129 @@ export default function FinanceFormModal({
               </div>
             </div>
 
-            {/* Parcelamento (somente na criação, discreto) */}
-            {!isEditMode && (
-              <div className="mt-1 space-y-2">
-                <div className="flex items-center gap-3 p-1">
-                  <input
-                    type="checkbox"
-                    id="useInstallments"
-                    checked={useInstallments}
-                    onChange={(e) => setUseInstallments(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="useInstallments"
-                    className="text-sm font-medium text-gray-700 cursor-pointer select-none"
-                  >
-                    {t("useInstallmentsLabel")}
-                  </label>
-                </div>
+            {/* Toggle Opções Avançadas */}
+            <div className="mt-1 px-1">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((prev) => !prev)}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600"
+              >
+                <FiChevronDown
+                  className={`transition-transform ${
+                    showAdvanced ? "rotate-180" : ""
+                  }`}
+                  size={14}
+                />
+                {t("advancedOptionsToggle")}
+              </button>
+            </div>
 
-                {useInstallments && (
-                  <div className="pl-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                      {t("installmentsLabel")}
-                    </label>
-                    <input
-                      name="installments"
-                      type="number"
-                      min={1}
-                      max={60}
-                      defaultValue={1}
-                      className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
-                    />
-                    <p className="text-[11px] text-gray-400 mt-1 px-1">
-                      {t("installmentsHint")}
+            {showAdvanced && (
+              <>
+                {/* Parcelamento (somente na criação, discreto) */}
+                {!isEditMode && (
+                  <div className="mt-1 space-y-2">
+                    <div className="flex items-center gap-3 p-1">
+                      <input
+                        type="checkbox"
+                        id="useInstallments"
+                        checked={useInstallments}
+                        onChange={(e) => setUseInstallments(e.target.checked)}
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <label
+                        htmlFor="useInstallments"
+                        className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                      >
+                        {t("useInstallmentsLabel")}
+                      </label>
+                    </div>
+
+                    {useInstallments && (
+                      <div className="pl-1">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                          {t("installmentsLabel")}
+                        </label>
+                        <input
+                          name="installments"
+                          type="number"
+                          min={1}
+                          max={60}
+                          defaultValue={1}
+                          className="w-full p-3 bg-gray-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all text-gray-900"
+                        />
+                        <p className="text-[11px] text-gray-400 mt-1 px-1">
+                          {t("installmentsHint")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Pago/Recebido */}
+                {!isEditMode && (
+                  <div className="flex flex-col gap-1 p-1 mt-1">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        name="status"
+                        value="paid"
+                        id="paid"
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <label
+                        htmlFor="paid"
+                        className="text-sm font-medium text-gray-800 cursor-pointer select-none"
+                      >
+                        {t("alreadyPaidLabel")}
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-gray-600 px-1">
+                      {t("partialPaymentHint")}
                     </p>
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* Pago/Recebido */}
-            {!isEditMode && (
-              <div className="flex flex-col gap-1 p-1 mt-1">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="status"
-                    value="paid"
-                    id="paid"
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="paid"
-                    className="text-sm font-medium text-gray-800 cursor-pointer select-none"
-                  >
-                    {t("alreadyPaidLabel")}
-                  </label>
-                </div>
-                <p className="text-[11px] text-gray-600 px-1">
-                  Se o pagamento foi <strong>parcial</strong>, você pode registrar o valor
-                  exato depois pelo botão de confirmação na lista de lançamentos.
-                </p>
-              </div>
-            )}
-
-            {/* Fixa */}
-            {showFixedBase && (
-              <div className="flex flex-col gap-1 p-1 mt-1">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="isFixed"
-                    value="true"
-                    id="isFixed"
-                    defaultChecked={initialItem?.isFixed ?? false}
-                    disabled={!canUseFixed}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <label
-                    htmlFor="isFixed"
-                    className={`text-sm font-medium cursor-pointer select-none ${canUseFixed ? "text-gray-700" : "text-gray-400"
-                      }`}
-                  >
-                    {t("fixedCheckboxLabel")}
-                  </label>
-                </div>
-                {disableFixedForInstallments && (
-                  <p className="text-[11px] text-gray-400 pl-1">
-                    {t("fixedNotAllowedWithInstallments")}
-                  </p>
+                {/* Fixa */}
+                {showFixedBase && (
+                  <div className="flex flex-col gap-1 p-1 mt-1">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        name="isFixed"
+                        value="true"
+                        id="isFixed"
+                        defaultChecked={initialItem?.isFixed ?? false}
+                        disabled={!canUseFixed}
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                      <label
+                        htmlFor="isFixed"
+                        className={`text-sm font-medium cursor-pointer select-none ${
+                          canUseFixed ? "text-gray-700" : "text-gray-400"
+                        }`}
+                      >
+                        {t("fixedCheckboxLabel")}
+                      </label>
+                    </div>
+                    {disableFixedForInstallments && (
+                      <p className="text-[11px] text-gray-400 pl-1">
+                        {t("fixedNotAllowedWithInstallments")}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             <button
               type="submit"
               disabled={isPending}
-              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${type === "income"
+              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${
+                type === "income"
                   ? "bg-green-600 hover:bg-green-700 shadow-green-100"
                   : "bg-red-600 hover:bg-red-700 shadow-red-100"
-                } disabled:opacity-70`}
+              } disabled:opacity-70`}
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">

@@ -1,4 +1,4 @@
-export type FinanceStatus = "paid" | "pending" | "partial";
+export type FinanceStatus = "paid" | "pending" | "partial" | "moved";
 
 export type FinanceItem = {
   id: string;
@@ -32,11 +32,15 @@ export type FinanceItem = {
   carriedFromMonth?: string; // ex: "2025-12"
   carriedFromItemId?: string; // id do item de origem
 
-  fixedTemplateId?: string; 
-  installmentGroupId?: string; 
-  installmentIndex?: number; 
-  installmentTotal?: number; 
+  fixedTemplateId?: string;
+  installmentGroupId?: string;
+  installmentIndex?: number;
+  installmentTotal?: number;
   originalAmount?: number;
+
+  // cartão (opcional)
+  cardName?: string; // "Nubank", "Santander", etc.
+  cardMode?: "credit" | "debit"; // crédito / débito
 };
 
 // ====== BOARDS ======
