@@ -126,6 +126,8 @@
     "suggestedExit": "Sugestão de saída"
   },
   "Finance": {
+    "paymentModalMoveLabel": "Mover para o próximo mês",
+    "paymentModalMoveHint": "Use esta opção para levar o valor integral para o próximo mês sem registrar pagamento agora.",
     "statusMoved": "Lançado no mês seguinte",
     "movedBadge": "Movido para o próximo mês",
     "paymentModalMoveOption": "Mover para o próximo mês",
@@ -282,6 +284,8 @@
     }
   },
   "FinancePage": {
+    "from": "De",
+    "to": "Até",
     "defaultUserName": "Gestor",
     "sending": "Enviando...",
     "openAmountLabel": "Saldo em aberto",
@@ -393,6 +397,12 @@
     "membersModalClose": "Fechar"
   },
   "FinanceForm": {
+    "useAutoDescription": "Usar descrição automática",
+    "advancedOptionsToggle": "Alternar opções avançadas",
+    "cardModeCreditLabel": "Crédito",
+    "cardModeDebitLabel": "Débito",
+    "cardNamePlaceholder": "Nome do cartão (ex: Nubank, Santander...)",
+    "editDescriptionButton": "Editar descrição",
     "advancedOptionsShow": "Mostrar opções avançadas",
     "advancedOptionsHide": "Ocultar opções avançadas",
     "cardOtherOption": "Outro cartão",

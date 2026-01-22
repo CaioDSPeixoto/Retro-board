@@ -302,7 +302,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               </span>
             </p>
 
-            <div className="space-y-3 mb-4">
+            <div className="mt-3 border-t border-gray-100 pt-3">
               <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
                 <input
                   type="radio"
@@ -318,7 +318,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                 </span>
               </label>
 
-              <div className="space-y-2">
+              <div className="mt-3 border-t border-gray-100 pt-3">
                 <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
                   <input
                     type="radio"
@@ -357,9 +357,6 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                   />
                   <span>{t("paymentModalMoveLabel")}</span>
                 </label>
-                <p className="text-[11px] text-gray-600 pl-6 mt-1">
-                  {t("paymentModalMoveHint")}
-                </p>
               </div>
             </div>
 

@@ -434,7 +434,7 @@ export default function FinanceMetricsPanel({
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
               <p className="text-[10px] font-semibold text-blue-700 mb-1">
-                {t("movedOutTitle")}
+                {t("movedTotalsTitle")}
               </p>
               <p className="text-blue-800">
                 {t("movedExpensesLine", {
