@@ -1,4 +1,4 @@
-export const CARD_FIXED_CATEGORY = "Cartão";
+export const CARD_FIXED_CATEGORY = "Cartão Fixo";
 
 export const BUILTIN_CATEGORIES = [
   "Alimentação",

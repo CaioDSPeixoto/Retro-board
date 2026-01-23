@@ -12,8 +12,8 @@ import type { FinanceItem } from "@/types/finance";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
+import { CARD_FIXED_CATEGORY } from "@/lib/finance/constants";
 
-const CARD_FIXED_CATEGORY_NAME = "Cartão Fixo";
 const DEFAULT_CARD_OPTIONS = ["Nubank", "Santander", "Inter", "C6", "Mercado Pago", "XP", "Will Bank", "Havan"];
 
 type Props = {
@@ -124,7 +124,7 @@ export default function FinanceFormModal({
     }
   }, [showNewCategoryForm]);
 
-  const isCardFixedCategory = category === CARD_FIXED_CATEGORY_NAME;
+  const isCardFixedCategory = category === CARD_FIXED_CATEGORY;
 
   // default pra cartão fixo
   useEffect(() => {
@@ -311,7 +311,7 @@ export default function FinanceFormModal({
                 onChange={(e) => {
                   setCategory(e.target.value);
                   // reset cartão ao trocar categoria
-                  if (e.target.value !== CARD_FIXED_CATEGORY_NAME) {
+                  if (e.target.value !== CARD_FIXED_CATEGORY) {
                     setCardName("");
                     setCardMode("");
                     setEnableCustomDescription(false);
@@ -330,9 +330,9 @@ export default function FinanceFormModal({
                     {cat}
                   </option>
                 ))}
-                {!categories.includes(CARD_FIXED_CATEGORY_NAME) && (
-                  <option value={CARD_FIXED_CATEGORY_NAME}>
-                    {CARD_FIXED_CATEGORY_NAME}
+                {!categories.includes(CARD_FIXED_CATEGORY) && (
+                  <option value={CARD_FIXED_CATEGORY}>
+                    {CARD_FIXED_CATEGORY}
                   </option>
                 )}
               </select>
@@ -384,7 +384,6 @@ export default function FinanceFormModal({
                       onChange={(e) => setCardName(e.target.value)}
                       className="w-full p-2.5 bg-white rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none text-sm text-gray-900"
                     >
-                      <option value="">{t("cardNamePlaceholder")}</option>
                       {DEFAULT_CARD_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>
                           {opt}

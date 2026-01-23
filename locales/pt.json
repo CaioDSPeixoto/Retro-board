@@ -7,7 +7,6 @@
     "author": "Autor"
   },
   "CreateCard": {
-    "new": "Novo card...",
     "author": "Seu nome..."
   },
   "Export": {
@@ -23,42 +22,12 @@
   },
   "Navbar": {
     "home": "Início",
-    "versionTitle": "Versão: v{version}",
     "tools": "Ferramentas"
-  },
-  "Column": {
-    "new": "Adicionar um novo card..."
   },
   "Room": {
     "defaults": {
       "roomName": "Retrospectiva",
       "anonymous": "Anônimo"
-    },
-    "categories": {
-      "bom": "Bom",
-      "ruim": "Ruim",
-      "melhorar": "Melhorar"
-    },
-    "alerts": {
-      "requireName": "Por favor, digite seu nome antes de criar o card!",
-      "addCardError": "Erro ao adicionar card. Tente novamente.",
-      "voteError": "Erro ao registrar voto.",
-      "roomNotFound": "Sala não encontrada!",
-      "fetchRoomError": "Erro ao carregar a sala."
-    },
-    "logs": {
-      "fetchRoomError": "Erro ao buscar sala:",
-      "addCardError": "Erro ao adicionar card:",
-      "voteError": "Erro ao votar:"
-    },
-    "errors": {
-      "noId": "ID da sala não encontrado",
-      "enterName": "Por favor, digite seu nome."
-    },
-    "modal": {
-      "enterName": "Digite seu nome",
-      "namePlaceholder": "Seu nome...",
-      "save": "Salvar"
     },
     "share": {
       "copied": "Link copiado para a área de transferência!",
@@ -94,10 +63,6 @@
       "requireName": "Por favor, digite seu nome antes de criar a sala!",
       "createError": "Erro ao criar a sala. Tente novamente.",
       "roomNotFound": "Sala não encontrada!"
-    },
-    "logs": {
-      "createError": "Erro ao criar sala:",
-      "checkRoomError": "Erro ao verificar sala:"
     }
   },
   "Tools": {
@@ -115,7 +80,6 @@
     "title": "Controle de Ponto",
     "registerNow": "Registrar horário agora",
     "addManual": "Adicionar horário manualmente",
-    "delete": "Excluir",
     "worked": "Horas trabalhadas",
     "lunch": "Tempo de almoço",
     "remaining": "Faltam",
@@ -127,35 +91,21 @@
   },
   "Finance": {
     "paymentModalMoveLabel": "Mover para o próximo mês",
-    "paymentModalMoveHint": "Use esta opção para levar o valor integral para o próximo mês sem registrar pagamento agora.",
     "statusMoved": "Lançado no mês seguinte",
     "movedBadge": "Movido para o próximo mês",
-    "paymentModalMoveOption": "Mover para o próximo mês",
     "modalReceiveTitle": "Registrar recebimento",
     "modalPayTitle": "Registrar pagamento",
     "paymentModalTotal": "Valor total",
     "paymentModalPartial": "Valor parcial",
     "paymentModalPartialHint": "O valor informado será considerado como pago agora e o restante será lançado automaticamente no mês seguinte.",
-    "confirmReceive": "Confirmar recebimento",
-    "confirmPay": "Confirmar pagamento",
     "confirmAction": "Confirmar",
     "cancel": "Cancelar",
     "backToBoard": "Voltar para o quadro",
-    "hello": "Olá",
-    "title": "Financeiro",
-    "expenses": "Despesas",
-    "incomes": "Receitas",
-    "groups": "Grupos",
     "incomesTitle": "Receitas",
     "noIncomesThisMonth": "Nenhuma receita lançada neste mês.",
     "expensesTitle": "Despesas",
     "noExpensesThisMonth": "Nenhuma despesa lançada neste mês.",
-    "transactionsTitle": "Transações",
-    "noTransactionsThisMonth": "Nenhum lançamento este mês.",
-    "categoryTitle": "Categoria",
     "noCategoryThisMonth": "Nenhum lançamento nesta categoria neste mês.",
-    "overdueTitle": "Em atraso",
-    "noOverdueThisMonth": "Não há contas em atraso neste mês.",
     "launchedBy": "Lançado por {name}",
     "openAmount": "Saldo em aberto: {value}",
     "statusPending": "Pendente",
@@ -163,8 +113,6 @@
     "statusReceived": "Recebido",
     "statusPartial": "Parcialmente pago",
     "fixedLabel": "Fixa",
-    "overdueBadge": "Em atraso",
-    "overdueMoved": "Lançado no mês seguinte",
     "confirmDelete": "Tem certeza que deseja apagar este lançamento?",
     "rolledFromMonth": "Movida de {month}",
     "partialPaid": "Pago {paid} de {total}",
@@ -173,17 +121,14 @@
     "editAria": "Editar lançamento",
     "deleteAria": "Excluir lançamento",
     "errors": {
-      "mustBeLoggedIn": "Você precisa estar logado.",
       "deleteFailed": "Erro ao excluir. Tente novamente.",
-      "toggleFailed": "Erro ao atualizar status. Tente novamente.",
-      "itemNotFound": "Item não encontrado."
+      "toggleFailed": "Erro ao atualizar status. Tente novamente."
     }
   },
   "FinanceMetrics": {
+    "movedExpensesLine":"Despesa movida com sucesso",
+    "movedIncomesLine":"Receita movida com sucesso",
     "movedTotalsTitle": "Lançamentos movidos para o próximo mês",
-    "movedIncomeLabel": "Receitas movidas",
-    "movedExpenseLabel": "Despesas movidas",
-    "movedCountLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
     "userTotalIncomeShort": "Receitas",
     "incomesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
     "expensesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
@@ -194,21 +139,15 @@
     "perUserTitle": "Métricas por pessoa",
     "perUserSubtitle": "Veja quanto cada pessoa movimentou neste período no quadro compartilhado.",
     "topSpenderBadge": "Quem mais gastou no período",
-    "mostBigSpender": "Quem mais gastou no período",
     "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total em despesas",
-    "userTotalIncome": "Total em receitas: {value}",
-    "userExpensesCountLabel": "Nº de despesas",
-    "userIncomesCountLabel": "Nº de receitas",
     "userTopCategoriesTitle": "Categorias em que mais gastou",
     "incomesTitle": "Receitas",
     "expensesTitle": "Despesas",
     "totalPaidAndPending": "Total:",
     "onlyFinished": "Finalizadas:",
     "onlyPending": "Pendentes:",
-    "incomesCountLabel": "{count} lançamento(s)",
     "incomesOverdueLabel": "{count} em atraso",
-    "expensesCountLabel": "{count} lançamento(s)",
     "expensesOverdueLabel": "{count} em atraso",
     "expensesDistributionTitle": "Distribuição de despesas por categoria",
     "noExpensesInPeriod": "Nenhuma despesa registrada neste período.",
@@ -219,15 +158,8 @@
     "mostActiveDateFormat": "dd 'de' MMM",
     "daysWithMovements": "Dias com movimentação no período: {count}",
     "notEnoughData": "Não há dados suficientes para calcular.",
-    "quickIndicatorsTitle": "Indicadores rápidos",
-    "totalTransactionsLabel": "Total de lançamentos",
-    "avgExpenseTicketLabel": "Ticket médio das despesas",
-    "avgIncomeTicketLabel": "Ticket médio das receitas",
     "avgTicketLabel": "Ticket médio:",
-    "othersCategory": "Outros",
-    "cardExpensesTitle": "Gastos no cartão",
-    "noCardExpensesInPeriod": "Nenhuma despesa registrada com cartão neste período.",
-    "cardModeTitle": "Gastos por tipo de cartão"
+    "othersCategory": "Outros"
   },
   "UserMenu": {
     "account": "Conta",
@@ -239,8 +171,6 @@
   },
   "TodoList": {
     "title": "Lista de Tarefas",
-    "add": "Adicionar tarefa",
-    "delete": "Excluir",
     "placeholder": "Descrição da tarefa",
     "clearAll": "Limpar tudo",
     "remaining": "restantes",
@@ -284,18 +214,14 @@
     }
   },
   "FinancePage": {
-    "from": "De",
-    "to": "Até",
     "defaultUserName": "Gestor",
     "sending": "Enviando...",
     "openAmountLabel": "Saldo em aberto",
     "loadingInvites": "Carregando convites e solicitações...",
     "inviteByEmail": "Convite por email para {email}",
     "requestByCode": "Pedido de acesso via código",
-    "hello": "Olá",
     "boardLabel": "Quadro de finanças",
     "allBoardsLabel": "Todos os quadros",
-    "currentBoardPrefix": "Você está no quadro",
     "balanceTitle": "Saldo em Caixa",
     "entriesLabel": "Entradas",
     "entriesForecastLabel": "Previstas para receber (não calculadas)",
@@ -316,8 +242,6 @@
     "addNow": "Adicionar agora",
     "pendingApprovalsTitle": "Aprovações pendentes",
     "pendingApprovalsMessage": "Você tem {count} solicitação(ões) para entrar em quadros que você administra. Acesse a área de convites para aprovar ou recusar.",
-    "pendingApprovalsClose": "Entendi",
-    "joinByCodeTitle": "Entrar em um quadro por código",
     "joinByCodeLabel": "Código do quadro",
     "joinByCodePlaceholder": "Cole aqui o código que você recebeu",
     "joinByCodeButton": "Solicitar entrada",
@@ -335,42 +259,21 @@
     "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-    "overdueSummaryLabel": "Saldo em atraso",
-    "errors": {
-      "boardNotFound": "Quadro não encontrado.",
-      "inviteSend": "Erro ao enviar convite. Tente novamente.",
-      "boardNotFoundCode": "Quadro não encontrado. Verifique o código.",
-      "alreadyMember": "Você já participa deste quadro.",
-      "alreadyRequested": "Você já solicitou acesso a este quadro.",
-      "requestSend": "Erro ao enviar pedido. Tente novamente."
-    }
+    "overdueSummaryLabel": "Saldo em atraso"
   },
   "FinanceBoards": {
     "title": "Quadros de finanças",
     "description": "Crie um novo quadro ou entre em um existente para organizar suas contas sozinho(a) ou com outras pessoas.",
-    "createSectionTitle": "Criar novo quadro",
-    "createNameLabel": "Nome do quadro",
-    "createNamePlaceholder": "Ex: Casa, Viagem com amigos...",
-    "createPersonalLabel": "Quadro pessoal (somente você vê e lança)",
     "createButton": "Criar quadro",
-    "joinSectionTitle": "Entrar em um quadro existente",
-    "joinCodeLabel": "Código do quadro",
-    "joinCodePlaceholder": "Cole aqui o código que recebeu",
-    "joinButton": "Entrar",
-    "listTitle": "Seus quadros",
     "personalTag": "Pessoal",
     "sharedTag": "Compartilhado",
     "openBoard": "Abrir",
-    "emptyMessage": "Você ainda não tem quadros criados ou compartilhados.",
     "newBoardLabel": "Novo quadro",
     "newBoardPlaceholder": "Dê um nome para este quadro",
     "emptyTitle": "Você ainda não tem quadros",
     "emptySubtitle": "Crie um novo quadro para começar a organizar suas finanças.",
     "membersLabel": "{count, plural, one {# membro} other {# membros}}",
     "errors": {
-      "nameRequired": "Dê um nome para o quadro antes de criar.",
-      "codeRequired": "Informe o código do quadro para entrar.",
-      "boardNotFound": "Quadro não encontrado ou você ainda não foi aceito.",
       "general": "Ocorreu um erro. Tente novamente."
     },
     "createButtonLoading": "Criando...",
@@ -401,58 +304,25 @@
     "advancedOptionsToggle": "Alternar opções avançadas",
     "cardModeCreditLabel": "Crédito",
     "cardModeDebitLabel": "Débito",
-    "cardNamePlaceholder": "Nome do cartão (ex: Nubank, Santander...)",
     "editDescriptionButton": "Editar descrição",
-    "advancedOptionsShow": "Mostrar opções avançadas",
-    "advancedOptionsHide": "Ocultar opções avançadas",
-    "cardOtherOption": "Outro cartão",
-    "cardOtherPlaceholder": "Nome do cartão",
-    "cardTypeLabel": "Tipo",
-    "cardTypeCredit": "Crédito",
-    "cardTypeDebit": "Débito",
-    "cardAutoDescriptionLabel": "Descrição automática baseada no cartão",
-    "cardManualDescriptionToggle": "Editar descrição manualmente",
-    "cardBackToAutoDescription": "Voltar para descrição automática",
-    "cardGeneratedTitlePreview": "Descrição gerada:",
-    "cardTitlePattern": "Cartão {card} - {type}",
     "partialPaymentHint": "Se o pagamento foi parcial, você pode registrar o valor exato depois pelo botão de confirmação na lista de lançamentos.",
     "newTransactionTitle": "Novo lançamento",
     "editTransactionTitle": "Editar lançamento",
     "typeIncome": "Receita",
     "typeExpense": "Despesa",
     "categoryLabel": "Categoria",
-    "customCategoryHint": "Precisa de algo diferente? Adicione uma categoria personalizada:",
     "customCategoryPlaceholder": "Nome da categoria",
-    "savingCategory": "Salvando...",
     "addCategory": "Adicionar",
     "descriptionLabel": "Descrição",
     "descriptionPlaceholder": "Ex: Aluguel, Salário...",
     "amountLabel": "Valor (R$)",
     "dateLabel": "Data",
     "alreadyPaidLabel": "Já foi pago/recebido?",
-    "paidAmountLabel": "Valor já pago (opcional)",
-    "paidAmountHint": "Use este campo para registrar pagamentos parciais. O saldo em aberto será levado para o próximo mês.",
     "fixedCheckboxLabel": "Lançamento fixo (repetir todo mês)",
     "savingButton": "Salvando...",
     "saveButton": "Salvar lançamento",
     "saveEditButton": "Salvar alterações",
-    "errors": {
-      "createCategory": "Erro ao criar categoria.",
-      "requiredFields": "Preencha todos os campos obrigatórios.",
-      "invalidAmount": "Informe um valor válido.",
-      "unknown": "Erro ao salvar. Tente novamente."
-    },
     "cancel": "Cancelar",
-    "title": "Novo lançamento",
-    "income": "Receita",
-    "expense": "Despesa",
-    "categoryCustomHelp": "Precisa de algo diferente? Adicione uma categoria personalizada:",
-    "categoryNamePlaceholder": "Nome da categoria",
-    "categoryAddButton": "Adicionar",
-    "paidLabel": "Já foi pago/recebido?",
-    "fixedLabel": "Despesa fixa (repetir todo mês)",
-    "submit": "Salvar lançamento",
-    "saving": "Salvando...",
     "fixedCategoryName": "Contas Fixas",
     "useInstallmentsLabel": "Pagar em parcelas",
     "installmentsLabel": "Número de parcelas",
@@ -460,11 +330,6 @@
     "fixedNotAllowedWithInstallments": "Não é possível marcar como conta fixa em lançamentos parcelados.",
     "cardSectionTitle": "Detalhes do cartão",
     "cardNameLabel": "Cartão",
-    "cardCustomOption": "Outro cartão...",
-    "cardCustomPlaceholder": "Nome do cartão (ex: Nubank, Santander...)",
-    "cardModeLabel": "Tipo de cartão",
-    "cardModeCredit": "Crédito",
-    "cardModeDebit": "Débito",
-    "cardModeHint": "Essas informações serão usadas nas métricas por cartão."
+    "cardModeLabel": "Tipo de cartão"
   }
 }
