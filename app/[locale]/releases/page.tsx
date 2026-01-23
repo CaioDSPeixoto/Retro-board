@@ -7,6 +7,10 @@ export default function ReleasesPage() {
   const t = useTranslations("Release");
 
   const releases = [
+    { version: "0.7.3", date: "22/01/2026", changes: ["FIX: correção de bugs e melhoria de desempenho"] },
+    { version: "0.7.2", date: "22/01/2026", changes: ["REFACT: removendo locales não utilizados"] },
+    { version: "0.7.1", date: "21/01/2026", changes: ["REFACT: reorganização dos módulos e nova estrutura"] },
+    { version: "0.7.0", date: "21/01/2026", changes: ["FEAT: adicionando repasse para mês seguinte de contas (financeiro)"] },
     { version: "0.6.8", date: "15/01/2026", changes: ["FIX: correções de locales (removendo hardcore)"] },
     { version: "0.6.7", date: "08/01/2026", changes: ["REFACT: ajustes visuais/bloqueios/tratativas de seguranca"] },
     { version: "0.6.6", date: "02/01/2026", changes: ["REFACT: ajustes visuais"] },
