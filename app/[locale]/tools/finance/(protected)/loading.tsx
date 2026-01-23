@@ -1,4 +1,4 @@
-import FinanceBoardsLoading from "./FinanceBoardsLoading";
+import FinanceBoardsLoading from "@/components/finance/FinanceBoardsLoading";
 
 export default function Loading() {
   return (

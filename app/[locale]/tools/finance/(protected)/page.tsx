@@ -2,8 +2,8 @@
 export const dynamic = "force-dynamic";
 
 import { format } from "date-fns";
-import FinanceClientPage from "./FinanceClientPage";
-import FinanceBoardsClient from "../FinanceBoardsClient";
+import FinanceClientPage from "@/components/finance/FinanceClientPage";
+import FinanceBoardsClient from "@/components/finance/FinanceBoardsClient";
 import {
   getFinanceItemsData,
   getCategoriesData,

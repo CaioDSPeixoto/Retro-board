@@ -1,6 +1,6 @@
 "use client";
 
-import RegisterForm from "./RegisterForm";
+import RegisterForm from "@/components/register/RegisterForm";
 
 export default function RegisterPage({ params }: { params: { locale: string } }) {
     // NOTE: Simple unwrapping of params for client component is okay here if passed from server parent, 

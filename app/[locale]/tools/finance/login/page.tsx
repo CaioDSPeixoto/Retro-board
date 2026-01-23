@@ -1,4 +1,4 @@
-import LoginForm from "./LoginForm";
+import LoginForm from "@/components/login/LoginForm";
 import { getTranslations } from "next-intl/server";
 
 export default async function FinanceLoginPage({

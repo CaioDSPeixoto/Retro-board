@@ -20,7 +20,7 @@ import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 
-import { sendInviteByEmail } from "./invite-actions";
+import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
 type Props = {
   initialItems: FinanceItem[];
@@ -131,6 +131,8 @@ export default function FinanceClientPage({
           installmentIndex: data.installmentIndex,
           installmentTotal: data.installmentTotal,
           originalAmount: data.originalAmount,
+          cardName: data.cardName,
+          cardMode: data.cardMode,
         });
       });
 
@@ -219,18 +221,24 @@ export default function FinanceClientPage({
     return items.reduce(
       (acc, item) => {
         const isPaid = item.status === "paid";
+        const isMoved = item.status === "moved";
 
         if (item.type === "income") {
           if (isPaid) acc.incomes += item.amount;
-          else acc.incomesForecast += item.amount;
+          else if (!isMoved) acc.incomesForecast += item.amount;
         } else {
           if (isPaid) acc.expenses += item.amount;
-          else acc.expensesForecast += item.amount;
+          else if (!isMoved) acc.expensesForecast += item.amount;
         }
 
         return acc;
       },
-      { incomes: 0, expenses: 0, incomesForecast: 0, expensesForecast: 0 },
+      {
+        incomes: 0,
+        expenses: 0,
+        incomesForecast: 0,
+        expensesForecast: 0,
+      },
     );
   }, [items]);
 
@@ -244,7 +252,8 @@ export default function FinanceClientPage({
         (item) =>
           !item.isSynthetic &&
           item.date < todayStr &&
-          item.status !== "paid",
+          item.status !== "paid" &&
+          item.status !== "moved",
       ),
     [items, todayStr],
   );
@@ -374,9 +383,7 @@ export default function FinanceClientPage({
 
         <div className="flex gap-4 mt-6">
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">
-              {t("entriesLabel")}
-            </p>
+            <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
             <p className="text-lg font-bold text-green-300">
               + {currency(totals.incomes)}
             </p>
@@ -390,9 +397,7 @@ export default function FinanceClientPage({
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
-            <p className="text-xs text-blue-100 mb-1">
-              {t("exitsLabel")}
-            </p>
+            <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
             <p className="text-lg font-bold text-red-300">
               - {currency(totals.expenses)}
             </p>

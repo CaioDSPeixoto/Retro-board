@@ -46,9 +46,22 @@ export default function FinanceMetricsPanel({
     let overdueIncomeCount = 0;
     let overdueExpenseCount = 0;
 
+    let movedIncomeTotal = 0;
+    let movedExpenseTotal = 0;
+
     for (const item of baseItems) {
       const isPaid = item.status === "paid";
-      const isOverdue = !isPaid && item.date < todayStr;
+      const isMoved = item.status === "moved";
+      const isOverdue = !isPaid && !isMoved && item.date < todayStr;
+
+      if (isMoved) {
+        if (item.type === "income") {
+          movedIncomeTotal += item.amount;
+        } else {
+          movedExpenseTotal += item.amount;
+        }
+        continue;
+      }
 
       if (item.type === "income") {
         totalIncome += item.amount;
@@ -66,7 +79,6 @@ export default function FinanceMetricsPanel({
     }
 
     const balance = totalIncome - totalExpense;
-    const overdueCount = overdueIncomeCount + overdueExpenseCount;
 
     return {
       totalIncome,
@@ -80,7 +92,8 @@ export default function FinanceMetricsPanel({
       pendingExpenseTotal,
       overdueIncomeCount,
       overdueExpenseCount,
-      overdueCount,
+      movedIncomeTotal,
+      movedExpenseTotal,
     };
   }, [baseItems, todayStr]);
 
@@ -96,6 +109,8 @@ export default function FinanceMetricsPanel({
     pendingExpenseTotal,
     overdueIncomeCount,
     overdueExpenseCount,
+    movedIncomeTotal,
+    movedExpenseTotal,
   } = metrics;
 
   // Despesas por categoria (global)
@@ -104,6 +119,7 @@ export default function FinanceMetricsPanel({
 
     for (const item of baseItems) {
       if (item.type !== "expense") continue;
+      if (item.status === "moved") continue;
 
       const key = item.category || othersLabel;
       const prev = map.get(key) || { total: 0, count: 0 };
@@ -132,6 +148,7 @@ export default function FinanceMetricsPanel({
 
     for (const item of baseItems) {
       if (item.type !== "income") continue;
+      if (item.status === "moved") continue;
 
       const key = item.category || othersLabel;
       const prev = map.get(key) || { total: 0, count: 0 };
@@ -161,6 +178,7 @@ export default function FinanceMetricsPanel({
     const dailyMap = new Map<string, { count: number; totalAbs: number }>();
 
     for (const item of baseItems) {
+      if (item.status === "moved") continue;
       const date = item.date;
       const prev = dailyMap.get(date) || { count: 0, totalAbs: 0 };
       prev.count += 1;
@@ -206,6 +224,8 @@ export default function FinanceMetricsPanel({
     const map = new Map<string, UserAgg>();
 
     for (const item of baseItems) {
+      if (item.status === "moved") continue;
+
       const userId = item.createdBy || "__unknown__";
       const name = item.createdByName || unknownUserLabel;
 
@@ -314,8 +334,9 @@ export default function FinanceMetricsPanel({
               {t("balanceLabel")}
             </p>
             <p
-              className={`text-2xl font-extrabold ${balance >= 0 ? "text-green-600" : "text-red-600"
-                }`}
+              className={`text-2xl font-extrabold ${
+                balance >= 0 ? "text-green-600" : "text-red-600"
+              }`}
             >
               {currency(balance)}
             </p>
@@ -408,6 +429,28 @@ export default function FinanceMetricsPanel({
             </div>
           </div>
         </div>
+
+        {(movedIncomeTotal > 0 || movedExpenseTotal > 0) && (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+              <p className="text-[10px] font-semibold text-blue-700 mb-1">
+                {t("movedTotalsTitle")}
+              </p>
+              <p className="text-blue-800">
+                {t("movedExpensesLine", {
+                  value: currency(movedExpenseTotal),
+                })}
+              </p>
+              {movedIncomeTotal > 0 && (
+                <p className="text-blue-800 mt-0.5">
+                  {t("movedIncomesLine", {
+                    value: currency(movedIncomeTotal),
+                  })}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Despesas por categoria (global) */}
@@ -493,9 +536,13 @@ export default function FinanceMetricsPanel({
         {mostActiveDayData?.top ? (
           <>
             <p className="text-sm font-semibold text-gray-800">
-              {format(parseISO(mostActiveDayData.top.date), t("mostActiveDateFormat"), {
-                locale: ptBR,
-              })}
+              {format(
+                parseISO(mostActiveDayData.top.date),
+                t("mostActiveDateFormat"),
+                {
+                  locale: ptBR,
+                },
+              )}
             </p>
             <p className="text-xs text-gray-500 mt-1">
               {t("mostActiveDayLine", {

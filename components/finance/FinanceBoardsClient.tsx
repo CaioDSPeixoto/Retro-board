@@ -20,9 +20,9 @@ import {
 
 import { FiSettings, FiEdit2, FiUsers, FiTrash2 } from "react-icons/fi";
 
-import FinanceJoinByCode from "./(protected)/FinanceJoinByCode";
-import FinanceInvitesPanel from "./(protected)/FinanceInvitePanel";
-import FinanceBoardsLoading from "./(protected)/FinanceBoardsLoading";
+import FinanceJoinByCode from "./FinanceJoinByCode";
+import FinanceInvitesPanel from "./FinanceInvitePanel";
+import FinanceBoardsLoading from "./FinanceBoardsLoading";
 
 type Props = {
   locale: string;

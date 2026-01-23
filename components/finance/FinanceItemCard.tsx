@@ -32,16 +32,21 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
   const [toggling, setToggling] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentMode, setPaymentMode] = useState<"full" | "partial">("full");
+  const [paymentMode, setPaymentMode] = useState<"full" | "partial" | "move">(
+    "full",
+  );
   const [partialValue, setPartialValue] = useState("");
 
   const isIncome = item.type === "income";
   const isPaid = item.status === "paid";
   const isPartial = item.status === "partial";
+  const isMoved = item.status === "moved";
   const isSynthetic = item.isSynthetic === true;
 
   const paidAmount = item.paidAmount || 0;
-  const openAmount = Math.max(item.amount - paidAmount, 0);
+  const openAmount = isMoved
+    ? 0
+    : Math.max(item.amount - paidAmount, 0);
 
   const isRolled = !!item.carriedFromMonth;
 
@@ -81,7 +86,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   };
 
   const handleToggle = () => {
-    if (isSynthetic || toggling) return;
+    if (isSynthetic || isMoved || toggling) return;
 
     setPaymentMode("full");
     setPartialValue("");
@@ -120,6 +125,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
     onEdit(item);
   };
 
+  const canToggle = !isSynthetic && !isMoved;
+
   return (
     <>
       {/* CARD */}
@@ -133,7 +140,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-gray-900 truncate">{item.title}</h3>
 
             {item.isFixed && (
@@ -145,6 +152,12 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
             {isRolled && (
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-100">
                 {t("rolledFromMonth", { month: item.carriedFromMonth || "" })}
+              </span>
+            )}
+
+            {isMoved && (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                {t("movedBadge")}
               </span>
             )}
 
@@ -183,7 +196,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
             </p>
           )}
 
-          {openAmount > 0 && item.status !== "paid" && (
+          {openAmount > 0 && item.status !== "paid" && !isMoved && (
             <p className="text-[11px] text-amber-700">
               {t("openAmount", {
                 value: formatCurrency(openAmount),
@@ -222,26 +235,33 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                 {t("statusPartial")}
               </span>
             )}
+            {item.status === "moved" && (
+              <span className="text-blue-600 font-semibold">
+                {t("statusMoved")}
+              </span>
+            )}
           </div>
 
           {!isSynthetic && (
             <div className="flex items-center gap-3 mt-1">
-              <button
-                onClick={handleToggle}
-                disabled={toggling}
-                className={`${
-                  isPaid ? "text-green-500" : "text-gray-400"
-                } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
-                aria-label={t("togglePaidAria")}
-              >
-                {toggling ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : isPaid ? (
-                  <FiCheckCircle size={18} />
-                ) : (
-                  <FiCircle size={18} />
-                )}
-              </button>
+              {canToggle && (
+                <button
+                  onClick={handleToggle}
+                  disabled={toggling}
+                  className={`${
+                    isPaid ? "text-green-500" : "text-gray-400"
+                  } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
+                  aria-label={t("togglePaidAria")}
+                >
+                  {toggling ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : isPaid ? (
+                    <FiCheckCircle size={18} />
+                  ) : (
+                    <FiCircle size={18} />
+                  )}
+                </button>
+              )}
 
               {onEdit && (
                 <button
@@ -272,9 +292,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-gray-200">
             <h3 className="text-base font-semibold text-gray-900 mb-1">
-              {isIncome
-                ? t("modalReceiveTitle")
-                : t("modalPayTitle")}
+              {isIncome ? t("modalReceiveTitle") : t("modalPayTitle")}
             </h3>
 
             <p className="text-sm text-gray-700 mb-3">
@@ -284,7 +302,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               </span>
             </p>
 
-            <div className="space-y-3 mb-4">
+            <div className="mt-3 border-t border-gray-100 pt-3">
               <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
                 <input
                   type="radio"
@@ -293,14 +311,14 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                   onChange={() => setPaymentMode("full")}
                 />
                 <span>
-                  Valor total{" "}
+                  {t("paymentModalTotal")}{" "}
                   <span className="font-semibold">
                     ({formatCurrency(item.amount)})
                   </span>
                 </span>
               </label>
 
-              <div className="space-y-2">
+              <div className="mt-3 border-t border-gray-100 pt-3">
                 <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
                   <input
                     type="radio"
@@ -308,7 +326,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                     checked={paymentMode === "partial"}
                     onChange={() => setPaymentMode("partial")}
                   />
-                  <span>Valor parcial</span>
+                  <span>{t("paymentModalPartial")}</span>
                 </label>
 
                 {paymentMode === "partial" && (
@@ -323,11 +341,22 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                       className="w-full p-2.5 bg-gray-50 rounded-xl border border-gray-300 focus:bg-white focus:border-blue-500 outline-none text-sm text-gray-900"
                     />
                     <p className="text-[11px] text-gray-600">
-                      O valor informado será considerado como pago agora e o
-                      restante será lançado automaticamente no mês seguinte.
+                      {t("paymentModalPartialHint")}
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div className="mt-3 border-t border-gray-100 pt-3">
+                <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+                  <input
+                    type="radio"
+                    className="w-4 h-4 text-blue-600"
+                    checked={paymentMode === "move"}
+                    onChange={() => setPaymentMode("move")}
+                  />
+                  <span>{t("paymentModalMoveLabel")}</span>
+                </label>
               </div>
             </div>
 
@@ -348,9 +377,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                 {toggling && (
                   <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 )}
-                {isIncome
-                  ? t("confirmReceive")
-                  : t("confirmPay")}
+                {t("confirmAction")}
               </button>
             </div>
           </div>

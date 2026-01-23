@@ -1,10 +1,9 @@
-// app/[locale]/tools/finance/(protected)/register/RegisterForm.tsx
 "use client";
 
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { loginAction } from "../login/actions";
+import { loginAction } from "@/app/[locale]/tools/finance/login/actions";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -43,8 +42,6 @@ export default function RegisterForm({ locale }: { locale: string }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
-      console.error("Firebase Register Error", firebaseError);
-
       if (firebaseError.code === "auth/email-already-in-use") setError(t("errors.inUse"));
       else if (firebaseError.code === "auth/invalid-email") setError(t("errors.invalid"));
       else setError(t("errors.general"));
