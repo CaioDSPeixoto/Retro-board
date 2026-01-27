@@ -126,7 +126,7 @@
     }
   },
   "FinanceMetrics": {
-    "movedExpensesLine":"Despesa movida com sucesso",
+    "movedExpensesLine":"Despesa movida R$ {value}",
     "movedIncomesLine":"Receita movida com sucesso",
     "movedTotalsTitle": "Lançamentos movidos para o próximo mês",
     "userTotalIncomeShort": "Receitas",

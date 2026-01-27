@@ -5,7 +5,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
-import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 
 /* ================= helpers ================= */
 
@@ -228,7 +228,7 @@ export async function addFinanceItem(formData: FormData) {
     type,
     category,
     createdAt: nowIso,
-    ...(category === "Contas Fixas" && isFixedFlag ? { isFixed: true } : {}),
+    ...(category === ACCOUNT_FIXED_CATEGORY && isFixedFlag ? { isFixed: true } : {}),
     ...(boardId ? { boardId } : {}),
     createdBy: sessionUser,
     ...(createdByNameFromForm ? { createdByName: createdByNameFromForm } : {}),
@@ -244,7 +244,7 @@ export async function addFinanceItem(formData: FormData) {
     let fixedTemplateId: string | undefined;
 
     // se for "Contas Fixas" com lançamento fixo, cria o template primeiro
-    if (category === "Contas Fixas" && isFixedFlag) {
+    if (category === ACCOUNT_FIXED_CATEGORY && isFixedFlag) {
       const day = parseInt(date.split("-")[2] || "1", 10);
 
       const tplRef = await adminDb.collection("finance_fixed_templates").add({
