@@ -24,9 +24,19 @@ type Props = {
   item: FinanceItem;
   locale: string;
   onEdit?: (item: FinanceItem) => void;
+  selectionMode?: boolean;
+  selected?: boolean;
+  onToggleSelection?: (itemId: string) => void;
 };
 
-export default function FinanceItemCard({ item, locale, onEdit }: Props) {
+export default function FinanceItemCard({
+  item,
+  locale,
+  onEdit,
+  selectionMode,
+  selected,
+  onToggleSelection,
+}: Props) {
   const router = useRouter();
   const t = useTranslations("Finance");
 
@@ -59,8 +69,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
     locale === "pt"
       ? ptBR
       : locale === "es"
-      ? es
-      : enUS;
+        ? es
+        : enUS;
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -130,14 +140,29 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
   return (
     <>
       {/* CARD */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between gap-3 mb-3">
-        <div
-          className={`p-3 rounded-full ${
-            isIncome ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-          }`}
-        >
-          {isIncome ? <FiArrowUp size={20} /> : <FiArrowDown size={20} />}
-        </div>
+      <div
+        className={`p-4 rounded-xl shadow-sm border flex items-center justify-between gap-3 mb-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
+          ? "bg-amber-50 border-amber-200"
+          : "bg-white border-gray-200"
+          } ${selected ? "ring-2 ring-blue-500 bg-blue-50/30" : ""}`}
+        onClick={() => selectionMode && onToggleSelection && onToggleSelection(item.id)}
+      >
+        {selectionMode ? (
+          <div className="mr-1">
+            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}`}>
+              {selected && <FiCheckCircle className="text-white" size={14} />}
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`p-3 rounded-full ${isIncome
+              ? "bg-green-100 text-green-600"
+              : "bg-red-100 text-red-600"
+              }`}
+          >
+            {isIncome ? <FiArrowUp size={20} /> : <FiArrowDown size={20} />}
+          </div>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -177,6 +202,7 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               item.category,
             )}?month=${monthParam}${boardParam}`}
             className="text-[11px] text-blue-600 mt-1 hover:underline inline-block"
+            onClick={(e) => selectionMode && e.preventDefault()}
           >
             {item.category}
           </Link>
@@ -207,9 +233,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
         <div className="text-right flex flex-col items-end gap-1">
           <span
-            className={`font-bold ${
-              isIncome ? "text-green-600" : "text-red-600"
-            }`}
+            className={`font-bold ${isIncome ? "text-green-600" : "text-red-600"
+              }`}
           >
             {isIncome ? "+ " : "- "}
             {formatCurrency(item.amount)}
@@ -221,8 +246,8 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
                 {item.originalAmount && item.originalAmount > item.amount
                   ? t("statusPartial")
                   : isIncome
-                  ? t("statusReceived")
-                  : t("statusPaid")}
+                    ? t("statusReceived")
+                    : t("statusPaid")}
               </span>
             )}
             {item.status === "pending" && (
@@ -242,15 +267,17 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
             )}
           </div>
 
-          {!isSynthetic && (
+          {!isSynthetic && !selectionMode && (
             <div className="flex items-center gap-3 mt-1">
               {canToggle && (
                 <button
-                  onClick={handleToggle}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggle();
+                  }}
                   disabled={toggling}
-                  className={`${
-                    isPaid ? "text-green-500" : "text-gray-400"
-                  } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
+                  className={`${isPaid ? "text-green-500" : "text-gray-400"
+                    } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
                   aria-label={t("togglePaidAria")}
                 >
                   {toggling ? (
@@ -265,7 +292,10 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
 
               {onEdit && (
                 <button
-                  onClick={handleEditClick}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick();
+                  }}
                   disabled={toggling}
                   className="text-gray-400 hover:text-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label={t("editAria")}
@@ -275,7 +305,10 @@ export default function FinanceItemCard({ item, locale, onEdit }: Props) {
               )}
 
               <button
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 disabled={toggling}
                 className="text-gray-400 hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={t("deleteAria")}

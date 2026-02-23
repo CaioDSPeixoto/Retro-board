@@ -31,7 +31,7 @@ async function canEditItem(existing: FinanceItem, sessionUser: string) {
 
 /* ================= categorias ================= */
 
-export async function createCategory(name: string, locale: string) {
+export async function createCategory(name: string, locale: string, boardId?: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
 
@@ -41,13 +41,51 @@ export async function createCategory(name: string, locale: string) {
   if (BUILTIN_CATEGORIES.includes(trimmed))
     return { error: "Essa categoria já existe" };
 
+  if (boardId) {
+    const board = await getBoard(boardId);
+    if (!board) return { error: "Quadro não encontrado" };
+    if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
+  }
+
+  // Verifica duplicidade no contexto (board ou pessoal)
+  let query = adminDb
+    .collection("finance_categories")
+    .where("userId", "==", sessionUser)
+    .where("name", "==", trimmed);
+
+  if (boardId) {
+    query = query.where("boardId", "==", boardId);
+  } else {
+    // Para "pessoal", idealmente checaríamos onde boardId não existe
+    // mas Firestore não facilita query de "campo não existe" ou "campo é null" combinado com outros wheres facilmente sem index.
+    // Vamos checar na memória se houver colisão.
+  }
+
+  const snap = await query.get();
+
+  let exists = false;
+  if (!snap.empty) {
+    if (boardId) {
+      exists = true;
+    } else {
+      // verifica se algum dos docs encontrados tbm não tem boardId
+      exists = snap.docs.some(d => !d.data().boardId);
+    }
+  }
+
+  if (exists) {
+    return { error: "Essa categoria já existe" };
+  }
+
   await adminDb.collection("finance_categories").add({
     userId: sessionUser,
     name: trimmed,
     createdAt: new Date().toISOString(),
+    ...(boardId ? { boardId } : {}),
   });
 
   revalidatePath(`/${locale}/tools/finance`);
+  revalidatePath(`/${locale}/tools/finance/categories`);
   return { success: true };
 }
 

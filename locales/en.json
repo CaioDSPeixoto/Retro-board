@@ -120,9 +120,16 @@
     "togglePaidAria": "Toggle paid status",
     "editAria": "Edit entry",
     "deleteAria": "Delete entry",
+    "noCustomCategories": "No custom categories found.",
+    "categoriesTitle": "Manage Categories",
+    "customCategoriesLabel": "Custom Categories",
+    "builtinCategoriesLabel": "Default Categories",
+    "builtinLabel": "Default",
     "errors": {
       "deleteFailed": "Delete failed. Please try again.",
-      "toggleFailed": "Failed to update status. Please try again."
+      "toggleFailed": "Failed to update status. Please try again.",
+      "unauthorized": "Unauthorized.",
+      "categoryInUse": "This category is in use and cannot be deleted."
     }
   },
   "FinanceMetrics": {
@@ -259,7 +266,13 @@
     "metricsTitle": "Metrics",
     "tabListLabel": "List",
     "tabMetricsLabel": "Metrics",
-    "overdueSummaryLabel": "Overdue Balance"
+    "overdueSummaryLabel": "Overdue Balance",
+    "manageCategoriesLabel": "Manage categories",
+    "selectButton": "Select",
+    "cancelSelection": "Cancel selection",
+    "selectedTotalLabel": "Selected total",
+    "itemSingular": "item",
+    "itemPlural": "items"
   },
   "FinanceBoards": {
     "title": "Finance Boards",

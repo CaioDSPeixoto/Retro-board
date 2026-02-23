@@ -120,14 +120,21 @@
     "togglePaidAria": "Alternar pago",
     "editAria": "Editar lançamento",
     "deleteAria": "Excluir lançamento",
+    "noCustomCategories": "Nenhuma categoria personalizada encontrada.",
+    "categoriesTitle": "Gerenciar Categorias",
+    "customCategoriesLabel": "Categorias Personalizadas",
+    "builtinCategoriesLabel": "Categorias Padrão",
+    "builtinLabel": "Padrão",
     "errors": {
       "deleteFailed": "Erro ao excluir. Tente novamente.",
-      "toggleFailed": "Erro ao atualizar status. Tente novamente."
+      "toggleFailed": "Erro ao atualizar status. Tente novamente.",
+      "unauthorized": "Não autorizado.",
+      "categoryInUse": "Esta categoria está em uso e não pode ser excluída."
     }
   },
   "FinanceMetrics": {
-    "movedExpensesLine":"Despesa movida R$ {value}",
-    "movedIncomesLine":"Receita movida com sucesso",
+    "movedExpensesLine": "Despesa movida R$ {value}",
+    "movedIncomesLine": "Receita movida com sucesso",
     "movedTotalsTitle": "Lançamentos movidos para o próximo mês",
     "userTotalIncomeShort": "Receitas",
     "incomesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
@@ -259,7 +266,13 @@
     "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-    "overdueSummaryLabel": "Saldo em atraso"
+    "overdueSummaryLabel": "Saldo em atraso",
+    "manageCategoriesLabel": "Gerenciar categorias",
+    "selectButton": "Selecionar",
+    "cancelSelection": "Cancelar seleção",
+    "selectedTotalLabel": "Total selecionado",
+    "itemSingular": "item",
+    "itemPlural": "itens"
   },
   "FinanceBoards": {
     "title": "Quadros de finanças",

@@ -107,7 +107,7 @@ export default async function FinancePage({
     items = await getFinanceItemsData(currentMonth, boardId);
   }
 
-  const categories = await getCategoriesData();
+  const categories = await getCategoriesData(boardId);
 
   return (
     <FinanceClientPage

@@ -10,7 +10,10 @@ import {
   FiPlus,
   FiUsers,
   FiChevronDown,
+  FiList,
+  FiSettings,
 } from "react-icons/fi";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
@@ -69,6 +72,8 @@ export default function FinanceClientPage({
   const [shareOpen, setShareOpen] = useState(false);
 
   const [showMetrics, setShowMetrics] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -267,6 +272,29 @@ export default function FinanceClientPage({
     [overdueItems],
   );
 
+  const toggleSelectionMode = () => {
+    setSelectionMode((prev) => !prev);
+    setSelectedItems(new Set());
+  };
+
+  const handleToggleItemSelection = (itemId: string) => {
+    const next = new Set(selectedItems);
+    if (next.has(itemId)) next.delete(itemId);
+    else next.add(itemId);
+    setSelectedItems(next);
+  };
+
+  const selectedTotal = useMemo(() => {
+    let total = 0;
+    items.forEach((item) => {
+      if (selectedItems.has(item.id)) {
+        if (item.type === "income") total += item.amount;
+        else total -= item.amount;
+      }
+    });
+    return total;
+  }, [items, selectedItems]);
+
   const handleOpenCreateModal = () => {
     setEditingItem(null);
     setIsModalOpen(true);
@@ -310,22 +338,35 @@ export default function FinanceClientPage({
     <div className="pb-24">
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
-        <div className="px-6 pt-4 pb-2">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">
-            {t("boardLabel")}
-          </label>
-          <select
-            value={currentBoardId ?? ""}
-            onChange={(e) => handleBoardChange(e.target.value)}
-            className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+        <div className="px-6 pt-4 pb-2 flex justify-between items-end gap-2">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              {t("boardLabel")}
+            </label>
+            <select
+              value={currentBoardId ?? ""}
+              onChange={(e) => handleBoardChange(e.target.value)}
+              className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">{t("allBoardsLabel")}</option>
+              {boards.map((board) => (
+                <option key={board.id} value={board.id}>
+                  {board.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Link
+            href={
+              currentBoardId
+                ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
+                : `/${locale}/tools/finance/categories`
+            }
+            className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition flex items-center justify-center"
+            title={t("manageCategoriesLabel")}
           >
-            <option value="">{t("allBoardsLabel")}</option>
-            {boards.map((board) => (
-              <option key={board.id} value={board.id}>
-                {board.name}
-              </option>
-            ))}
-          </select>
+            <FiSettings size={16} />
+          </Link>
         </div>
       )}
 
@@ -428,9 +469,8 @@ export default function FinanceClientPage({
                 </span>
               </div>
               <FiChevronDown
-                className={`text-gray-400 transition-transform ${
-                  shareOpen ? "rotate-180" : ""
-                }`}
+                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -509,128 +549,160 @@ export default function FinanceClientPage({
             <button
               type="button"
               onClick={() => setShowMetrics(false)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                !showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
-              }`}
+              className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500"
+                }`}
             >
               {t("tabListLabel")}
             </button>
             <button
               type="button"
               onClick={() => setShowMetrics(true)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
-              }`}
+              className={`px-3 py-1 rounded-lg transition-all ${showMetrics
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500"
+                }`}
             >
               {t("tabMetricsLabel")}
             </button>
           </div>
-        </div>
 
-        {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
-        {!showMetrics && overdueItems.length > 0 && (
-          <div className="mb-4">
-            <details className="bg-amber-50 border border-amber-100 rounded-2xl p-3 group">
-              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
-                <div>
-                  <p className="text-xs text-amber-700 font-semibold">
-                    {t("overdueTitle")}
-                  </p>
-                  <p className="text-[11px] text-amber-600">
-                    {t("overdueSubtitle", { count: overdueItems.length })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-amber-800">
-                    {currency(overdueTotal)}
-                  </p>
-                  <p className="text-[10px] text-amber-700 mt-0.5">
-                    {t("overdueSummaryLabel")}
-                  </p>
-                </div>
-              </summary>
-
-              <div className="mt-3 max-h-52 overflow-y-auto space-y-2">
-                {overdueItems.map((item) => {
-                  const openAmount = item.amount - (item.paidAmount || 0);
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">
-                          {item.title}
-                        </p>
-                        <p className="text-[11px] text-gray-500">
-                          {format(new Date(item.date), "dd 'de' MMM, yyyy", {
-                            locale: ptBR,
-                          })}
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-[11px] text-amber-700 font-semibold">
-                          {currency(Math.max(openAmount, 0))}
-                        </p>
-                        <p className="text-[10px] text-gray-400">
-                          {t("openAmountLabel")}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </details>
-          </div>
-        )}
-
-        {showMetrics ? (
-          <FinanceMetricsPanel
-            items={items}
-            currentMonth={currentMonth}
-            rangeFrom={rangeFrom}
-            rangeTo={rangeTo}
-          />
-        ) : items.length === 0 ? (
-          <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
+          {!showMetrics && (
             <button
-              onClick={handleOpenCreateModal}
-              className="text-blue-600 font-bold text-sm"
+              onClick={toggleSelectionMode}
+              className={`ml-2 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectionMode
+                ? "bg-blue-100 text-blue-700"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
             >
-              {t("addNow")}
+              {selectionMode ? t("cancelSelection") : t("selectButton")}
             </button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {items.map((item) => (
-              <FinanceItemCard
-                key={item.id}
-                item={item}
-                locale={locale}
-                onEdit={handleEditItem}
-              />
-            ))}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* BOTÃO FLOAT – só na LISTA */}
-      {!showMetrics && (
-        <button
-          onClick={handleOpenCreateModal}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
-          aria-label={t("addNow")}
-        >
-          <FiPlus size={28} />
-        </button>
+      {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
+      {!showMetrics && overdueItems.length > 0 && (
+        <div className="mb-4">
+          <details className="bg-amber-50 border border-amber-100 rounded-2xl p-3 group">
+            <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
+              <div>
+                <p className="text-xs text-amber-700 font-semibold">
+                  {t("overdueTitle")}
+                </p>
+                <p className="text-[11px] text-amber-600">
+                  {t("overdueSubtitle", { count: overdueItems.length })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-amber-800">
+                  {currency(overdueTotal)}
+                </p>
+                <p className="text-[10px] text-amber-700 mt-0.5">
+                  {t("overdueSummaryLabel")}
+                </p>
+              </div>
+            </summary>
+
+            <div className="mt-3 max-h-52 overflow-y-auto space-y-2">
+              {overdueItems.map((item) => {
+                const openAmount = item.amount - (item.paidAmount || 0);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-center bg-white/70 rounded-xl px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {item.title}
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        {format(new Date(item.date), "dd 'de' MMM, yyyy", {
+                          locale: ptBR,
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-[11px] text-amber-700 font-semibold">
+                        {currency(Math.max(openAmount, 0))}
+                      </p>
+                      <p className="text-[10px] text-gray-400">
+                        {t("openAmountLabel")}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </details>
+        </div>
       )}
+
+      {showMetrics ? (
+        <FinanceMetricsPanel
+          items={items}
+          currentMonth={currentMonth}
+          rangeFrom={rangeFrom}
+          rangeTo={rangeTo}
+        />
+      ) : items.length === 0 ? (
+        <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
+          <button
+            onClick={handleOpenCreateModal}
+            className="text-blue-600 font-bold text-sm"
+          >
+            {t("addNow")}
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          {items.map((item) => (
+            <FinanceItemCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              onEdit={handleEditItem}
+              selectionMode={selectionMode}
+              selected={selectedItems.has(item.id)}
+              onToggleSelection={handleToggleItemSelection}
+            />
+          ))}
+        </div>
+      )}
+
+      {
+        selectionMode && selectedItems.size > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
+              <span className={`text-lg font-bold ${selectedTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {currency(selectedTotal)}
+              </span>
+            </div>
+            <div className="h-8 w-px bg-gray-200 mx-1" />
+            <span className="text-xs text-gray-400 font-medium">
+              {selectedItems.size} {selectedItems.size === 1 ? t("itemSingular") : t("itemPlural")}
+            </span>
+          </div>
+        )
+      }
+
+      {/* BOTÃO FLOAT – só na LISTA e se NÃO estiver em seleção */}
+      {
+        !showMetrics && !selectionMode && (
+          <button
+            onClick={handleOpenCreateModal}
+            className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
+            aria-label={t("addNow")}
+          >
+            <FiPlus size={28} />
+          </button>
+        )
+      }
 
       {/* MODAL */}
       <FinanceFormModal
@@ -642,6 +714,6 @@ export default function FinanceClientPage({
         boardId={currentBoardId ?? null}
         currentMonth={currentMonth}
       />
-    </div>
+    </div >
   );
 }

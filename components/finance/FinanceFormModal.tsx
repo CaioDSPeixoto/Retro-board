@@ -147,7 +147,7 @@ export default function FinanceFormModal({
     setAddingCategory(true);
     setError(null);
 
-    const res = await createCategory(name, locale);
+    const res = await createCategory(name, locale, boardId || undefined);
 
     setAddingCategory(false);
 
@@ -170,11 +170,10 @@ export default function FinanceFormModal({
 
   const generatedCardDescription =
     isCardFixedCategory && cardName && cardMode
-      ? `Cartão ${cardName} - ${
-          cardMode === "credit"
-            ? t("cardModeCreditLabel")
-            : t("cardModeDebitLabel")
-        }`
+      ? `Cartão ${cardName} - ${cardMode === "credit"
+        ? t("cardModeCreditLabel")
+        : t("cardModeDebitLabel")
+      }`
       : "";
 
   return (
@@ -243,29 +242,26 @@ export default function FinanceFormModal({
 
           {/* Seletor de Tipo (Receita/Despesa) */}
           <div
-            className={`flex bg-gray-100 p-1 rounded-xl ${
-              showNewCategoryForm ? "opacity-50 pointer-events-none" : ""
-            }`}
+            className={`flex bg-gray-100 p-1 rounded-xl ${showNewCategoryForm ? "opacity-50 pointer-events-none" : ""
+              }`}
           >
             <button
               type="button"
               onClick={() => setType("income")}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "income"
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === "income"
                   ? "bg-white text-green-600 shadow-sm"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               {t("typeIncome")}
             </button>
             <button
               type="button"
               onClick={() => setType("expense")}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "expense"
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === "expense"
                   ? "bg-white text-red-600 shadow-sm"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               {t("typeExpense")}
             </button>
@@ -286,11 +282,10 @@ export default function FinanceFormModal({
                     setNewCategory("");
                   }
                 }}
-                className={`text-xs font-bold flex items-center gap-1 transition-colors ${
-                  showNewCategoryForm
+                className={`text-xs font-bold flex items-center gap-1 transition-colors ${showNewCategoryForm
                     ? "text-red-500"
                     : "text-blue-600 hover:text-blue-700"
-                }`}
+                  }`}
               >
                 {showNewCategoryForm ? (
                   <>
@@ -400,22 +395,20 @@ export default function FinanceFormModal({
                       <button
                         type="button"
                         onClick={() => setCardMode("credit")}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
-                          cardMode === "credit"
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${cardMode === "credit"
                             ? "bg-blue-50 border-blue-500 text-blue-600"
                             : "bg-white border-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {t("cardModeCreditLabel")}
                       </button>
                       <button
                         type="button"
                         onClick={() => setCardMode("debit")}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
-                          cardMode === "debit"
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${cardMode === "debit"
                             ? "bg-blue-50 border-blue-500 text-blue-600"
                             : "bg-white border-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {t("cardModeDebitLabel")}
                       </button>
@@ -520,9 +513,8 @@ export default function FinanceFormModal({
                 className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600"
               >
                 <FiChevronDown
-                  className={`transition-transform ${
-                    showAdvanced ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${showAdvanced ? "rotate-180" : ""
+                    }`}
                   size={14}
                 />
                 {t("advancedOptionsToggle")}
@@ -610,9 +602,8 @@ export default function FinanceFormModal({
                       />
                       <label
                         htmlFor="isFixed"
-                        className={`text-sm font-medium cursor-pointer select-none ${
-                          canUseFixed ? "text-gray-700" : "text-gray-400"
-                        }`}
+                        className={`text-sm font-medium cursor-pointer select-none ${canUseFixed ? "text-gray-700" : "text-gray-400"
+                          }`}
                       >
                         {t("fixedCheckboxLabel")}
                       </label>
@@ -630,11 +621,10 @@ export default function FinanceFormModal({
             <button
               type="submit"
               disabled={isPending}
-              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${
-                type === "income"
+              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${type === "income"
                   ? "bg-green-600 hover:bg-green-700 shadow-green-100"
                   : "bg-red-600 hover:bg-red-700 shadow-red-100"
-              } disabled:opacity-70`}
+                } disabled:opacity-70`}
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">

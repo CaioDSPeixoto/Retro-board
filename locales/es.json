@@ -120,9 +120,16 @@
     "togglePaidAria": "Cambiar estado de pago",
     "editAria": "Editar registro",
     "deleteAria": "Eliminar registro",
+    "noCustomCategories": "No se encontraron categorías personalizadas.",
+    "categoriesTitle": "Gestionar Categorias",
+    "customCategoriesLabel": "Categorias Personalizadas",
+    "builtinCategoriesLabel": "Categorias Estándar",
+    "builtinLabel": "Estándar",
     "errors": {
       "deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
-      "toggleFailed": "Error al actualizar estado. Inténtalo de nuevo."
+      "toggleFailed": "Error al actualizar estado. Inténtalo de nuevo.",
+      "unauthorized": "No autorizado.",
+      "categoryInUse": "Esta categoría está en uso y no se puede eliminar."
     }
   },
   "FinanceMetrics": {
@@ -259,7 +266,13 @@
     "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-    "overdueSummaryLabel": "Saldo vencido"
+    "overdueSummaryLabel": "Saldo vencido",
+    "manageCategoriesLabel": "Gestionar categorías",
+    "selectButton": "Seleccionar",
+    "cancelSelection": "Cancelar selección",
+    "selectedTotalLabel": "Total seleccionado",
+    "itemSingular": "elemento",
+    "itemPlural": "elementos"
   },
   "FinanceBoards": {
     "title": "Tableros de Finanzas",

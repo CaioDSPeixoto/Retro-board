@@ -82,18 +82,39 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
 
 /* ================= categories ================= */
 
-export async function getCategoriesData(): Promise<string[]> {
+export async function getCategoriesData(boardId?: string | null): Promise<string[]> {
   const sessionUserId = await getSession();
   if (!sessionUserId) return BUILTIN_CATEGORIES;
 
-  const snap = await adminDb
-    .collection("finance_categories")
-    .where("userId", "==", sessionUserId)
-    .get();
+  let query = adminDb.collection("finance_categories").where("userId", "==", sessionUserId);
+
+  // Se tiver boardId, filtra por ele.
+  // Se NÃO tiver boardId, queremos as "pessoais" (sem boardId) ou todas?
+  // Por compatibilidade e lógica de "meus dados", se não passar boardId,
+  // vamos trazer as que NÃO têm boardId (pessoais) OU manter o comportamento antigo (todas)?
+  // O pedido é "particular tendo cada quadro...".
+  // Então, se estou num quadro, só quero ver as do quadro.
+  if (boardId) {
+    query = query.where("boardId", "==", boardId);
+  } else {
+    // Se não tem boardId, assumimos contexto pessoal ou "sem quadro".
+    // Para não quebrar legados que não tem boardId field, não podemos filtrar por boardId == null facilmente no Firestore
+    // sem criar um índice ou garantir que todos tenham null.
+    // Mas podemos filtrar no cliente (memória) ou aceitar misturado por enquanto.
+    // Vamos tentar trazer tudo do usuário e filtrar em memória para garantir.
+  }
+
+  const snap = await query.get();
 
   const userCats = new Set<string>();
   snap.forEach((doc) => {
     const data = doc.data() as any;
+    // Se pedimos boardId, o filtro do banco já garantiu.
+    // Se NÃO pedimos boardId, só queremos as que NÃO tem boardId (ou boardId null/undefined).
+    if (!boardId) {
+      if (data.boardId) return; // ignora categorias de boards específicos se estamos no modo "sem board"
+    }
+
     if (typeof data.name === "string" && data.name.trim()) {
       userCats.add(data.name.trim());
     }
