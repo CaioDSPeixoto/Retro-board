@@ -133,8 +133,8 @@
     }
   },
   "FinanceMetrics": {
-    "movedExpensesLine": "Despesa movida R$ {value}",
-    "movedIncomesLine": "Receita movida com sucesso",
+    "movedExpensesLine": "Despesa movida: {value}",
+    "movedIncomesLine": "Receita movida: {value}",
     "movedTotalsTitle": "Lançamentos movidos para o próximo mês",
     "userTotalIncomeShort": "Receitas",
     "incomesLaunchesLabel": "{count, plural, one {{count} lançamento} other {{count} lançamentos}}",
@@ -242,9 +242,11 @@
     "shareEmailButton": "Enviar convite",
     "inviteSent": "Convite enviado com sucesso!",
     "overdueTitle": "Contas em atraso",
-    "overdueSubtitle": "Você tem {count} conta(s) com vencimento já passado.",
+    "overdueSubtitle": "Você possui {count} conta(s) vencida(s).",
     "transactionsTitle": "Transações",
     "transactionsCount": "{count} lançamentos",
+    "searchByNamePlaceholder": "Buscar por nome...",
+    "noResults": "Nenhum lançamento encontrado.",
     "noTransactions": "Nenhum lançamento este mês.",
     "addNow": "Adicionar agora",
     "pendingApprovalsTitle": "Aprovações pendentes",

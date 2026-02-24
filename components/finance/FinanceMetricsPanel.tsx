@@ -431,22 +431,24 @@ export default function FinanceMetricsPanel({
         </div>
 
         {(movedIncomeTotal > 0 || movedExpenseTotal > 0) && (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <p className="text-[10px] font-semibold text-blue-700 mb-1">
-                {t("movedTotalsTitle")}
-              </p>
-              <p className="text-blue-800">
+          <div className="mt-4 bg-blue-50 border border-blue-100 rounded-2xl p-3 text-[11px]">
+            <p className="text-[10px] font-semibold text-blue-700 mb-2">
+              {t("movedTotalsTitle")}
+            </p>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-blue-800 font-medium">
                 {t("movedExpensesLine", {
                   value: currency(movedExpenseTotal),
                 })}
-              </p>
+              </div>
+
               {movedIncomeTotal > 0 && (
-                <p className="text-blue-800 mt-0.5">
+                <div className="text-blue-800 font-medium">
                   {t("movedIncomesLine", {
                     value: currency(movedIncomeTotal),
                   })}
-                </p>
+                </div>
               )}
             </div>
           </div>

@@ -133,8 +133,8 @@
     }
   },
   "FinanceMetrics": {
-    "movedExpensesLine": "Expense successfully moved",
-    "movedIncomesLine": "Income successfully moved",
+    "movedExpensesLine": "Expense moved: {value}",
+    "movedIncomesLine": "Income moved: {value}",
     "movedTotalsTitle": "Items moved to next month",
     "userTotalIncomeShort": "Income",
     "incomesLaunchesLabel": "{count, plural, one {{count} entry} other {{count} entries}}",
@@ -242,9 +242,11 @@
     "shareEmailButton": "Send Invite",
     "inviteSent": "Invite sent successfully!",
     "overdueTitle": "Overdue Accounts",
-    "overdueSubtitle": "You have {count} bill(s) past their due date.",
+    "overdueSubtitle": "You have {count} overdue bill(s).",
     "transactionsTitle": "Transactions",
     "transactionsCount": "{count} entries",
+    "searchByNamePlaceholder": "Search by name...",
+    "noResults": "No transactions found for this search.",
     "noTransactions": "No entries this month.",
     "addNow": "Add now",
     "pendingApprovalsTitle": "Pending Approvals",

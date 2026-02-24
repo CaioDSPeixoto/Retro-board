@@ -8,10 +8,10 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiPlus,
-  FiUsers,
-  FiChevronDown,
   FiList,
   FiSettings,
+  FiAlertCircle,
+  FiShare2,
 } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,6 +34,14 @@ type Props = {
   currentBoardId?: string | null;
   sessionUserId: string;
 };
+
+function normalizeForSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
 
 function getMonthRange(month: string): { start: string; end: string } {
   const [yearStr, monthStr] = month.split("-");
@@ -64,6 +72,7 @@ export default function FinanceClientPage({
   const [userName, setUserName] = useState<string>(t("defaultUserName"));
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
   const [items, setItems] = useState<FinanceItem[]>(initialItems);
+  const [nameFilter, setNameFilter] = useState("");
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -74,6 +83,7 @@ export default function FinanceClientPage({
   const [showMetrics, setShowMetrics] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -251,6 +261,15 @@ export default function FinanceClientPage({
 
   const todayStr = new Date().toISOString().split("T")[0];
 
+  const visibleItems = useMemo(() => {
+    const query = normalizeForSearch(nameFilter);
+    if (!query) return items;
+
+    return items.filter((item) =>
+      normalizeForSearch(item.title || "").includes(query),
+    );
+  }, [items, nameFilter]);
+
   const overdueItems = useMemo(
     () =>
       items.filter(
@@ -271,6 +290,19 @@ export default function FinanceClientPage({
       }, 0),
     [overdueItems],
   );
+
+  useEffect(() => {
+    if (showMetrics) {
+      setShareOpen(false);
+      setSelectionMode(false);
+      setSelectedItems(new Set());
+    }
+    setOverdueInfoOpen(false);
+  }, [showMetrics]);
+
+  useEffect(() => {
+    if (overdueItems.length === 0) setOverdueInfoOpen(false);
+  }, [overdueItems.length]);
 
   const toggleSelectionMode = () => {
     setSelectionMode((prev) => !prev);
@@ -454,28 +486,21 @@ export default function FinanceClientPage({
       </div>
 
       {/* SHARE (só dono) */}
-      {currentBoard && isOwner && (
+      {false && currentBoard && isOwner && (
         <div className="px-6 mt-4 mb-6">
-          <div className="bg-white border border-blue-100 rounded-2xl shadow-sm">
+          <div className="flex flex-col items-end gap-2">
             <button
               type="button"
               onClick={() => setShareOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between px-4 py-3"
+              className="p-2 rounded-xl bg-white/80 hover:bg-white border border-gray-200 text-gray-700 shadow-sm transition"
+              aria-label={t("shareTitle")}
+              title={t("shareTitle")}
             >
-              <div className="flex items-center gap-2">
-                <FiUsers className="text-blue-600" size={18} />
-                <span className="text-sm font-semibold text-gray-800">
-                  {t("shareTitle")}
-                </span>
-              </div>
-              <FiChevronDown
-                className={`text-gray-400 transition-transform ${shareOpen ? "rotate-180" : ""
-                  }`}
-              />
+              <FiShare2 size={18} />
             </button>
 
             {shareOpen && (
-              <div className="border-t border-blue-50 px-4 pb-4 pt-2">
+              <div className="w-full bg-white border border-blue-100 rounded-2xl shadow-sm px-4 pb-4 pt-3">
                 <div className="mb-3">
                   <label className="block text-xs font-semibold text-gray-600 mb-1">
                     {t("shareCodeLabel")}
@@ -535,72 +560,179 @@ export default function FinanceClientPage({
       <div className="px-6 mt-2">
         <div className="flex justify-between items-center mb-4 px-2">
           <div>
-            <h3 className="font-bold text-gray-700">
-              {showMetrics ? t("metricsTitle") : t("transactionsTitle")}
-            </h3>
             {!showMetrics && (
-              <span className="text-xs text-gray-400">
-                {t("transactionsCount", { count: items.length })}
-              </span>
+              <button
+                onClick={toggleSelectionMode}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectionMode
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+              >
+                {selectionMode ? t("cancelSelection") : t("selectButton")}
+              </button>
             )}
           </div>
 
-          <div className="inline-flex bg-gray-100 rounded-xl p-1 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setShowMetrics(false)}
-              className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500"
-                }`}
-            >
-              {t("tabListLabel")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowMetrics(true)}
-              className={`px-3 py-1 rounded-lg transition-all ${showMetrics
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500"
-                }`}
-            >
-              {t("tabMetricsLabel")}
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex bg-gray-100 rounded-xl p-1 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setShowMetrics(false)}
+                className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+                  }`}
+              >
+                {t("tabListLabel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMetrics(true)}
+                className={`px-3 py-1 rounded-lg transition-all ${showMetrics
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500"
+                  }`}
+              >
+                {t("tabMetricsLabel")}
+              </button>
+            </div>
           </div>
-
-          {!showMetrics && (
-            <button
-              onClick={toggleSelectionMode}
-              className={`ml-2 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectionMode
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-            >
-              {selectionMode ? t("cancelSelection") : t("selectButton")}
-            </button>
-          )}
         </div>
       </div>
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
-      {!showMetrics && overdueItems.length > 0 && (
+      {!showMetrics && (
+        <div className="px-6 mb-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              placeholder={t("searchByNamePlaceholder")}
+              className="flex-1 p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+
+            {overdueItems.length > 0 && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOverdueInfoOpen((prev) => !prev)}
+                  className="relative p-2 rounded-xl text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-100 transition"
+                  aria-label={t("overdueTitle")}
+                  title={t("overdueTitle")}
+                >
+                  <FiAlertCircle size={18} />
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-amber-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {overdueItems.length}
+                  </span>
+                </button>
+
+                {overdueInfoOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 shadow-lg rounded-xl p-3 z-50">
+                    <p className="text-xs font-semibold text-gray-800">
+                      {t("overdueSubtitle", { count: overdueItems.length })}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      {t("overdueSummaryLabel")}:{" "}
+                      <span className="font-semibold text-amber-700">
+                        {currency(overdueTotal)}
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {currentBoard && isOwner && (
+              <button
+                type="button"
+                onClick={() => setShareOpen((prev) => !prev)}
+                className="p-2 rounded-xl bg-white/80 hover:bg-white border border-gray-200 text-gray-700 shadow-sm transition"
+                aria-label={t("shareTitle")}
+                title={t("shareTitle")}
+              >
+                <FiShare2 size={18} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex justify-end mt-1">
+            <span className="text-[11px] text-gray-500 font-medium">
+              {t("transactionsCount", { count: visibleItems.length })}
+            </span>
+          </div>
+
+          {shareOpen && currentBoard && isOwner && (
+            <div className="mt-2 bg-white border border-blue-100 rounded-2xl shadow-sm px-4 pb-4 pt-3">
+              <div className="mb-3">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  {t("shareCodeLabel")}
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={currentBoard.id}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
+                />
+                <p className="mt-1 text-[11px] text-gray-400">
+                  {t("shareCodeHint")}
+                </p>
+              </div>
+
+              <form
+                onSubmit={handleInviteByEmail}
+                className="mt-3 flex flex-col gap-3 md:flex-row"
+              >
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    {t("shareEmailLabel")}
+                  </label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t("shareEmailPlaceholder")}
+                    className="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-gray-900"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    disabled={inviteLoading || !inviteEmail.trim()}
+                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0"
+                  >
+                    {inviteLoading ? t("sending") : t("shareEmailButton")}
+                  </button>
+                </div>
+              </form>
+
+              {inviteMessage && (
+                <p className="mt-2 text-xs text-green-600">{inviteMessage}</p>
+              )}
+              {inviteError && (
+                <p className="mt-2 text-xs text-red-600">{inviteError}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {false && !showMetrics && overdueItems.length > 0 && (
         <div className="mb-4">
-          <details className="bg-amber-50 border border-amber-100 rounded-2xl p-3 group">
+          <details className="bg-amber-50/50 border border-amber-100/70 rounded-xl px-3 py-2 group opacity-80 hover:opacity-100 transition">
             <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
               <div>
-                <p className="text-xs text-amber-700 font-semibold">
-                  {t("overdueTitle")}
-                </p>
-                <p className="text-[11px] text-amber-600">
-                  {t("overdueSubtitle", { count: overdueItems.length })}
+                <p className="text-[11px] text-amber-700 font-semibold">
+                  {t("overdueTitle")}{" "}
+                  <span className="text-amber-600 font-medium">
+                    • {t("overdueSubtitle", { count: overdueItems.length })}
+                  </span>
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-amber-800">
+                <p className="text-[11px] font-bold text-amber-800">
                   {currency(overdueTotal)}
-                </p>
-                <p className="text-[10px] text-amber-700 mt-0.5">
-                  {t("overdueSummaryLabel")}
                 </p>
               </div>
             </summary>
@@ -648,9 +780,11 @@ export default function FinanceClientPage({
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
         />
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <p className="text-gray-400 mb-2">{t("noTransactions")}</p>
+          <p className="text-gray-400 mb-2">
+            {items.length === 0 ? t("noTransactions") : t("noResults")}
+          </p>
           <button
             onClick={handleOpenCreateModal}
             className="text-blue-600 font-bold text-sm"
@@ -660,7 +794,7 @@ export default function FinanceClientPage({
         </div>
       ) : (
         <div className="flex flex-col gap-1">
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <FinanceItemCard
               key={item.id}
               item={item}
