@@ -103,19 +103,31 @@ export default function FinanceFormModal({
   }, []);
 
   useEffect(() => {
+    if (!isOpen) return;
     if (!initialCategories?.length) return;
-    setCategories(initialCategories);
 
-    if (initialItem?.category) {
-      setCategory(initialItem.category);
+    const nextCategories = Array.from(new Set([
+      ...initialCategories,
+      ...(initialItem?.category ? [initialItem.category] : []),
+    ]));
+
+    setCategories(nextCategories);
+
+    if (initialItem) {
       setType(initialItem.type);
+      setCategory(initialItem.category || nextCategories[0] || fixedCategoryName);
       setCardName(initialItem.cardName || "");
       setCardMode(initialItem.cardMode || "");
       setEnableCustomDescription(false);
-    } else if (!initialCategories.includes(category)) {
-      setCategory(initialCategories[0]);
+      return;
     }
-  }, [initialCategories, initialItem, isOpen, category]);
+
+    setType("expense");
+    setCategory(nextCategories[0] || fixedCategoryName);
+    setCardName("");
+    setCardMode("");
+    setEnableCustomDescription(false);
+  }, [initialCategories, initialItem?.id, isOpen, fixedCategoryName]);
 
   // Foca no input quando o formulário de nova categoria abre
   useEffect(() => {
@@ -178,7 +190,17 @@ export default function FinanceFormModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto">
+        {isPending && (
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-t-2xl sm:rounded-2xl">
+            <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+              <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+              <span className="text-sm font-semibold text-gray-700">
+                {t("savingButton")}
+              </span>
+            </div>
+          </div>
+        )}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">
             {isEditMode ? t("editTransactionTitle") : t("newTransactionTitle")}
@@ -444,8 +466,12 @@ export default function FinanceFormModal({
 
           {/* Restante do formulário fica "travado" enquanto cria nova categoria */}
           <fieldset
-            disabled={showNewCategoryForm}
-            className={showNewCategoryForm ? "opacity-50 pointer-events-none" : ""}
+            disabled={showNewCategoryForm || isPending}
+            className={
+              showNewCategoryForm || isPending
+                ? "opacity-50 pointer-events-none"
+                : ""
+            }
           >
             {/* Descrição */}
             <div>
@@ -506,7 +532,9 @@ export default function FinanceFormModal({
             </div>
 
             {/* Toggle Opções Avançadas */}
-            <div className="mt-1 px-1">
+            {!isEditMode && (
+              <>
+                <div className="mt-1 px-1">
               <button
                 type="button"
                 onClick={() => setShowAdvanced((prev) => !prev)}
@@ -615,6 +643,8 @@ export default function FinanceFormModal({
                     )}
                   </div>
                 )}
+              </>
+            )}
               </>
             )}
 

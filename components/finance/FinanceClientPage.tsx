@@ -1,7 +1,7 @@
 "use client";
 
 import type { FinanceBoard, FinanceItem } from "@/types/finance";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -67,6 +67,7 @@ export default function FinanceClientPage({
   const t = useTranslations("FinancePage");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isRoutePending, startRouteTransition] = useTransition();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState<string>(t("defaultUserName"));
@@ -193,8 +194,10 @@ export default function FinanceClientPage({
     // ao navegar de mês, volta para a LISTA
     params.delete("from");
     params.delete("to");
-    router.push(`/${locale}/tools/finance?${params.toString()}`);
-    setShowMetrics(false);
+    startRouteTransition(() => {
+      router.push(`/${locale}/tools/finance?${params.toString()}`);
+      setShowMetrics(false);
+    });
   };
 
   const handleNextMonth = () => {
@@ -205,8 +208,10 @@ export default function FinanceClientPage({
     else params.delete("boardId");
     params.delete("from");
     params.delete("to");
-    router.push(`/${locale}/tools/finance?${params.toString()}`);
-    setShowMetrics(false);
+    startRouteTransition(() => {
+      router.push(`/${locale}/tools/finance?${params.toString()}`);
+      setShowMetrics(false);
+    });
   };
 
   const handleGoToCurrentMonth = () => {
@@ -217,8 +222,10 @@ export default function FinanceClientPage({
     else params.delete("boardId");
     params.delete("from");
     params.delete("to");
-    router.push(`/${locale}/tools/finance?${params.toString()}`);
-    setShowMetrics(false);
+    startRouteTransition(() => {
+      router.push(`/${locale}/tools/finance?${params.toString()}`);
+      setShowMetrics(false);
+    });
   };
 
   const handleBoardChange = (boardId: string) => {
@@ -228,8 +235,10 @@ export default function FinanceClientPage({
     params.set("month", currentMonth);
     params.delete("from");
     params.delete("to");
-    router.push(`/${locale}/tools/finance?${params.toString()}`);
-    setShowMetrics(false);
+    startRouteTransition(() => {
+      router.push(`/${locale}/tools/finance?${params.toString()}`);
+      setShowMetrics(false);
+    });
   };
 
   const totals = useMemo(() => {
@@ -367,7 +376,17 @@ export default function FinanceClientPage({
     }).format(value);
 
   return (
-    <div className="pb-24">
+    <div className="relative pb-24" aria-busy={isRoutePending}>
+      {isRoutePending && (
+        <div className="absolute inset-0 z-40 bg-gray-50/60 backdrop-blur-[1px] flex items-center justify-center">
+          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+            <span className="text-sm font-semibold text-gray-700">
+              Carregando...
+            </span>
+          </div>
+        </div>
+      )}
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
         <div className="px-6 pt-4 pb-2 flex justify-between items-end gap-2">

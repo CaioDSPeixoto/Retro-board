@@ -120,6 +120,7 @@
     "togglePaidAria": "Alternar pago",
     "editAria": "Editar lançamento",
     "deleteAria": "Excluir lançamento",
+    "confirmRevertPayment": "Você realmente deseja reverter esse pagamento/recebimento?",
     "noCustomCategories": "Nenhuma categoria personalizada encontrada.",
     "categoriesTitle": "Gerenciar Categorias",
     "customCategoriesLabel": "Categorias Personalizadas",

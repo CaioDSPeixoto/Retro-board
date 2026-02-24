@@ -120,6 +120,7 @@
     "togglePaidAria": "Toggle paid status",
     "editAria": "Edit entry",
     "deleteAria": "Delete entry",
+    "confirmRevertPayment": "Do you really want to revert this payment/receipt?",
     "noCustomCategories": "No custom categories found.",
     "categoriesTitle": "Manage Categories",
     "customCategoriesLabel": "Custom Categories",

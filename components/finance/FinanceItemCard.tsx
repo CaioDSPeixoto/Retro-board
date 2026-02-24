@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import {
   deleteFinanceItem,
   applyPaymentToFinanceItem,
+  revertFinanceItemPayment,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 
 type Props = {
@@ -41,7 +42,12 @@ export default function FinanceItemCard({
   const t = useTranslations("Finance");
 
   const [toggling, setToggling] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [confirmKind, setConfirmKind] = useState<"delete" | "revert" | null>(
+    null,
+  );
+  const [actionError, setActionError] = useState<string | null>(null);
   const [paymentMode, setPaymentMode] = useState<"full" | "partial" | "move">(
     "full",
   );
@@ -54,11 +60,13 @@ export default function FinanceItemCard({
   const isSynthetic = item.isSynthetic === true;
 
   const paidAmount = item.paidAmount || 0;
+  const originalAmount = item.originalAmount ?? item.amount;
   const openAmount = isMoved
     ? 0
     : Math.max(item.amount - paidAmount, 0);
 
   const isRolled = !!item.carriedFromMonth;
+  const isInstallment = !!item.installmentGroupId;
 
   const monthParam = item.date.slice(0, 7);
   const boardParam = item.boardId
@@ -78,29 +86,71 @@ export default function FinanceItemCard({
       currency: "BRL",
     }).format(value);
 
-  const handleDelete = async () => {
-    if (isSynthetic) return;
-
-    if (!confirm(t("confirmDelete"))) return;
-
-    try {
-      const res = await deleteFinanceItem(item.id, locale);
-      if (res && "error" in res && res.error) {
-        alert(res.error as string);
-        return;
-      }
-      router.refresh();
-    } catch {
-      alert(t("errors.deleteFailed"));
-    }
+  const handleDeleteClick = () => {
+    if (!canDelete || toggling || deleting) return;
+    setActionError(null);
+    setConfirmKind("delete");
   };
 
   const handleToggle = () => {
-    if (isSynthetic || isMoved || toggling) return;
+    if (isSynthetic || isMoved || toggling || deleting) return;
 
+    // Reverter quitaÃ§Ã£o somente quando for pagamento total
+    // (lanÃ§amentos "parcialmente pagos" podem estar com status="paid", mas com originalAmount > amount)
+    if (isPaid && originalAmount <= item.amount && (item.paidAmount || 0) >= item.amount) {
+      setActionError(null);
+      setConfirmKind("revert");
+      return;
+    }
+
+    setActionError(null);
     setPaymentMode("full");
     setPartialValue("");
     setPaymentModalOpen(true);
+  };
+
+  const handleConfirmRevert = async () => {
+    if (isSynthetic || isMoved || toggling || deleting) return;
+
+    try {
+      setToggling(true);
+      setActionError(null);
+
+      const res = await revertFinanceItemPayment(item.id, locale);
+      if (res && "error" in res && res.error) {
+        setActionError(res.error as string);
+        return;
+      }
+
+      setConfirmKind(null);
+      router.refresh();
+    } catch {
+      setActionError(t("errors.toggleFailed"));
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!canDelete || toggling || deleting) return;
+
+    try {
+      setDeleting(true);
+      setActionError(null);
+
+      const res = await deleteFinanceItem(item.id, locale);
+      if (res && "error" in res && res.error) {
+        setActionError(res.error as string);
+        return;
+      }
+
+      setConfirmKind(null);
+      router.refresh();
+    } catch {
+      setActionError(t("errors.deleteFailed"));
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleConfirmPayment = async () => {
@@ -108,6 +158,7 @@ export default function FinanceItemCard({
 
     try {
       setToggling(true);
+      setActionError(null);
 
       const res = await applyPaymentToFinanceItem(
         item.id,
@@ -117,14 +168,14 @@ export default function FinanceItemCard({
       );
 
       if (res && "error" in res && res.error) {
-        alert(res.error as string);
+        setActionError(res.error as string);
         return;
       }
 
       setPaymentModalOpen(false);
       router.refresh();
     } catch {
-      alert(t("errors.toggleFailed"));
+      setActionError(t("errors.toggleFailed"));
     } finally {
       setToggling(false);
     }
@@ -136,6 +187,14 @@ export default function FinanceItemCard({
   };
 
   const canToggle = !isSynthetic && !isMoved;
+  const canShowToggleButton =
+    canToggle &&
+    (item.status === "pending" ||
+      (item.status === "paid" &&
+        paidAmount >= item.amount &&
+        originalAmount <= item.amount));
+  const canDelete =
+    !isSynthetic && !isMoved && !isRolled && !isInstallment && !isPaid && !isPartial;
 
   return (
     <>
@@ -269,13 +328,13 @@ export default function FinanceItemCard({
 
           {!isSynthetic && !selectionMode && (
             <div className="flex items-center gap-3 mt-1">
-              {canToggle && (
+              {canShowToggleButton && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleToggle();
                   }}
-                  disabled={toggling}
+                  disabled={toggling || deleting}
                   className={`${isPaid ? "text-green-500" : "text-gray-400"
                     } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
                   aria-label={t("togglePaidAria")}
@@ -296,7 +355,7 @@ export default function FinanceItemCard({
                     e.stopPropagation();
                     handleEditClick();
                   }}
-                  disabled={toggling}
+                  disabled={toggling || deleting || isPaid || isPartial}
                   className="text-gray-400 hover:text-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label={t("editAria")}
                 >
@@ -307,9 +366,9 @@ export default function FinanceItemCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDelete();
+                  handleDeleteClick();
                 }}
-                disabled={toggling}
+                disabled={toggling || deleting || !canDelete}
                 className="text-gray-400 hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={t("deleteAria")}
               >
@@ -319,6 +378,62 @@ export default function FinanceItemCard({
           )}
         </div>
       </div>
+
+      {/* CONFIRMAÃ‡ÃƒO (reverter pagamento / excluir) */}
+      {confirmKind && (
+        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-gray-200">
+            <h3
+              className={`text-base font-semibold mb-1 ${confirmKind === "delete" ? "text-red-600" : "text-gray-900"
+                }`}
+            >
+              {confirmKind === "delete" ? t("deleteAria") : t("togglePaidAria")}
+            </h3>
+
+            <p className="text-sm text-gray-700">
+              {confirmKind === "delete"
+                ? t("confirmDelete")
+                : t("confirmRevertPayment")}
+            </p>
+
+            {actionError && (
+              <p className="text-xs text-red-600 mt-2">{actionError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  if (toggling || deleting) return;
+                  setConfirmKind(null);
+                  setActionError(null);
+                }}
+                className="px-4 py-2 text-sm font-semibold text-gray-700 rounded-xl hover:bg-gray-100"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={
+                  confirmKind === "delete"
+                    ? handleConfirmDelete
+                    : handleConfirmRevert
+                }
+                disabled={toggling || deleting}
+                className={`px-4 py-2 text-sm font-bold rounded-xl text-white active:scale-95 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${confirmKind === "delete"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+              >
+                {(toggling || deleting) && (
+                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                )}
+                {t("confirmAction")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL DE PAGAMENTO / RECEBIMENTO */}
       {paymentModalOpen && (
@@ -392,6 +507,10 @@ export default function FinanceItemCard({
                 </label>
               </div>
             </div>
+
+            {actionError && (
+              <p className="text-xs text-red-600 mt-3">{actionError}</p>
+            )}
 
             <div className="flex justify-end gap-2">
               <button

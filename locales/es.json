@@ -120,6 +120,7 @@
     "togglePaidAria": "Cambiar estado de pago",
     "editAria": "Editar registro",
     "deleteAria": "Eliminar registro",
+    "confirmRevertPayment": "¿Realmente deseas revertir este pago/recibo?",
     "noCustomCategories": "No se encontraron categorías personalizadas.",
     "categoriesTitle": "Gestionar Categorias",
     "customCategoriesLabel": "Categorias Personalizadas",

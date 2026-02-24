@@ -411,6 +411,13 @@ export async function updateFinanceItem(formData: FormData) {
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
 
+  if (existing.status === "paid" || existing.status === "partial") {
+    return {
+      error:
+        "NÃ£o Ã© possÃ­vel editar lanÃ§amentos pagos/recebidos. Reverter a quitaÃ§Ã£o primeiro.",
+    };
+  }
+
   const paidAmount = Math.max(0, paidAmountRaw);
   let status: FinanceStatus = "pending";
   if (paidAmount >= amount) status = "paid";
@@ -447,6 +454,22 @@ export async function deleteFinanceItem(id: string, locale: string) {
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
 
+  if (existing.status === "paid" || existing.status === "partial") {
+    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos pagos/recebidos." };
+  }
+
+  if (existing.status === "moved") {
+    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos movidos." };
+  }
+
+  if (existing.carriedFromMonth || existing.carriedFromItemId) {
+    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos repassados de outro mÃªs." };
+  }
+
+  if (existing.installmentGroupId) {
+    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos parcelados." };
+  }
+
   await ref.delete();
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
@@ -474,6 +497,41 @@ export async function toggleStatus(
   const paidAmount = newStatus === "paid" ? amount : 0;
 
   await ref.update({ status: newStatus, paidAmount });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function revertFinanceItemPayment(id: string, locale: string) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+
+  const ref = adminDb.collection("finance_items").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: "Unauthorized" };
+
+  if (existing.status !== "paid") {
+    return { error: "LanÃ§amento nÃ£o estÃ¡ quitado totalmente." };
+  }
+
+  const paidAmount = Number(existing.paidAmount || 0);
+  const amount = Number(existing.amount || 0);
+  const originalAmount = Number(existing.originalAmount ?? amount);
+  if (
+    !Number.isFinite(paidAmount) ||
+    !Number.isFinite(amount) ||
+    !Number.isFinite(originalAmount) ||
+    paidAmount < amount ||
+    originalAmount > amount
+  ) {
+    return { error: "Somente pagamentos totais podem ser revertidos." };
+  }
+
+  await ref.update({ status: "pending" as FinanceStatus, paidAmount: 0 });
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
