@@ -7,6 +7,9 @@ export default function ReleasesPage() {
   const t = useTranslations("Release");
 
   const releases = [
+    { version: "0.8.2", date: "25/02/2026", changes: ["REFACT: ajustando alguns textos para melhor compreensão"] },
+    { version: "0.8.1", date: "25/02/2026", changes: ["FEAT: adicionado novas funcionalidades no módulo financeiro"] },
+    { version: "0.8.0", date: "25/02/2026", changes: ["FEAT: adicionado banco de horas no calculo de horas trabalhadas"] },
     { version: "0.7.3", date: "22/01/2026", changes: ["FIX: correção de bugs e melhoria de desempenho"] },
     { version: "0.7.2", date: "22/01/2026", changes: ["REFACT: removendo locales não utilizados"] },
     { version: "0.7.1", date: "21/01/2026", changes: ["REFACT: reorganização dos módulos e nova estrutura"] },
