@@ -22,7 +22,8 @@
   },
   "Navbar": {
     "home": "Home",
-    "tools": "Tools"
+    "tools": "Tools",
+    "language": "Language"
   },
   "Room": {
     "defaults": {
@@ -100,6 +101,9 @@
     "paymentModalPartialHint": "The amount entered will be marked as paid now, and the balance will be automatically moved to next month.",
     "confirmAction": "Confirm",
     "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
     "backToBoard": "Back to board",
     "incomesTitle": "Income",
     "noIncomesThisMonth": "No income logged this month.",
@@ -126,10 +130,20 @@
     "customCategoriesLabel": "Custom Categories",
     "builtinCategoriesLabel": "Default Categories",
     "builtinLabel": "Default",
+    "deleteCategoryTitle": "Delete category",
+    "deleteCategoryMessage": "Are you sure you want to delete the category \"{category}\"?",
+    "description": "Manage the categories used in your entries.",
     "errors": {
       "deleteFailed": "Delete failed. Please try again.",
       "toggleFailed": "Failed to update status. Please try again.",
       "unauthorized": "Unauthorized.",
+      "noPermission": "No permission.",
+      "boardNotFound": "Board not found.",
+      "itemNotFound": "Item not found.",
+      "incompleteData": "Incomplete data.",
+      "invalidCategoryName": "Invalid name.",
+      "categoryExists": "This category already exists.",
+      "updateFailed": "Update failed. Please try again.",
       "categoryInUse": "This category is in use and cannot be deleted."
     }
   },
@@ -224,6 +238,7 @@
   "FinancePage": {
     "defaultUserName": "Manager",
     "sending": "Sending...",
+    "loading": "Loading...",
     "openAmountLabel": "Outstanding balance",
     "loadingInvites": "Loading invites and requests...",
     "inviteByEmail": "Email invite for {email}",
@@ -244,7 +259,6 @@
     "inviteSent": "Invite sent successfully!",
     "overdueTitle": "Overdue Accounts",
     "overdueSubtitle": "You have {count} overdue bill(s).",
-    "transactionsTitle": "Transactions",
     "transactionsCount": "{count} entries",
     "searchByNamePlaceholder": "Search by name...",
     "noResults": "No transactions found for this search.",
@@ -266,7 +280,6 @@
     "prevMonthAria": "Previous month",
     "nextMonthAria": "Next month",
     "goTodayLabel": "Today",
-    "metricsTitle": "Metrics",
     "tabListLabel": "List",
     "tabMetricsLabel": "Metrics",
     "overdueSummaryLabel": "Overdue Balance",
@@ -275,7 +288,22 @@
     "cancelSelection": "Cancel selection",
     "selectedTotalLabel": "Selected total",
     "itemSingular": "item",
-    "itemPlural": "items"
+    "itemPlural": "items",
+    "errors": {
+      "unauthorized": "Unauthorized.",
+      "invalidEmail": "Invalid email.",
+      "boardNotFound": "Board not found.",
+      "onlyOwnerCanInvite": "Only the owner can invite.",
+      "invalidCode": "Invalid code.",
+      "alreadyMember": "You are already a member of this board.",
+      "alreadyRequested": "You have already requested access to this board.",
+      "inviteNotFound": "Invite not found.",
+      "noPermission": "No permission.",
+      "inviteNotPending": "Invite is not pending.",
+      "onlyInviteeCanAccept": "Only the invitee can accept.",
+      "onlyOwnerCanApprove": "Only the owner can approve.",
+      "requestMissingUserId": "Request is missing userId."
+    }
   },
   "FinanceBoards": {
     "title": "Finance Boards",

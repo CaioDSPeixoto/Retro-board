@@ -79,9 +79,9 @@ export default function FinanceBoardsClient({
     setInvitesLoading(true);
     try {
       const [me, owner, pending] = await Promise.all([
-        listInvitesForMe(),
-        listOwnerRequests(),
-        getOwnerPendingApprovalsCount(),
+        listInvitesForMe(locale),
+        listOwnerRequests(locale),
+        getOwnerPendingApprovalsCount(locale),
       ]);
 
       if (me && typeof me === "object" && !("error" in me)) {

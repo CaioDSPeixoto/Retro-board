@@ -22,7 +22,8 @@
   },
   "Navbar": {
     "home": "Início",
-    "tools": "Ferramentas"
+    "tools": "Ferramentas",
+    "language": "Idioma"
   },
   "Room": {
     "defaults": {
@@ -100,6 +101,9 @@
     "paymentModalPartialHint": "O valor informado será considerado como pago agora e o restante será lançado automaticamente no mês seguinte.",
     "confirmAction": "Confirmar",
     "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
     "backToBoard": "Voltar para o quadro",
     "incomesTitle": "Receitas",
     "noIncomesThisMonth": "Nenhuma receita lançada neste mês.",
@@ -126,10 +130,20 @@
     "customCategoriesLabel": "Categorias Personalizadas",
     "builtinCategoriesLabel": "Categorias Padrão",
     "builtinLabel": "Padrão",
+    "deleteCategoryTitle": "Excluir categoria",
+    "deleteCategoryMessage": "Tem certeza que deseja excluir a categoria \"{category}\"?",
+    "description": "Gerencie as categorias usadas nos seus lançamentos.",
     "errors": {
       "deleteFailed": "Erro ao excluir. Tente novamente.",
       "toggleFailed": "Erro ao atualizar status. Tente novamente.",
       "unauthorized": "Não autorizado.",
+      "noPermission": "Sem permissão.",
+      "boardNotFound": "Quadro não encontrado.",
+      "itemNotFound": "Item não encontrado.",
+      "incompleteData": "Dados incompletos.",
+      "invalidCategoryName": "Nome inválido.",
+      "categoryExists": "Essa categoria já existe.",
+      "updateFailed": "Erro ao atualizar. Tente novamente.",
       "categoryInUse": "Esta categoria está em uso e não pode ser excluída."
     }
   },
@@ -224,6 +238,7 @@
   "FinancePage": {
     "defaultUserName": "Gestor",
     "sending": "Enviando...",
+    "loading": "Carregando...",
     "openAmountLabel": "Saldo em aberto",
     "loadingInvites": "Carregando convites e solicitações...",
     "inviteByEmail": "Convite por email para {email}",
@@ -244,7 +259,6 @@
     "inviteSent": "Convite enviado com sucesso!",
     "overdueTitle": "Contas em atraso",
     "overdueSubtitle": "Você possui {count} conta(s) vencida(s).",
-    "transactionsTitle": "Transações",
     "transactionsCount": "{count} lançamentos",
     "searchByNamePlaceholder": "Buscar por nome...",
     "noResults": "Nenhum lançamento encontrado.",
@@ -266,7 +280,6 @@
     "prevMonthAria": "Mês anterior",
     "nextMonthAria": "Próximo mês",
     "goTodayLabel": "Hoje",
-    "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
     "overdueSummaryLabel": "Saldo em atraso",
@@ -275,7 +288,22 @@
     "cancelSelection": "Cancelar seleção",
     "selectedTotalLabel": "Total selecionado",
     "itemSingular": "item",
-    "itemPlural": "itens"
+    "itemPlural": "itens",
+    "errors": {
+      "unauthorized": "Não autorizado.",
+      "invalidEmail": "Email inválido.",
+      "boardNotFound": "Quadro não encontrado.",
+      "onlyOwnerCanInvite": "Somente o dono pode convidar.",
+      "invalidCode": "Código inválido.",
+      "alreadyMember": "Você já é membro desse quadro.",
+      "alreadyRequested": "Você já solicitou acesso para esse quadro.",
+      "inviteNotFound": "Convite não encontrado.",
+      "noPermission": "Sem permissão.",
+      "inviteNotPending": "Convite não está pendente.",
+      "onlyInviteeCanAccept": "Somente o convidado pode aceitar.",
+      "onlyOwnerCanApprove": "Somente o dono pode aprovar.",
+      "requestMissingUserId": "Pedido sem userId."
+    }
   },
   "FinanceBoards": {
     "title": "Quadros de finanças",

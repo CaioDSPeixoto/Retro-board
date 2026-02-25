@@ -18,9 +18,29 @@ def flatten_json(data, prefix=""):
 def scan_files(root_dirs):
     used_keys = set()
     
+    def parse_namespace(arg_src: str) -> str:
+        s = (arg_src or "").strip()
+        if not s:
+            return ""
+
+        # useTranslations("Finance")
+        m = re.match(r'^[\'"]([^\'"]+)[\'"]$', s)
+        if m:
+            return m.group(1).strip()
+
+        # getTranslations({ locale, namespace: "Finance" })
+        m = re.search(r'\bnamespace\s*:\s*[\'"]([^\'"]+)[\'"]', s)
+        if m:
+            return m.group(1).strip()
+
+        return ""
+
     # Regex para capturar tanto useTranslations quanto getTranslations
-    # Captura o nome da variável (t) e o namespace ('Finance')
-    hook_pattern = re.compile(r'const\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\([\'"]?(.*?)[\'"]?\)')
+    # Captura o nome da variável (t) e os argumentos brutos (string ou objeto)
+    hook_pattern = re.compile(
+        r'const\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\((.*?)\)',
+        re.DOTALL,
+    )
     
     for root_dir in root_dirs:
         if not os.path.exists(root_dir): continue
@@ -35,7 +55,8 @@ def scan_files(root_dirs):
                         # 1. Mapeia os hooks e namespaces no arquivo
                         hooks = hook_pattern.findall(content)
                         
-                        for var_name, namespace in hooks:
+                        for var_name, raw_args in hooks:
+                            namespace = parse_namespace(raw_args)
                             # 2. Busca o uso da variável: t('chave'), t.rich('chave'), etc.
                             # O [\'"]([\w\.\-]+)[\'"] garante que pegamos apenas o ID da tradução
                             usage_pattern = re.compile(r'\b' + re.escape(var_name) + r'(?:\.\w+)?\([\'"]([\w\.\-]+)[\'"]', re.DOTALL)
@@ -81,15 +102,15 @@ def main():
     print("-" * 60)
 
     if missing_in_pt:
-        print(f"\n❌ FALTANDO NO PT.JSON ({len(missing_in_pt)}):")
+        print(f"\nMISSING IN PT.JSON ({len(missing_in_pt)}):")
         for k in sorted(missing_in_pt): print(f"  {k}")
 
     if unused_in_pt:
-        print(f"\n⚠️  NÃO ENCONTRADAS NO CÓDIGO ({len(unused_in_pt)}):")
+        print(f"\nNOT FOUND IN CODE ({len(unused_in_pt)}):")
         for k in sorted(unused_in_pt): print(f"  {k}")
     
     if not missing_in_pt and not unused_in_pt:
-        print("\n✅ Tudo limpo! O JSON e o código estão em sincronia.")
+        print("\nOK: JSON and code are in sync.")
 
 if __name__ == "__main__":
     main()

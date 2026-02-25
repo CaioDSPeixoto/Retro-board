@@ -22,7 +22,8 @@
   },
   "Navbar": {
     "home": "Inicio",
-    "tools": "Herramientas"
+    "tools": "Herramientas",
+    "language": "Idioma"
   },
   "Room": {
     "defaults": {
@@ -100,6 +101,9 @@
     "paymentModalPartialHint": "El valor informado se marcará como pagado ahora y el resto se pasará automáticamente al mes siguiente.",
     "confirmAction": "Confirmar",
     "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
     "backToBoard": "Volver al tablero",
     "incomesTitle": "Ingresos",
     "noIncomesThisMonth": "No hay ingresos registrados este mes.",
@@ -126,10 +130,20 @@
     "customCategoriesLabel": "Categorias Personalizadas",
     "builtinCategoriesLabel": "Categorias Estándar",
     "builtinLabel": "Estándar",
+    "deleteCategoryTitle": "Eliminar categoría",
+    "deleteCategoryMessage": "¿Estás seguro de que quieres eliminar la categoría \"{category}\"?",
+    "description": "Gestiona las categorías usadas en tus registros.",
     "errors": {
       "deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
       "toggleFailed": "Error al actualizar estado. Inténtalo de nuevo.",
       "unauthorized": "No autorizado.",
+      "noPermission": "Sin permiso.",
+      "boardNotFound": "Tablero no encontrado.",
+      "itemNotFound": "Elemento no encontrado.",
+      "incompleteData": "Datos incompletos.",
+      "invalidCategoryName": "Nombre inválido.",
+      "categoryExists": "Esta categoría ya existe.",
+      "updateFailed": "Error al actualizar. Inténtalo de nuevo.",
       "categoryInUse": "Esta categoría está en uso y no se puede eliminar."
     }
   },
@@ -224,6 +238,7 @@
   "FinancePage": {
     "defaultUserName": "Gestor",
     "sending": "Enviando...",
+    "loading": "Cargando...",
     "openAmountLabel": "Saldo pendiente",
     "loadingInvites": "Cargando invitaciones...",
     "inviteByEmail": "Invitación por email para {email}",
@@ -244,7 +259,6 @@
     "inviteSent": "¡Invitación enviada con éxito!",
     "overdueTitle": "Cuentas vencidas",
     "overdueSubtitle": "Tienes {count} cuenta(s) vencida(s).",
-    "transactionsTitle": "Transacciones",
     "transactionsCount": "{count} registros",
     "searchByNamePlaceholder": "Buscar por nombre...",
     "noResults": "No se encontraron registros para esta búsqueda.",
@@ -266,7 +280,6 @@
     "prevMonthAria": "Mes anterior",
     "nextMonthAria": "Mes siguiente",
     "goTodayLabel": "Hoy",
-    "metricsTitle": "Métricas",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
     "overdueSummaryLabel": "Saldo vencido",
@@ -275,7 +288,22 @@
     "cancelSelection": "Cancelar selección",
     "selectedTotalLabel": "Total seleccionado",
     "itemSingular": "elemento",
-    "itemPlural": "elementos"
+    "itemPlural": "elementos",
+    "errors": {
+      "unauthorized": "No autorizado.",
+      "invalidEmail": "Email inválido.",
+      "boardNotFound": "Tablero no encontrado.",
+      "onlyOwnerCanInvite": "Solo el dueño puede invitar.",
+      "invalidCode": "Código inválido.",
+      "alreadyMember": "Ya eres miembro de este tablero.",
+      "alreadyRequested": "Ya solicitaste acceso a este tablero.",
+      "inviteNotFound": "Invitación no encontrada.",
+      "noPermission": "Sin permiso.",
+      "inviteNotPending": "La invitación no está pendiente.",
+      "onlyInviteeCanAccept": "Solo el invitado puede aceptar.",
+      "onlyOwnerCanApprove": "Solo el dueño puede aprobar.",
+      "requestMissingUserId": "Solicitud sin userId."
+    }
   },
   "FinanceBoards": {
     "title": "Tableros de Finanzas",

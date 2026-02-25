@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import { getTranslations } from "next-intl/server";
 
 /* ================= helpers ================= */
 
@@ -32,19 +33,20 @@ async function canEditItem(existing: FinanceItem, sessionUser: string) {
 /* ================= categorias ================= */
 
 export async function createCategory(name: string, locale: string, boardId?: string) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Nome de categoria inválido" };
+  if (!trimmed) return { error: t("errors.invalidCategoryName") };
 
   if (BUILTIN_CATEGORIES.includes(trimmed))
-    return { error: "Essa categoria já existe" };
+    return { error: t("errors.categoryExists") };
 
   if (boardId) {
     const board = await getBoard(boardId);
-    if (!board) return { error: "Quadro não encontrado" };
-    if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
+    if (!board) return { error: t("errors.boardNotFound") };
+    if (!isMember(board, sessionUser)) return { error: t("errors.noPermission") };
   }
 
   // Verifica duplicidade no contexto (board ou pessoal)
@@ -74,7 +76,7 @@ export async function createCategory(name: string, locale: string, boardId?: str
   }
 
   if (exists) {
-    return { error: "Essa categoria já existe" };
+    return { error: t("errors.categoryExists") };
   }
 
   await adminDb.collection("finance_categories").add({
@@ -242,7 +244,7 @@ export async function addFinanceItem(formData: FormData) {
   const category = categoryRaw.trim();
 
   if (!title || Number.isNaN(amount) || !date || !type) {
-    return { error: "Dados incompletos" };
+    return { error: t("errors.incompleteData") };
   }
   if (!category) return { error: "Categoria é obrigatória" };
 
@@ -369,8 +371,10 @@ export async function addFinanceItem(formData: FormData) {
 }
 
 export async function updateFinanceItem(formData: FormData) {
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const id = String(formData.get("id") || "");
   const title = String(formData.get("title") || "");
@@ -378,7 +382,6 @@ export async function updateFinanceItem(formData: FormData) {
   const date = String(formData.get("date") || "");
   const category = String(formData.get("category") || "");
   const type = formData.get("type") as "income" | "expense" | null;
-  const locale = String(formData.get("locale") || "pt").toLowerCase();
   const paidAmountStr = String(formData.get("paidAmount") || "");
 
   const cardNameRaw = String(formData.get("cardName") || "");
@@ -409,7 +412,7 @@ export async function updateFinanceItem(formData: FormData) {
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status === "paid" || existing.status === "partial") {
     return {
@@ -508,11 +511,11 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status !== "paid") {
     return { error: "LanÃ§amento nÃ£o estÃ¡ quitado totalmente." };

@@ -104,7 +104,7 @@ export async function updateCategory(
     }
 
     const trimmedNew = newName.trim();
-    if (!trimmedNew) return { error: "Nome inválido." }; // TODO: Add to locale if needed or use generic error
+    if (!trimmedNew) return { error: t("errors.invalidCategoryName") };
 
     if (oldName === trimmedNew) return { success: true };
 
@@ -132,7 +132,7 @@ export async function updateCategory(
         }
 
         if (exists) {
-            return { error: t("errors.categoryExists") || "Category already exists." };
+            return { error: t("errors.categoryExists") };
         }
 
         // 2. Find the old category doc
@@ -183,6 +183,6 @@ export async function updateCategory(
 
     } catch (error) {
         console.error("Error updating category:", error);
-        return { error: t("errors.updateFailed") || "Update failed." };
+        return { error: t("errors.updateFailed") };
     }
 }

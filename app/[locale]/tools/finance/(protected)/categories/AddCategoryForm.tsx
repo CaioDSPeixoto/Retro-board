@@ -10,6 +10,7 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
     const [isPending, startTransition] = useTransition();
     const [isAdding, setIsAdding] = useState(false);
     const [name, setName] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
     const t = useTranslations("FinanceForm"); // Reusing FinanceForm translations
@@ -22,9 +23,10 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
         startTransition(async () => {
             const res = await createCategory(trimmed, locale, boardId);
             if (res?.error) {
-                alert(res.error);
+                setError(res.error);
             } else {
                 setName("");
+                setError(null);
                 setIsAdding(false);
                 router.refresh();
             }
@@ -36,6 +38,7 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
             <button
                 onClick={() => {
                     setIsAdding(true);
+                    setError(null);
                     setTimeout(() => inputRef.current?.focus(), 50);
                 }}
                 className="w-full py-3 px-4 flex items-center justify-center gap-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl border border-dashed border-blue-200 transition-all"
@@ -47,29 +50,41 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-1">
-            <input
-                ref={inputRef}
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t("customCategoryPlaceholder")}
-                className="flex-1 px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 outline-none"
-                disabled={isPending}
-                onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                        setIsAdding(false);
-                        setName("");
-                    }
-                }}
-            />
-            <button
-                type="submit"
-                disabled={isPending || !name.trim()}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-                {isPending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FiCheck size={16} />}
-            </button>
-        </form>
+        <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2 bg-white border border-blue-200 rounded-xl shadow-sm animate-in fade-in slide-in-from-top-1">
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={name}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                        if (error) setError(null);
+                    }}
+                    placeholder={t("customCategoryPlaceholder")}
+                    className="flex-1 px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 outline-none"
+                    disabled={isPending}
+                    onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                            setIsAdding(false);
+                            setName("");
+                            setError(null);
+                        }
+                    }}
+                />
+                <button
+                    type="submit"
+                    disabled={isPending || !name.trim()}
+                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                    {isPending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FiCheck size={16} />}
+                </button>
+            </form>
+
+            {error && (
+                <p className="text-xs text-red-600 px-1" role="status" aria-live="polite">
+                    {error}
+                </p>
+            )}
+        </div>
     );
 }
