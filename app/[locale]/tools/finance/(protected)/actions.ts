@@ -219,6 +219,7 @@ export async function addFinanceItem(formData: FormData) {
   const type = formData.get("type") as "income" | "expense" | null;
   const categoryRaw = String(formData.get("category") || "");
   const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "Finance" });
 
   const statusField = formData.get("status") as FinanceStatus | null;
   const isFixedFlag = formData.get("isFixed") === "true";
@@ -506,8 +507,9 @@ export async function toggleStatus(
 }
 
 export async function revertFinanceItemPayment(id: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();

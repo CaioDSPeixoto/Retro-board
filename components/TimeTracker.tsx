@@ -185,8 +185,8 @@ export default function TimeTracker() {
   };
 
   const result = calculate();
-  const showBankResult =
-    typeof result.bankMinutes === "number" && result.bankMinutes !== 0;
+  const bankMinutesValue =
+    typeof result.bankMinutes === "number" ? result.bankMinutes : null;
 
   return (
     <div className="border border-blue-200 rounded-xl p-6 bg-white shadow-lg">
@@ -356,9 +356,9 @@ export default function TimeTracker() {
         </div>
       )}
 
-      {showBankResult && (
+      {bankMinutesValue !== null && bankMinutesValue !== 0 && (
         <div className="grid grid-cols-2 gap-4 text-sm mt-4">
-          <Result label={t("bankLabel")} value={formatSigned(result.bankMinutes)} />
+          <Result label={t("bankLabel")} value={formatSigned(bankMinutesValue)} />
         </div>
       )}
     </div>

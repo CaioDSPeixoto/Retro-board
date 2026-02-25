@@ -527,7 +527,7 @@ export default function FinanceClientPage({
                   <input
                     type="text"
                     readOnly
-                    value={currentBoard.id}
+                    value={currentBoard?.id ?? ""}
                     className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
                   />
                   <p className="mt-1 text-[11px] text-gray-400">

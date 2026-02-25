@@ -624,7 +624,7 @@ export default function FinanceFormModal({
                         name="isFixed"
                         value="true"
                         id="isFixed"
-                        defaultChecked={initialItem?.isFixed ?? false}
+                        defaultChecked={false}
                         disabled={!canUseFixed}
                         className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                       />
