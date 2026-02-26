@@ -130,56 +130,73 @@ export default function TimeTracker() {
   }, [focusIndex, punches.length]);
 
   const calculate = () => {
-    let workedMinutes = 0;
-    let lunchMinutes = 0;
+  const valid = punches.map(p => (p || "").trim()).filter(Boolean);
 
-    for (let i = 0; i < punches.length - 1; i++) {
-      const start = punches[i];
-      const end = punches[i + 1];
-      if (!start || !end) continue;
-
-      const diff = convertToMinutes(end) - convertToMinutes(start);
-
-      if (i % 2 === 0) workedMinutes += diff;
-      else lunchMinutes += diff;
-    }
-
-    const daily = workload === "6h" ? 360 : workload === "8h" ? 480 : 528;
-
-    const bankBaseMinutes = parseTimeMinutes(bankTime);
-    const bankMinutesSigned =
-      typeof bankBaseMinutes === "number"
-        ? bankBaseMinutes * (bankSign === "negative" ? -1 : 1)
-        : null;
-
-    const effectiveDaily =
-      typeof bankMinutesSigned === "number"
-        ? Math.max(0, daily - bankMinutesSigned)
-        : daily;
-
-    const remaining = Math.max(0, effectiveDaily - workedMinutes);
-    const extra = Math.max(0, workedMinutes - effectiveDaily);
-
-    let suggestedExit = "";
-    if (punches.length % 2 === 1 && remaining > 0) {
-      const lastPunch = punches[punches.length - 1];
-      if (lastPunch) {
-        const total = convertToMinutes(lastPunch) + remaining;
-        const h = Math.floor(total / 60) % 24;
-        const m = total % 60;
-        suggestedExit = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-      }
-    }
-
-    return {
-      worked: format(workedMinutes),
-      lunch: format(lunchMinutes),
-      remaining,
-      extra: format(extra),
-      suggestedExit,
-      bankMinutes: bankMinutesSigned,
-    };
+  const toMin = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
   };
+
+  const format = (m: number) =>
+    `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+
+  let workedMinutes = 0;
+
+  const breaks: number[] = [];
+
+  for (let i = 0; i < valid.length - 1; i++) {
+    const start = valid[i];
+    const end = valid[i + 1];
+
+    const diff = toMin(end) - toMin(start);
+    if (!Number.isFinite(diff) || diff <= 0) continue;
+
+    if (i % 2 === 0) workedMinutes += diff;
+    else breaks.push(diff);
+  }
+
+  const rawLunch = breaks.length ? Math.max(...breaks) : 0;
+  const lunchMinutes = rawLunch
+    ? Math.min(120, Math.max(60, rawLunch))
+    : 0;
+
+  const lunchDeficit = Math.max(0, lunchMinutes - rawLunch);
+  const workedAdjusted = Math.max(0, workedMinutes - lunchDeficit);
+
+  const daily = workload === "6h" ? 360 : workload === "8h" ? 480 : 528;
+
+  const bankBaseMinutes = parseTimeMinutes(bankTime);
+  const bankMinutesSigned =
+    typeof bankBaseMinutes === "number"
+      ? bankBaseMinutes * (bankSign === "negative" ? -1 : 1)
+      : null;
+
+  const effectiveDaily =
+    typeof bankMinutesSigned === "number"
+      ? Math.max(0, daily - bankMinutesSigned)
+      : daily;
+
+  const remaining = Math.max(0, effectiveDaily - workedAdjusted);
+  const extra = Math.max(0, workedAdjusted - effectiveDaily);
+
+  let suggestedExit = "";
+  if (valid.length % 2 === 1 && remaining > 0) {
+    const lastPunch = valid[valid.length - 1];
+    const total = toMin(lastPunch) + remaining;
+    const h = Math.floor(total / 60) % 24;
+    const m = total % 60;
+    suggestedExit = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  return {
+    worked: format(workedAdjusted),
+    lunch: format(lunchMinutes),
+    remaining,
+    extra: format(extra),
+    suggestedExit,
+    bankMinutes: bankMinutesSigned,
+  };
+};
 
   const result = calculate();
   const bankMinutesValue =
