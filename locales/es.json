@@ -79,7 +79,7 @@
   },
   "TimeTracker": {
     "title": "Control de Horas",
-    "addManual": "Añadir hora manualmente",
+    "addManual": "Añadir hora",
     "workloadLabel": "Jornada",
     "settingsTitle": "Configuración inicial",
     "bankLabel": "Banco de horas",

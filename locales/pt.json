@@ -79,7 +79,7 @@
   },
   "TimeTracker": {
     "title": "Controle de Ponto",
-    "addManual": "Adicionar horário manualmente",
+    "addManual": "Adicionar horário",
     "workloadLabel": "Carga diária",
     "settingsTitle": "Configurações iniciais",
     "bankLabel": "Banco de horas",

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { FiChevronDown, FiChevronUp, FiTrash2 } from "react-icons/fi";
+import { FiChevronDown, FiTrash2 } from "react-icons/fi";
 
 type BankSign = "positive" | "negative";
 
@@ -30,7 +30,6 @@ export default function TimeTracker() {
     localStorage.setItem("timeTrackerPunches", JSON.stringify(punches));
   }, [punches]);
 
-  // Load bank (with backward-compat for old combined string like "-00:45")
   useEffect(() => {
     const storedSign = localStorage.getItem("timeTrackerBankSign");
     const storedTimeRaw = localStorage.getItem("timeTrackerBankTime");
@@ -54,7 +53,6 @@ export default function TimeTracker() {
       timePart = timePart.slice(1).trim();
     }
 
-    // Normalize "H:MM" => "HH:MM"
     const m = timePart.match(/^(\d{1,2}):(\d{2})$/);
     if (m) {
       const hh = String(Number(m[1])).padStart(2, "0");
@@ -142,7 +140,6 @@ export default function TimeTracker() {
 
       const diff = convertToMinutes(end) - convertToMinutes(start);
 
-      // even indexes = work | odd = breaks
       if (i % 2 === 0) workedMinutes += diff;
       else lunchMinutes += diff;
     }
@@ -189,13 +186,15 @@ export default function TimeTracker() {
     typeof result.bankMinutes === "number" ? result.bankMinutes : null;
 
   return (
-    <div className="border border-blue-200 rounded-xl p-6 bg-white shadow-lg">
-      {/* Controls (full-width bar + inline collapse that pushes content down) */}
+    <div className="border border-blue-200 rounded-xl p-4 sm:p-6 bg-white shadow-lg">
       <div className="mb-8 border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
-        <div className="h-12 px-3 flex items-center justify-between gap-3">
+
+        {/* HEADER */}
+        <div className="px-3 py-3 flex items-center gap-3">
+
           <button
             onClick={addManual}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold shadow"
+            className="flex-[2] px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold shadow"
           >
             {t("addManual")}
           </button>
@@ -203,24 +202,27 @@ export default function TimeTracker() {
           <button
             type="button"
             onClick={() => setSettingsOpen((p) => !p)}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition text-gray-800"
+            className="flex-1 inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition text-gray-800"
             aria-expanded={settingsOpen}
           >
             <span className="text-sm font-semibold">{t("settingsTitle")}</span>
-            <span className="text-gray-400">
-              {settingsOpen ? (
-                <FiChevronUp size={16} />
-              ) : (
-                <FiChevronDown size={16} />
-              )}
+
+            <span className={`transition-transform duration-300 ${settingsOpen ? "rotate-180" : ""}`}>
+              <FiChevronDown size={16} />
             </span>
           </button>
         </div>
 
-        {settingsOpen && (
-          <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              <div className="md:col-span-5">
+        {/* COLLAPSE */}
+        <div
+          className={`transition-all duration-300 ease-in-out overflow-hidden bg-gray-50 ${
+            settingsOpen ? "max-h-[500px] opacity-100 border-t border-gray-200" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="px-4 pb-4 pt-3">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              
+              <div className="lg:col-span-5">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
                   {t("workloadLabel")}
                 </label>
@@ -235,36 +237,33 @@ export default function TimeTracker() {
                 </select>
               </div>
 
-              <div className="md:col-span-7">
+              <div className="lg:col-span-7">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
                   {t("bankLabel")}
                 </label>
 
-                <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <div className="inline-flex h-10 rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden w-full md:w-auto">
+                <div className="grid grid-cols-3 gap-3">
+
+                  <div className="flex h-10 rounded-xl border border-gray-300 overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setBankSign("positive")}
-                      className={`w-12 h-10 text-sm font-bold transition ${
+                      className={`flex-1 text-sm font-bold ${
                         bankSign === "positive"
                           ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-50"
+                          : "bg-white text-gray-700"
                       }`}
-                      title={t("bankPositiveTitle")}
-                      aria-pressed={bankSign === "positive"}
                     >
                       +
                     </button>
                     <button
                       type="button"
                       onClick={() => setBankSign("negative")}
-                      className={`w-12 h-10 text-sm font-bold transition ${
+                      className={`flex-1 text-sm font-bold ${
                         bankSign === "negative"
                           ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-50"
+                          : "bg-white text-gray-700"
                       }`}
-                      title={t("bankNegativeTitle")}
-                      aria-pressed={bankSign === "negative"}
                     >
                       -
                     </button>
@@ -277,12 +276,9 @@ export default function TimeTracker() {
                       const next = e.target.value;
                       setBankTime(next);
                       const parsed = parseTimeMinutes(next);
-                      setBankError(
-                        next.trim() && parsed == null ? t("bankInvalid") : null,
-                      );
+                      setBankError(next.trim() && parsed == null ? t("bankInvalid") : null);
                     }}
-                    className="h-10 border border-gray-300 px-3 rounded-xl shadow-sm text-gray-800 w-full md:w-56 bg-white"
-                    aria-invalid={!!bankError}
+                    className="h-10 border border-gray-300 px-3 rounded-xl shadow-sm text-gray-800 w-full bg-white"
                   />
 
                   <button
@@ -292,9 +288,7 @@ export default function TimeTracker() {
                       setBankSign("positive");
                       setBankError(null);
                     }}
-                    className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition font-semibold w-full md:w-auto"
-                    title={t("bankResetTitle")}
-                    aria-label={t("bankResetTitle")}
+                    className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition font-semibold w-full"
                   >
                     {t("bankReset")}
                   </button>
@@ -302,13 +296,7 @@ export default function TimeTracker() {
 
                 <div className="mt-2 min-h-[14px]">
                   {bankError ? (
-                    <p
-                      className="text-[11px] text-red-600"
-                      role="status"
-                      aria-live="polite"
-                    >
-                      {bankError}
-                    </p>
+                    <p className="text-[11px] text-red-600">{bankError}</p>
                   ) : (
                     <p className="text-[11px] text-gray-500">{t("bankHint")}</p>
                   )}
@@ -316,9 +304,10 @@ export default function TimeTracker() {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
+      {/* PUNCHES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
         {punches.map((p, i) => (
           <div key={i} className="flex items-center gap-3">
@@ -334,8 +323,6 @@ export default function TimeTracker() {
             <button
               onClick={() => removePunch(i)}
               className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow-sm"
-              title={t("removePunchTitle")}
-              aria-label={t("removePunchTitle")}
             >
               <FiTrash2 size={18} />
             </button>
@@ -343,7 +330,8 @@ export default function TimeTracker() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+      {/* RESULTS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
         <Result label={t("worked")} value={result.worked} />
         <Result label={t("lunch")} value={result.lunch} />
         <Result label={t("remaining")} value={format(result.remaining)} />
@@ -351,13 +339,13 @@ export default function TimeTracker() {
       </div>
 
       {result.suggestedExit && (
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <Result label={t("suggestedExit")} value={result.suggestedExit} />
         </div>
       )}
 
       {bankMinutesValue !== null && bankMinutesValue !== 0 && (
-        <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mt-4">
           <Result label={t("bankLabel")} value={formatSigned(bankMinutesValue)} />
         </div>
       )}

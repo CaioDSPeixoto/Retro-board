@@ -79,7 +79,7 @@
   },
   "TimeTracker": {
     "title": "Time Tracker",
-    "addManual": "Add time manually",
+    "addManual": "Add time",
     "workloadLabel": "Daily goal",
     "settingsTitle": "Initial settings",
     "bankLabel": "Time bank",
