@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { FiDollarSign, FiList, FiUsers, FiWatch } from "react-icons/fi";
+import { FiDollarSign, FiList, FiUsers, FiWatch, FiTool } from "react-icons/fi";
 
 export default function ToolsPage() {
   const t = useTranslations("Tools");
@@ -66,20 +66,36 @@ export default function ToolsPage() {
             </div>
         </Link>
 
-        {/* Chat */}
+        {/* RetroBoard */}
         <Link
-            href="tools"
-            className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
-            >
-            <FiUsers size={28} className="text-blue-700" />
-            <div>
-                <h2 className="font-semibold text-lg text-gray-800">
-                {t("toolSoon")}
-                </h2>
-                <p className="text-sm text-gray-600">
-                {t("toolSoon")}
-                </p>
-            </div>
+          href="tools/retroboard"
+          className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
+        >
+          <FiUsers size={28} className="text-blue-700" />
+          <div>
+            <h2 className="font-semibold text-lg text-gray-800">
+              {t("retroboardTitle")}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {t("retroboardDesc")}
+            </p>
+          </div>
+        </Link>
+
+        {/* Em breve */}
+        <Link
+          href="tools"
+          className="border border-blue-200 p-6 rounded-xl shadow-lg hover:shadow-xl transition bg-white flex items-center gap-3"
+        >
+          <FiTool size={28} className="text-blue-700" />
+          <div>
+            <h2 className="font-semibold text-lg text-gray-800">
+              {t("toolSoon")}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {t("toolSoon")}
+            </p>
+          </div>
         </Link>
       </div>
     </div>

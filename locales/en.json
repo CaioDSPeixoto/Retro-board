@@ -23,7 +23,8 @@
   "Navbar": {
     "home": "Home",
     "tools": "Tools",
-    "language": "Language"
+    "language": "Language",
+    "resume": "Resume"
   },
   "Room": {
     "defaults": {
@@ -32,39 +33,28 @@
     },
     "share": {
       "copied": "Link copied to clipboard!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/sendtext=Join the room: {url}"
     }
   },
   "Home": {
-    "slogan": "Feedback that drives the future!",
-    "tabs": {
-      "create": "Create Room",
-      "enter": "Join Room"
-    },
-    "roomName": {
-      "label": "Room name",
-      "default": "Default",
-      "custom": "Custom",
-      "placeholder": "Enter room name",
-      "defaultName": "Retrospective"
-    },
-    "userName": {
-      "label": "Username settings",
-      "allowAnonymous": "Allow Anonymous",
-      "requireName": "Name Required",
-      "placeholder": "Enter your name..."
-    },
-    "createButton": "Create Room",
-    "enterRoom": {
-      "placeholder": "Enter Room ID",
-      "button": "Join"
-    },
-    "loading": "Creating room...",
-    "alerts": {
-      "requireName": "Please enter your name before creating the room!",
-      "createError": "Error creating room. Please try again.",
-      "roomNotFound": "Room not found!"
-    }
+    "title": "Hi, I'm Caio Peixoto!",
+    "subtitle": "I build useful things. Sometimes pretty. Usually functional.",
+    "description": "This is my personal space. Here you can find my tools, projects, and experiments.",
+    "ctaTools": "View tools",
+    "ctaRetroboard": "Open RetroBoard",
+    "aboutTitle": "About me",
+    "aboutBody": "Write a short professional bio here, your interests, and the kind of work youre looking for.",
+    "highlightsTitle": "Highlights",
+    "highlight1Title": "Product & UX",
+    "highlight1Desc": "I build clear flows and straightforward experiences.",
+    "highlight2Title": "Engineering",
+    "highlight2Desc": "I care about clean, scalable, testable code.",
+    "highlight3Title": "Automation",
+    "highlight3Desc": "I reduce repetitive work with practical tools.",
+    "contactTitle": "Lets talk",
+    "contactBody": "If you want to discuss opportunities, projects, or partnerships, reach out.",
+    "contactButton": "Explore tools",
+    "ctaResume": "View resume"
   },
   "Tools": {
     "title": "Tools",
@@ -75,7 +65,9 @@
     "todoListDesc": "Manage tasks with time-based alerts.",
     "financeTitle": "Finance",
     "financeDesc": "Manage your accounts and expenses.",
-    "toolSoon": "Coming soon..."
+    "toolSoon": "Coming soon...",
+    "retroboardTitle": "RetroBoard",
+    "retroboardDesc": "Collaborative retrospectives in real time."
   },
   "TimeTracker": {
     "title": "Time Tracker",
@@ -126,21 +118,21 @@
     "statusReceived": "Received",
     "statusPartial": "Partially paid",
     "fixedLabel": "Recurring",
-    "confirmDelete": "Are you sure you want to delete this entry?",
+    "confirmDelete": "Are you sure you want to delete this entry",
     "rolledFromMonth": "Moved from {month}",
     "partialPaid": "Paid {paid} of {total}",
     "syntheticLabel": "Generated",
     "togglePaidAria": "Toggle paid status",
     "editAria": "Edit entry",
     "deleteAria": "Delete entry",
-    "confirmRevertPayment": "Do you really want to revert this payment/receipt?",
+    "confirmRevertPayment": "Do you really want to revert this payment/receipt",
     "noCustomCategories": "No custom categories found.",
     "categoriesTitle": "Manage Categories",
     "customCategoriesLabel": "Custom Categories",
     "builtinCategoriesLabel": "Default Categories",
     "builtinLabel": "Default",
     "deleteCategoryTitle": "Delete category",
-    "deleteCategoryMessage": "Are you sure you want to delete the category \"{category}\"?",
+    "deleteCategoryMessage": "Are you sure you want to delete the category \"{category}\"",
     "description": "Manage the categories used in your entries.",
     "errors": {
       "deleteFailed": "Delete failed. Please try again.",
@@ -216,7 +208,7 @@
     "passwordPlaceholder": "••••••••",
     "submitButton": "Log In",
     "loading": "Signing in...",
-    "noAccount": "Don't have an account?",
+    "noAccount": "Don't have an account",
     "registerLink": "Sign up",
     "errors": {
       "invalid": "Invalid email or password.",
@@ -234,7 +226,7 @@
     "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Create Account",
     "loading": "Creating account...",
-    "hasAccount": "Already have an account?",
+    "hasAccount": "Already have an account",
     "loginLink": "Log in",
     "errors": {
       "match": "Passwords do not match.",
@@ -370,7 +362,7 @@
     "descriptionPlaceholder": "e.g., Rent, Salary...",
     "amountLabel": "Amount ($)",
     "dateLabel": "Date",
-    "alreadyPaidLabel": "Already paid/received?",
+    "alreadyPaidLabel": "Already paid/received",
     "fixedCheckboxLabel": "Recurring (repeat every month)",
     "savingButton": "Saving...",
     "saveButton": "Save Entry",
@@ -384,5 +376,146 @@
     "cardSectionTitle": "Card Details",
     "cardNameLabel": "Card",
     "cardModeLabel": "Card Type"
+  },
+  "Retroboard": {
+    "slogan": "Feedback that drives the future!",
+    "tabs": {
+      "create": "Create Room",
+      "enter": "Join Room"
+    },
+    "roomName": {
+      "label": "Room name",
+      "default": "Default",
+      "custom": "Custom",
+      "placeholder": "Enter room name",
+      "defaultName": "Retrospective"
+    },
+    "userName": {
+      "label": "Username settings",
+      "allowAnonymous": "Allow Anonymous",
+      "requireName": "Name Required",
+      "placeholder": "Enter your name..."
+    },
+    "createButton": "Create Room",
+    "enterRoom": {
+      "placeholder": "Enter Room ID",
+      "button": "Join"
+    },
+    "loading": "Creating room...",
+    "alerts": {
+      "requireName": "Please enter your name before creating the room!",
+      "createError": "Error creating room. Please try again.",
+      "roomNotFound": "Room not found!"
+    }
+  },
+  "Common": {
+    "loading": "Loading..."
+  },
+  "Resume": {
+    "labels": {
+      "phone": "Phone",
+      "recado": "Message",
+      "email": "Email",
+      "linkedin": "LinkedIn"
+    },
+    "header": {
+      "name": "Caio dos Santos Peixoto",
+      "role": "Back-End Developer | Tech Lead",
+      "location": "Brusque, Santa Catarina - Brazil",
+      "phone": "",
+      "recado": "",
+      "email": "caiospeixoto23@gmail.com",
+      "linkedin": "/caiodspeixoto"
+    },
+    "objective": {
+      "title": "Professional goal",
+      "body": "Improve and optimize processes and services using analytical thinking to solve problems and deliver better customer experience. Passionate about learning and exploring emerging technologies. Open to relocation."
+    },
+    "sections": {
+      "experience": "Work experience",
+      "education": "Education",
+      "courses": "Courses",
+      "extra": "Additional information"
+    },
+    "experience": [
+      {
+        "title": "Questor Sistemas  Tech Lead",
+        "period": "Nov 2023  Present",
+        "bullets": [
+          "Continuous system development with focus on performance and optimization.",
+          "Planning of technologies and technical support for the team.",
+          "Agile routines focused on quality with reduced time and cost."
+        ]
+      },
+      {
+        "title": "Havan S.A.  Software Developer",
+        "period": "Jan 2021  Sep 2023",
+        "bullets": [
+          "Back-end with .NET Core, DDD, microservices, and RabbitMQ integrations.",
+          "Front-end support with AngularJS and migration to ReactJS.",
+          "SQL Server and MongoDB with queries, views, functions, and procedures.",
+          "Tech lead duties: standards, code reviews, and production deployments."
+        ]
+      },
+      {
+        "title": "Tcnica Automao Comercial  Software Support",
+        "period": "2019  2021",
+        "bullets": [
+          "ERP support and internal C# solutions.",
+          "Database and hardware maintenance.",
+          "Training and application issue analysis."
+        ]
+      },
+      {
+        "title": "FK-Tech Telecomunicaes  IT Intern",
+        "period": "2017  2019",
+        "bullets": [
+          "User support and hardware maintenance.",
+          "Web programming (HTML, CSS, PHP, JavaScript, and databases).",
+          "Mikrotik Hotspot and API integrations using PHP."
+        ]
+      },
+      {
+        "title": "Centro Universitrio So Camilo  IT Intern",
+        "period": "2015  2016",
+        "bullets": [
+          "Hardware maintenance and network support (cabling).",
+          "User support and lab organization.",
+          "Assisted teachers with classroom setup and equipment."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "title": "Postgraduate in Software Engineering",
+        "subtitle": "Faculdade Metropolitana",
+        "period": "2024  2024"
+      },
+      {
+        "title": "BSc in Information Systems",
+        "subtitle": "Multivix  Cachoeiro de Itapemirim",
+        "period": "2017  2020"
+      },
+      {
+        "title": "Technical High School in IT",
+        "subtitle": "Fraternidade e Luz",
+        "period": "2014  2016"
+      }
+    ],
+    "courses": [
+      "DevOps Ninja: Docker, Kubernetes and Rancher (2021)",
+      "C# Complete  Object-Oriented Programming (2021)",
+      "C# OOP + Logic Programming (2020)",
+      "Database and SQL Course (20192020)",
+      "English at Microlins Book2 (Intermediate, 20152017)"
+    ],
+    "extra": [
+      "Reading and writing (English): Intermediate",
+      "Conversation (English): Basic",
+      "Marital status: Married",
+      "Driver's license: AB"
+    ],
+    "download": "Download PDF",
+    "backToTools": "Back to tools"
   }
 }

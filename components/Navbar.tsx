@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FiHome, FiTool } from "react-icons/fi";
+import { FiHome, FiTool, FiFileText } from "react-icons/fi";
 import UserMenu from "./UserMenu";
 import { getTranslations } from "next-intl/server";
 import { getSession } from "@/lib/auth/session";
@@ -17,7 +17,7 @@ export default async function Navbar({ locale }: { locale: string }) {
         {/* LEFT */}
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
-            href="/"
+            href={`/${locale}`}
             className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900 transition-colors"
           >
             <FiHome size={18} />
@@ -30,6 +30,14 @@ export default async function Navbar({ locale }: { locale: string }) {
           >
             <FiTool size={18} />
             <span className="hidden sm:inline">{t("tools")}</span>
+          </Link>
+
+          <Link
+            href={`/${locale}/cv`}
+            className="flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            <FiFileText size={18} />
+            <span className="hidden sm:inline">{t("resume")}</span>
           </Link>
         </div>
 

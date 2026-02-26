@@ -85,6 +85,7 @@ export default function FinanceClientPage({
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
+  const [showBoardPicker, setShowBoardPicker] = useState(false);
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -389,40 +390,57 @@ export default function FinanceClientPage({
       )}
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
-        <div className="px-6 pt-4 pb-2 flex justify-between items-end gap-2">
-          <div className="flex-1">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
-              {t("boardLabel")}
-            </label>
-            <select
-              value={currentBoardId ?? ""}
-              onChange={(e) => handleBoardChange(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+        <div className="px-4 sm:px-6 pt-3 pb-1">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setShowBoardPicker((prev) => !prev)}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition"
+              aria-expanded={showBoardPicker}
             >
-              <option value="">{t("allBoardsLabel")}</option>
-              {boards.map((board) => (
-                <option key={board.id} value={board.id}>
-                  {board.name}
-                </option>
-              ))}
-            </select>
+              <FiList size={14} />
+              <span className="truncate max-w-[180px]">
+                {t("boardLabel")}: {boardName}
+              </span>
+            </button>
+
+            <Link
+              href={
+                currentBoardId
+                  ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
+                  : `/${locale}/tools/finance/categories`
+              }
+              className="px-2.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition flex items-center justify-center"
+              title={t("manageCategoriesLabel")}
+            >
+              <FiSettings size={14} />
+            </Link>
           </div>
-          <Link
-            href={
-              currentBoardId
-                ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
-                : `/${locale}/tools/finance/categories`
-            }
-            className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition flex items-center justify-center"
-            title={t("manageCategoriesLabel")}
-          >
-            <FiSettings size={16} />
-          </Link>
+
+          {showBoardPicker && (
+            <div className="mt-2 bg-white border border-gray-200 rounded-2xl px-3 py-3 shadow-sm">
+              <label className="block text-[11px] font-semibold text-gray-500 mb-2">
+                {t("boardLabel")}
+              </label>
+              <select
+                value={currentBoardId ?? ""}
+                onChange={(e) => handleBoardChange(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">{t("allBoardsLabel")}</option>
+                {boards.map((board) => (
+                  <option key={board.id} value={board.id}>
+                    {board.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       )}
 
       {/* HEADER */}
-      <div className="bg-blue-600 pt-6 pb-12 px-6 rounded-b-[2.5rem] text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 pt-6 pb-12 px-6 rounded-3xl text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
         <span className="sr-only">

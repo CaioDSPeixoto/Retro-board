@@ -10,8 +10,8 @@ import Script from "next/script";
 import AdBanner from "@/components/AdBanner";
 
 export const metadata: Metadata = {
-  title: "Retrospectiva",
-  description: "Projeto colaborativo em tempo real",
+  title: "Caio Peixoto",
+  description: "Portfólio e sistema de ferramentas",
 };
 
 export default async function RootLayout({

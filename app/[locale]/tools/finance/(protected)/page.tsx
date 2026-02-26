@@ -110,14 +110,16 @@ export default async function FinancePage({
   const categories = await getCategoriesData(boardId);
 
   return (
-    <FinanceClientPage
-      initialItems={items}
-      initialCategories={categories}
-      currentMonth={currentMonth}
-      locale={locale}
-      boards={boards}
-      currentBoardId={boardId}
-      sessionUserId={safeSessionUserId}
-    />
+    <div className="max-w-5xl mx-auto px-6 pb-10 pt-4">
+      <FinanceClientPage
+        initialItems={items}
+        initialCategories={categories}
+        currentMonth={currentMonth}
+        locale={locale}
+        boards={boards}
+        currentBoardId={boardId}
+        sessionUserId={safeSessionUserId}
+      />
+    </div>
   );
 }

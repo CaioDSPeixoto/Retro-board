@@ -23,7 +23,8 @@
   "Navbar": {
     "home": "Inicio",
     "tools": "Herramientas",
-    "language": "Idioma"
+    "language": "Idioma",
+    "resume": "Currculum"
   },
   "Room": {
     "defaults": {
@@ -32,39 +33,28 @@
     },
     "share": {
       "copied": "¡Enlace copiado al portapapeles!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Entra a la sala: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/sendtext=Entra a la sala: {url}"
     }
   },
   "Home": {
-    "slogan": "¡Feedback que impulsa el futuro!",
-    "tabs": {
-      "create": "Crear Sala",
-      "enter": "Entrar a Sala"
-    },
-    "roomName": {
-      "label": "¿Qué nombre quieres para la sala?",
-      "default": "Predeterminado",
-      "custom": "Personalizado",
-      "placeholder": "Escribe el nombre de la sala",
-      "defaultName": "Retrospectiva"
-    },
-    "userName": {
-      "label": "¿Cómo quieres que aparezcan los nombres?",
-      "allowAnonymous": "Permitir Anónimo",
-      "requireName": "Nombre Obligatorio",
-      "placeholder": "Escribe tu nombre..."
-    },
-    "createButton": "Crear Sala",
-    "enterRoom": {
-      "placeholder": "ID de la sala",
-      "button": "Entrar"
-    },
-    "loading": "Creando sala...",
-    "alerts": {
-      "requireName": "¡Por favor, escribe tu nombre antes de crear la sala!",
-      "createError": "Error al crear la sala. Inténtalo de nuevo.",
-      "roomNotFound": "¡Sala no encontrada!"
-    }
+    "title": "Hola, soy Caio Peixoto",
+    "subtitle": "Hago cosas tiles. A veces bonitas. Casi siempre funcionales.",
+    "description": "Este es mi espacio personal. Aqu encontrars mis herramientas, proyectos y experimentos.",
+    "ctaTools": "Ver herramientas",
+    "ctaRetroboard": "Abrir RetroBoard",
+    "aboutTitle": "Sobre m",
+    "aboutBody": "Escribe aqu una breve presentacin profesional, tus intereses y el tipo de trabajo que buscas.",
+    "highlightsTitle": "Destacados",
+    "highlight1Title": "Producto & UX",
+    "highlight1Desc": "Creo flujos claros y experiencias directas.",
+    "highlight2Title": "Ingeniera",
+    "highlight2Desc": "Me importa el cdigo limpio, escalable y testeable.",
+    "highlight3Title": "Automatizacin",
+    "highlight3Desc": "Reduzco trabajo repetitivo con herramientas tiles.",
+    "contactTitle": "Hablamos",
+    "contactBody": "Si quieres hablar sobre oportunidades, proyectos o colaboraciones, contctame.",
+    "contactButton": "Explorar herramientas",
+    "ctaResume": "Ver currculum"
   },
   "Tools": {
     "title": "Herramientas",
@@ -75,7 +65,9 @@
     "todoListDesc": "Gestiona tareas con alertas de horario.",
     "financeTitle": "Finanzas",
     "financeDesc": "Gestiona tus cuentas y tus gastos.",
-    "toolSoon": "En construcción..."
+    "toolSoon": "En construcción...",
+    "retroboardTitle": "RetroBoard",
+    "retroboardDesc": "Retrospectivas colaborativas en tiempo real."
   },
   "TimeTracker": {
     "title": "Control de Horas",
@@ -126,21 +118,21 @@
     "statusReceived": "Recibido",
     "statusPartial": "Pago parcial",
     "fixedLabel": "Fijo",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar este registro?",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este registro",
     "rolledFromMonth": "Movido desde {month}",
     "partialPaid": "Pagado {paid} de {total}",
     "syntheticLabel": "Generado",
     "togglePaidAria": "Cambiar estado de pago",
     "editAria": "Editar registro",
     "deleteAria": "Eliminar registro",
-    "confirmRevertPayment": "¿Realmente deseas revertir este pago/recibo?",
+    "confirmRevertPayment": "¿Realmente deseas revertir este pago/recibo",
     "noCustomCategories": "No se encontraron categorías personalizadas.",
     "categoriesTitle": "Gestionar Categorias",
     "customCategoriesLabel": "Categorias Personalizadas",
     "builtinCategoriesLabel": "Categorias Estándar",
     "builtinLabel": "Estándar",
     "deleteCategoryTitle": "Eliminar categoría",
-    "deleteCategoryMessage": "¿Estás seguro de que quieres eliminar la categoría \"{category}\"?",
+    "deleteCategoryMessage": "¿Estás seguro de que quieres eliminar la categoría \"{category}\"",
     "description": "Gestiona las categorías usadas en tus registros.",
     "errors": {
       "deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
@@ -216,7 +208,7 @@
     "passwordPlaceholder": "••••••••",
     "submitButton": "Acceder",
     "loading": "Entrando...",
-    "noAccount": "¿Aún no tienes cuenta?",
+    "noAccount": "¿Aún no tienes cuenta",
     "registerLink": "Regístrate",
     "errors": {
       "invalid": "Email o contraseña inválidos.",
@@ -234,7 +226,7 @@
     "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Crear Cuenta",
     "loading": "Creando cuenta...",
-    "hasAccount": "¿Ya tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta",
     "loginLink": "Entrar",
     "errors": {
       "match": "Las contraseñas no coinciden.",
@@ -370,7 +362,7 @@
     "descriptionPlaceholder": "Ej: Alquiler, Salario...",
     "amountLabel": "Valor ($)",
     "dateLabel": "Fecha",
-    "alreadyPaidLabel": "¿Ya se pagó/recibió?",
+    "alreadyPaidLabel": "¿Ya se pagó/recibió",
     "fixedCheckboxLabel": "Registro fijo (repetir cada mes)",
     "savingButton": "Guardando...",
     "saveButton": "Guardar registro",
@@ -384,5 +376,146 @@
     "cardSectionTitle": "Detalles de tarjeta",
     "cardNameLabel": "Tarjeta",
     "cardModeLabel": "Tipo de tarjeta"
+  },
+  "Retroboard": {
+    "slogan": "¡Feedback que impulsa el futuro!",
+    "tabs": {
+      "create": "Crear Sala",
+      "enter": "Entrar a Sala"
+    },
+    "roomName": {
+      "label": "¿Qué nombre quieres para la sala",
+      "default": "Predeterminado",
+      "custom": "Personalizado",
+      "placeholder": "Escribe el nombre de la sala",
+      "defaultName": "Retrospectiva"
+    },
+    "userName": {
+      "label": "¿Cómo quieres que aparezcan los nombres",
+      "allowAnonymous": "Permitir Anónimo",
+      "requireName": "Nombre Obligatorio",
+      "placeholder": "Escribe tu nombre..."
+    },
+    "createButton": "Crear Sala",
+    "enterRoom": {
+      "placeholder": "ID de la sala",
+      "button": "Entrar"
+    },
+    "loading": "Creando sala...",
+    "alerts": {
+      "requireName": "¡Por favor, escribe tu nombre antes de crear la sala!",
+      "createError": "Error al crear la sala. Inténtalo de nuevo.",
+      "roomNotFound": "¡Sala no encontrada!"
+    }
+  },
+  "Common": {
+    "loading": "Cargando..."
+  },
+  "Resume": {
+    "labels": {
+      "phone": "Telfono",
+      "recado": "Recado",
+      "email": "Email",
+      "linkedin": "LinkedIn"
+    },
+    "header": {
+      "name": "Caio dos Santos Peixoto",
+      "role": "Desarrollador Back-End | Tech Lead",
+      "location": "Brusque  Santa Catarina - Brasil",
+      "phone": "",
+      "recado": "",
+      "email": "caiospeixoto23@gmail.com",
+      "linkedin": "/caiodspeixoto"
+    },
+    "objective": {
+      "title": "Objetivo profesional",
+      "body": "Mejorar y optimizar procesos y servicios usando anlisis para resolver problemas y ofrecer mejor experiencia al cliente. Apasionado por aprender y explorar tecnologas emergentes. Disponible para mudarme de ciudad."
+    },
+    "sections": {
+      "experience": "Experiencia profesional",
+      "education": "Formacin acadmica",
+      "courses": "Cursos",
+      "extra": "Informacin complementaria"
+    },
+    "experience": [
+      {
+        "title": "Questor Sistemas  Tech Lead",
+        "period": "Nov 2023  Actual",
+        "bullets": [
+          "Desarrollo continuo de sistemas con enfoque en rendimiento y optimizacin.",
+          "Planificacin tecnolgica y soporte tcnico al equipo.",
+          "Rutina gil orientada a calidad con menos tiempo y costo."
+        ]
+      },
+      {
+        "title": "Havan S.A.  Programador de Computador",
+        "period": "Ene 2021  Sep 2023",
+        "bullets": [
+          "Back-end con .NET Core, DDD, microservicios e integraciones RabbitMQ.",
+          "Soporte en front-end con AngularJS y migracin a ReactJS.",
+          "SQL Server y MongoDB con queries, vistas, funciones y procedures.",
+          "Rol de tech lead: estndares, code review y despliegues en produccin."
+        ]
+      },
+      {
+        "title": "Tcnica Automao Comercial  Soporte de Software",
+        "period": "2019  2021",
+        "bullets": [
+          "Soporte ERP y soluciones internas en C#.",
+          "Mantenimiento de base de datos y hardware.",
+          "Capacitacin y anlisis de errores en aplicaciones."
+        ]
+      },
+      {
+        "title": "FK-Tech Telecomunicaes  Pasante de Informtica",
+        "period": "2017  2019",
+        "bullets": [
+          "Soporte al usuario y mantenimiento de hardware.",
+          "Programacin web (HTML, CSS, PHP, JavaScript y bases de datos).",
+          "Hotspot Mikrotik e integraciones va API con PHP."
+        ]
+      },
+      {
+        "title": "Centro Universitrio So Camilo  Pasante de Informtica",
+        "period": "2015  2016",
+        "bullets": [
+          "Mantenimiento de hardware y soporte de red (cableado).",
+          "Soporte a usuarios y organizacin de laboratorios.",
+          "Apoyo a docentes en montaje de estructura y equipos."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "title": "Posgrado en Ingeniera de Software",
+        "subtitle": "Faculdade Metropolitana",
+        "period": "2024  2024"
+      },
+      {
+        "title": "Licenciatura en Sistemas de Informacin",
+        "subtitle": "Multivix  Cachoeiro de Itapemirim",
+        "period": "2017  2020"
+      },
+      {
+        "title": "Enseanza Media Tcnica en Informtica",
+        "subtitle": "Fraternidade e Luz",
+        "period": "2014  2016"
+      }
+    ],
+    "courses": [
+      "DevOps Ninja: Docker, Kubernetes y Rancher (2021)",
+      "C# Completo — Programación Orientada a Objetos (2021)",
+      "C# POO + Lógica de Programación (2020)",
+      "Curso de Base de Datos y SQL (2019–2020)",
+      "Inglés en Microlins Book2 (Intermedio, 2015–2017)"
+    ],
+    "extra": [
+      "Lectura y escritura (Inglés): Intermedio",
+      "Conversación (Inglés): Básico",
+      "Estado civil: Casado",
+      "Licencia de conducir: AB"
+    ],
+    "download": "Descargar PDF",
+    "backToTools": "Volver a herramientas"
   }
 }
