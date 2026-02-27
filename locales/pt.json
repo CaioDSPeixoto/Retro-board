@@ -38,23 +38,103 @@
   },
   "Home": {
     "title": "Oi, eu sou Caio Peixoto",
-    "subtitle": "Falo coisas úteis. As vezes bonitas. Quase sempre funcionais.",
-    "description": "Este site  meu laboratrio: ferramentas, ideias e experimentos com um toque de brincadeira.",
-    "ctaTools": "Abrir o inventrio de ferramentas",
-    "ctaRetroboard": "Entrar no RetroBoard",
-    "aboutTitle": "Sobre mim (verso honesta)",
-    "aboutBody": "Gosto de resolver problemas reais, evitar reunies desnecessrias e automatizar o tdio.",
-    "highlightsTitle": "Superpoderes (no confirmados)",
-    "highlight1Title": "Produto & UX",
-    "highlight1Desc": "Fao fluxos que sua av entenderia  e seu time tambm.",
-    "highlight2Title": "Engenharia",
-    "highlight2Desc": "Cdigo limpo, testes na medida e zero drama.",
-    "highlight3Title": "Automao",
-    "highlight3Desc": "Se d para apertar um boto s, eu aperto.",
-    "contactTitle": "Bora conversar",
-    "contactBody": "Se você curte ideias bem executadas ou precisa de algum para construir, me chama.",
-    "contactButton": "Ver ferramentas",
-    "ctaResume": "Ver currículo"
+    "subtitle": "Falo algumas coisas úteis e quase sempre funcionais.",
+    "description": "Este site é meu laboratório de ferramentas para meu dia a dia.",
+    "ctaTools": "Abrir o inventário de ferramentas",
+    "aboutTitle": "Sobre mim (versão honesta)",
+    "aboutBody": "Gosto de resolver problemas (famoso bombeiro) e de inovar.",
+    "highlightsTitle": "Superpoderes (não confirmados)",
+    "highlights": [
+      {
+        "title": "Bombeiro",
+        "desc": "Apaga incêndios, resolve bugs e salva o dia."
+      },
+      {
+        "title": "Topa tudo",
+        "desc": "Refatoração, linguagem nova ou legado? Bora."
+      },
+      {
+        "title": "Amigo da galera",
+        "desc": "De dev tímido a tech leader, coach, mentor, conselheiro amoroso, tudo."
+      },
+      {
+        "title": "Último a apagar a luz",
+        "desc": "Quase um 24/7, sempre pronto pra ajudar com SQL, Infra, mudança, planning, passar café, etc."
+      }
+    ],
+    "historyTitle": "Minha trajetória profissional",
+    "historyBody": "Uma breve resumida:",
+    "timeline": [
+      { "year": "2014", "text": "Iniciei meu Ensino Médio Integrado ao Técnico de Informática" },
+      { "year": "2015", "text": "Fiz um estágio de informática no Centro Universitário São Camilo" },
+      { "year": "2017", "text": "Comecei a cursar Sistemas de Informação na Faculdade Multivix" },
+      { "year": "2017", "text": "Comecei a trabalhar como Programador Web na FK-Tech" },
+      { "year": "2019", "text": "Iniciei como suporte técnico de software na Técnica Automação" },
+      { "year": "2020", "text": "Me formei na faculdade e me casei" },
+      { "year": "2021", "text": "Me mudei para SC e começei a trabalhar como Programador na Havan S.A." },
+      { "year": "2023", "text": "Comecei a trabalhar como Tech Leader na Questor Sistemas" },
+      { "year": "2024", "text": "Fiz minha pós-graduação em Engenharia de Software na Faculdade Metropolitana" },
+      { "year": "2025", "text": "Atualmente atuo como Programador Full Stack na Havan S.A. (um bom filho a casa torna)" }
+    ],
+    "stacksTitle": "Stacks e tecnologias",
+    "stacks": [
+      "C#",
+      ".NET",
+      "PostgreSQL",
+      "MongoDB",
+      "Redis",
+      "Docker",
+      "RabbitMQ",
+      "Next.js",
+      "TypeScript",
+      "PHP",
+      "ReactJS",
+      "AngularJS",
+      "SQL Server",
+      "Git",
+      "Rancher",
+      "Datadog",
+      "Microserviços",
+      "Clean Architecture",
+      "Agile",
+      "DDD",
+      "REST",
+      "Design Patterns",
+      "SOLID",
+      "Python",
+      "Genexus",
+      "IA Generativa",
+      "LLMs",
+      "MCP Server",
+      "ChatGPT",
+      "CI/CD",
+      "Clean Code",
+      "Refatoração"
+    ],
+    "ctaResume": "Ver currículo",
+    "funStatsTitle": "Estatísticas não oficiais",
+    "funStats": [
+      {
+        "icon": "☕",
+        "value": "4826745",
+        "label": "Copos de café tomados"
+      },
+      {
+        "icon": "🐞",
+        "value": "+632",
+        "label": "Bugs resolvidos"
+      },
+      {
+        "icon": "🧯",
+        "value": "null",
+        "label": "Dias sem bug em produção"
+      },
+      {
+        "icon": "🚨",
+        "value": "34",
+        "label": "Dias sem war room"
+      }
+    ]
   },
   "Tools": {
     "title": "Ferramentas",
