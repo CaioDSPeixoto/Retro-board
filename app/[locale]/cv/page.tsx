@@ -8,6 +8,48 @@ type ResumeItem = {
   bullets?: string[];
 };
 
+type Header = {
+  name: string;
+  role: string;
+  location: string;
+  phone?: string;
+  recado?: string;
+  email?: string;
+  linkedin?: string;
+};
+
+type Objective = {
+  title: string;
+  body: string;
+};
+
+function ContactRow({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value?: string;
+  href?: string;
+}) {
+  if (!value) return null;
+
+  const content = href ? (
+    <a href={href} className="text-blue-600 hover:underline break-words" target="_blank">
+      {value}
+    </a>
+  ) : (
+    <span className="break-words">{value}</span>
+  );
+
+  return (
+    <p className="text-sm text-gray-700">
+      <span className="font-semibold text-gray-900">{label}:</span>{" "}
+      {content}
+    </p>
+  );
+}
+
 export default async function ResumePage({
   params,
 }: {
@@ -16,140 +58,185 @@ export default async function ResumePage({
   const { locale } = await params;
   const t = await getTranslations("Resume");
 
-  const header = t.raw("header") as {
-    name: string;
-    role: string;
-    location: string;
-    phone: string;
-    recado: string;
-    email: string;
-    linkedin: string;
-  };
+  const header = t.raw("header") as Header;
+  const objective = t.raw("objective") as Objective;
 
-  const objective = t.raw("objective") as { title: string; body: string };
-  const experience = t.raw("experience") as ResumeItem[];
-  const education = t.raw("education") as ResumeItem[];
-  const courses = t.raw("courses") as string[];
-  const extra = t.raw("extra") as string[];
+  const experience = (t.raw("experience") as ResumeItem[]) ?? [];
+  const education = (t.raw("education") as ResumeItem[]) ?? [];
+  const courses = (t.raw("courses") as string[]) ?? [];
+  const extra = (t.raw("extra") as string[]) ?? [];
+
+  const hasContactInfo =
+    !!header.phone || !!header.recado || !!header.email || !!header.linkedin;
+
+  const linkedinHref =
+    header.linkedin &&
+    (header.linkedin.startsWith("http")
+      ? header.linkedin
+      : `https://www.linkedin.com/in/${header.linkedin}`);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
-      <section className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <section className="bg-white/90 border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+        {/* Cabeçalho */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
               {header.name}
             </h1>
-            <p className="text-gray-600 mt-1 font-semibold">{header.role}</p>
-            <p className="text-gray-500 mt-1">{header.location}</p>
+            {header.role && (
+              <p className="text-gray-700 mt-1 font-semibold">
+                {header.role}
+              </p>
+            )}
+            {header.location && (
+              <p className="text-gray-500 mt-1 text-sm">
+                {header.location}
+              </p>
+            )}
           </div>
-          <div className="text-sm text-gray-700 space-y-1">
-            <p>
-              <span className="font-semibold">{t("labels.phone")}:</span>{" "}
-              {header.phone}
-            </p>
-            <p>
-              <span className="font-semibold">{t("labels.recado")}:</span>{" "}
-              {header.recado}
-            </p>
-            <p>
-              <span className="font-semibold">{t("labels.email")}:</span>{" "}
-              {header.email}
-            </p>
-            <p>
-              <span className="font-semibold">{t("labels.linkedin")}:</span>{" "}
-              {header.linkedin}
-            </p>
-          </div>
+
+          {hasContactInfo && (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3 space-y-1 min-w-[220px]">
+              <ContactRow
+                label={t("labels.phone")}
+                value={header.phone}
+                href={header.phone ? `tel:${header.phone}` : undefined}
+              />
+              <ContactRow
+                label={t("labels.recado")}
+                value={header.recado}
+              />
+              <ContactRow
+                label={t("labels.email")}
+                value={header.email}
+                href={header.email ? `mailto:${header.email}` : undefined}
+              />
+              <ContactRow
+                label={t("labels.linkedin")}
+                value={header.linkedin}
+                href={linkedinHref}
+              />
+            </div>
+          )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
-          <h2 className="text-lg font-bold text-gray-900">
-            {objective.title}
-          </h2>
-          <p className="text-gray-700 mt-2">{objective.body}</p>
-        </div>
+        {/* Objetivo profissional */}
+        {objective?.title && objective?.body && (
+          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
+            <h2 className="text-lg font-bold text-gray-900">
+              {objective.title}
+            </h2>
+            <p className="text-gray-700 mt-2 leading-relaxed">
+              {objective.body}
+            </p>
+          </div>
+        )}
 
-        <div className="mt-8">
-          <h2 className="text-xl font-extrabold text-gray-900">
-            {t("sections.experience")}
-          </h2>
-          <div className="mt-4 space-y-4">
-            {experience.map((item, index) => (
-              <div
-                key={`${item.title}-${index}`}
-                className="rounded-2xl border border-gray-200 p-5 bg-white"
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
-                  <div>
-                    <p className="text-base font-bold text-gray-900">
-                      {item.title}
-                    </p>
-                    {item.subtitle && (
-                      <p className="text-sm text-gray-600">{item.subtitle}</p>
+        {/* Experiência */}
+        {experience.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-extrabold text-gray-900">
+              {t("sections.experience")}
+            </h2>
+            <div className="mt-4 space-y-4">
+              {experience.map((item, index) => (
+                <article
+                  key={`${item.title}-${index}`}
+                  className="rounded-2xl border border-slate-200 bg-white p-5"
+                >
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-base font-bold text-gray-900">
+                        {item.title}
+                      </p>
+                      {item.subtitle && (
+                        <p className="text-sm text-gray-600">
+                          {item.subtitle}
+                        </p>
+                      )}
+                    </div>
+                    {item.period && (
+                      <p className="text-xs text-gray-500 font-semibold">
+                        {item.period}
+                      </p>
                     )}
                   </div>
-                  {item.period && (
-                    <p className="text-xs text-gray-500 font-semibold">
-                      {item.period}
-                    </p>
-                  )}
-                </div>
-                {item.bullets && item.bullets.length > 0 && (
-                  <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1">
-                    {item.bullets.map((bullet, bulletIndex) => (
-                      <li key={`${item.title}-${bulletIndex}`}>{bullet}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-gray-200 p-5 bg-white">
-            <h2 className="text-lg font-bold text-gray-900">
-              {t("sections.education")}
-            </h2>
-            <div className="mt-3 space-y-3 text-sm text-gray-700">
-              {education.map((item, index) => (
-                <div key={`${item.title}-${index}`}>
-                  <p className="font-semibold text-gray-900">{item.title}</p>
-                  {item.subtitle && (
-                    <p className="text-gray-600">{item.subtitle}</p>
+                  {item.bullets && item.bullets.length > 0 && (
+                    <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5 leading-relaxed">
+                      {item.bullets.map((bullet, bulletIndex) => (
+                        <li key={`${item.title}-${bulletIndex}`}>
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                  {item.period && (
-                    <p className="text-xs text-gray-500">{item.period}</p>
-                  )}
-                </div>
+                </article>
               ))}
             </div>
           </div>
+        )}
 
-          <div className="rounded-2xl border border-gray-200 p-5 bg-white">
+        {/* Educação + Cursos */}
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {education.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <h2 className="text-lg font-bold text-gray-900">
+                {t("sections.education")}
+              </h2>
+              <div className="mt-3 space-y-3 text-sm text-gray-700">
+                {education.map((item, index) => (
+                  <div
+                    key={`${item.title}-${index}`}
+                    className="border-l-4 border-blue-500/70 pl-3"
+                  >
+                    <p className="font-semibold text-gray-900">
+                      {item.title}
+                    </p>
+                    {item.subtitle && (
+                      <p className="text-gray-600">{item.subtitle}</p>
+                    )}
+                    {item.period && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {item.period}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {courses.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <h2 className="text-lg font-bold text-gray-900">
+                {t("sections.courses")}
+              </h2>
+              <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5">
+                {courses.map((course, index) => (
+                  <li key={`${course}-${index}`}>{course}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Extra */}
+        {extra.length > 0 && (
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
             <h2 className="text-lg font-bold text-gray-900">
-              {t("sections.courses")}
+              {t("sections.extra")}
             </h2>
-            <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1">
-              {courses.map((course, index) => (
-                <li key={`${course}-${index}`}>{course}</li>
+            <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5">
+              {extra.map((item, index) => (
+                <li key={`${item}-${index}`}>{item}</li>
               ))}
             </ul>
           </div>
-        </div>
+        )}
 
-        <div className="mt-6 rounded-2xl border border-gray-200 p-5 bg-white">
-          <h2 className="text-lg font-bold text-gray-900">
-            {t("sections.extra")}
-          </h2>
-          <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1">
-            {extra.map((item, index) => (
-              <li key={`${item}-${index}`}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
+        {/* Ações */}
         <div className="mt-6 flex flex-wrap gap-3">
           <a
             href="/caio-peixoto-cv.pdf"
@@ -157,12 +244,6 @@ export default async function ResumePage({
           >
             {t("download")}
           </a>
-          <Link
-            href={`/${locale}/tools`}
-            className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
-          >
-            {t("backToTools")}
-          </Link>
         </div>
       </section>
     </div>

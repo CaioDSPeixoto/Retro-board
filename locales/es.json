@@ -1,6 +1,6 @@
 {
   "Release": {
-    "title": "📌 Versiones y Lanzamientos",
+    "title": "📌 Versiones y lanzamientos",
     "version": "Versión"
   },
   "CardItem": {
@@ -10,7 +10,7 @@
     "author": "Tu nombre..."
   },
   "Export": {
-    "defaultTitle": "Resultados del Tablero",
+    "defaultTitle": "Resultados del tablero",
     "exportPDF": "Exportar PDF",
     "exportExcel": "Exportar Excel",
     "author": "Autor",
@@ -24,7 +24,7 @@
     "home": "Inicio",
     "tools": "Herramientas",
     "language": "Idioma",
-    "resume": "Currculum"
+    "resume": "Currículum"
   },
   "Room": {
     "defaults": {
@@ -38,68 +38,148 @@
   },
   "Home": {
     "title": "Hola, soy Caio Peixoto",
-    "subtitle": "Hago cosas tiles. A veces bonitas. Casi siempre funcionales.",
-    "description": "Este es mi espacio personal. Aqu encontrars mis herramientas, proyectos y experimentos.",
-    "ctaTools": "Ver herramientas",
-    "ctaRetroboard": "Abrir RetroBoard",
-    "aboutTitle": "Sobre m",
-    "aboutBody": "Escribe aqu una breve presentacin profesional, tus intereses y el tipo de trabajo que buscas.",
-    "highlightsTitle": "Destacados",
-    "highlight1Title": "Producto & UX",
-    "highlight1Desc": "Creo flujos claros y experiencias directas.",
-    "highlight2Title": "Ingeniera",
-    "highlight2Desc": "Me importa el cdigo limpio, escalable y testeable.",
-    "highlight3Title": "Automatizacin",
-    "highlight3Desc": "Reduzco trabajo repetitivo con herramientas tiles.",
-    "contactTitle": "Hablamos",
-    "contactBody": "Si quieres hablar sobre oportunidades, proyectos o colaboraciones, contctame.",
-    "contactButton": "Explorar herramientas",
-    "ctaResume": "Ver currculum"
+    "subtitle": "Construyo algunas cosas útiles que casi siempre funcionan.",
+    "description": "Este sitio es mi pequeño laboratorio de herramientas para el día a día.",
+    "ctaTools": "Abrir inventario de herramientas",
+    "aboutTitle": "Sobre mí (versión honesta)",
+    "aboutBody": "Me gusta resolver problemas (el típico bombero) y probar ideas nuevas.",
+    "highlightsTitle": "Superpoderes (no confirmados)",
+    "highlights": [
+      {
+        "title": "Bombero",
+        "desc": "Apaga incendios, corrige bugs y salva el día."
+      },
+      {
+        "title": "Se apunta a todo",
+        "desc": "¿Refactorización, lenguaje nuevo o legado? Vamos."
+      },
+      {
+        "title": "Colega de todos",
+        "desc": "De dev tímido a tech lead, coach, mentor, consejero sentimental, lo que haga falta."
+      },
+      {
+        "title": "El último en apagar la luz",
+        "desc": "Casi 24/7, siempre listo para ayudar con SQL, infra, mudanza, planning, preparar café, etc."
+      }
+    ],
+    "historyTitle": "Mi trayectoria profesional",
+    "historyBody": "Un resumen rápido:",
+    "timeline": [
+      { "year": "2014", "text": "Empecé el bachillerato integrado con el curso técnico de Informática." },
+      { "year": "2015", "text": "Hice prácticas de informática en el Centro Universitário São Camilo." },
+      { "year": "2017", "text": "Comencé la carrera de Sistemas de Información en la Faculdade Multivix." },
+      { "year": "2017", "text": "Empecé a trabajar como Programador Web en FK-Tech." },
+      { "year": "2019", "text": "Entré en Técnica Automação como soporte técnico de software." },
+      { "year": "2020", "text": "Me gradué de la facultad y me casé." },
+      { "year": "2021", "text": "Me mudé a Santa Catarina y empecé a trabajar como Programador en Havan S.A." },
+      { "year": "2023", "text": "Empecé a trabajar como Tech Leader en Questor Sistemas." },
+      { "year": "2024", "text": "Terminé el posgrado en Ingeniería de Software en la Faculdade Metropolitana." },
+      { "year": "2025", "text": "Actualmente trabajo como Desarrollador Full Stack en Havan S.A. (el buen hijo siempre vuelve a casa)." }
+    ],
+    "stacksTitle": "Stacks y tecnologías",
+    "stacks": [
+      "C#",
+      ".NET",
+      "PostgreSQL",
+      "MongoDB",
+      "Redis",
+      "Docker",
+      "RabbitMQ",
+      "Next.js",
+      "TypeScript",
+      "PHP",
+      "ReactJS",
+      "AngularJS",
+      "SQL Server",
+      "Git",
+      "Rancher",
+      "Datadog",
+      "Microservicios",
+      "Clean Architecture",
+      "Agile",
+      "DDD",
+      "REST",
+      "Design Patterns",
+      "SOLID",
+      "Python",
+      "Genexus",
+      "IA Generativa",
+      "LLMs",
+      "MCP Server",
+      "ChatGPT",
+      "CI/CD",
+      "Clean Code",
+      "Refactorización"
+    ],
+    "ctaResume": "Ver currículum",
+    "funStatsTitle": "Estadísticas no oficiales",
+    "funStats": [
+      {
+        "icon": "☕",
+        "value": "4826745",
+        "label": "Tazas de café tomadas"
+      },
+      {
+        "icon": "🐞",
+        "value": "+632",
+        "label": "Bugs corregidos"
+      },
+      {
+        "icon": "🧯",
+        "value": "null",
+        "label": "Días sin bugs en producción"
+      },
+      {
+        "icon": "🚨",
+        "value": "34",
+        "label": "Días sin war room"
+      }
+    ]
   },
   "Tools": {
     "title": "Herramientas",
     "description": "Selecciona una de las herramientas disponibles.",
-    "timeTrackerTitle": "Control de Horas",
-    "timeTrackerDesc": "Registra tus horarios y calcula las horas trabajadas.",
+    "timeTrackerTitle": "Control de horario",
+    "timeTrackerDesc": "Registra entradas y salidas y calcula las horas trabajadas.",
     "todoListTitle": "Tareas",
     "todoListDesc": "Gestiona tareas con alertas de horario.",
     "financeTitle": "Finanzas",
-    "financeDesc": "Gestiona tus cuentas y tus gastos.",
+    "financeDesc": "Gestiona tus cuentas y gastos.",
     "toolSoon": "En construcción...",
     "retroboardTitle": "RetroBoard",
     "retroboardDesc": "Retrospectivas colaborativas en tiempo real."
   },
   "TimeTracker": {
-    "title": "Control de Horas",
-    "addManual": "Añadir hora",
-    "workloadLabel": "Jornada",
+    "title": "Control de horario",
+    "addManual": "Añadir horario",
+    "workloadLabel": "Jornada diaria",
     "settingsTitle": "Configuración inicial",
     "bankLabel": "Banco de horas",
     "bankPositiveTitle": "Banco positivo",
     "bankNegativeTitle": "Banco negativo",
     "bankReset": "Reiniciar",
     "bankResetTitle": "Reiniciar banco de horas",
-    "bankHint": "Opcional. Ingresa el tiempo y selecciona si es positivo o negativo.",
-    "bankInvalid": "Formato inválido. Usa HH:MM (ej: 01:30).",
-    "removePunchTitle": "Eliminar hora",
+    "bankHint": "Opcional. Indica el tiempo y selecciona si es positivo o negativo.",
+    "bankInvalid": "Formato inválido. Usa HH:MM (ej.: 01:30).",
+    "removePunchTitle": "Eliminar horario",
     "worked": "Horas trabajadas",
-    "lunch": "Tiempo de almuerzo",
-    "remaining": "Restan",
-    "extra": "Horas extras",
-    "workload6": "Jornada: 6h",
-    "workload8": "Jornada: 8h",
-    "workload848": "Jornada: 8h48",
-    "suggestedExit": "Sugerencia de salida"
+    "lunch": "Pausa para el almuerzo",
+    "remaining": "Faltan",
+    "extra": "Horas extra",
+    "workload6": "Jornada diaria: 6h",
+    "workload8": "Jornada diaria: 8h",
+    "workload848": "Jornada diaria: 8h48",
+    "suggestedExit": "Hora sugerida de salida"
   },
   "Finance": {
-    "paymentModalMoveLabel": "Mover al mes siguiente",
-    "statusMoved": "Lanzado el mes siguiente",
-    "movedBadge": "Movido al mes siguiente",
+    "paymentModalMoveLabel": "Mover al próximo mes",
+    "statusMoved": "Registrado para el próximo mes",
+    "movedBadge": "Movido al próximo mes",
     "modalReceiveTitle": "Registrar ingreso",
     "modalPayTitle": "Registrar pago",
-    "paymentModalTotal": "Monto total",
-    "paymentModalPartial": "Valor parcial",
-    "paymentModalPartialHint": "El valor informado se marcará como pagado ahora y el resto se pasará automáticamente al mes siguiente.",
+    "paymentModalTotal": "Importe total",
+    "paymentModalPartial": "Importe parcial",
+    "paymentModalPartialHint": "El importe informado se considerará como pagado ahora y el resto se registrará automáticamente para el próximo mes.",
     "confirmAction": "Confirmar",
     "cancel": "Cancelar",
     "save": "Guardar",
@@ -107,36 +187,36 @@
     "delete": "Eliminar",
     "backToBoard": "Volver al tablero",
     "incomesTitle": "Ingresos",
-    "noIncomesThisMonth": "No hay ingresos registrados este mes.",
+    "noIncomesThisMonth": "Ningún ingreso registrado este mes.",
     "expensesTitle": "Gastos",
-    "noExpensesThisMonth": "No hay gastos registrados este mes.",
-    "noCategoryThisMonth": "Sin registros en esta categoría este mes.",
+    "noExpensesThisMonth": "Ningún gasto registrado este mes.",
+    "noCategoryThisMonth": "Ningún registro en esta categoría este mes.",
     "launchedBy": "Registrado por {name}",
     "openAmount": "Saldo pendiente: {value}",
     "statusPending": "Pendiente",
     "statusPaid": "Pagado",
     "statusReceived": "Recibido",
-    "statusPartial": "Pago parcial",
-    "fixedLabel": "Fijo",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar este registro",
-    "rolledFromMonth": "Movido desde {month}",
+    "statusPartial": "Parcialmente pagado",
+    "fixedLabel": "Fija",
+    "confirmDelete": "¿Seguro que deseas eliminar este registro",
+    "rolledFromMonth": "Movido de {month}",
     "partialPaid": "Pagado {paid} de {total}",
     "syntheticLabel": "Generado",
-    "togglePaidAria": "Cambiar estado de pago",
+    "togglePaidAria": "Alternar pagado",
     "editAria": "Editar registro",
     "deleteAria": "Eliminar registro",
     "confirmRevertPayment": "¿Realmente deseas revertir este pago/recibo",
     "noCustomCategories": "No se encontraron categorías personalizadas.",
-    "categoriesTitle": "Gestionar Categorias",
-    "customCategoriesLabel": "Categorias Personalizadas",
-    "builtinCategoriesLabel": "Categorias Estándar",
-    "builtinLabel": "Estándar",
+    "categoriesTitle": "Gestionar categorías",
+    "customCategoriesLabel": "Categorías personalizadas",
+    "builtinCategoriesLabel": "Categorías predeterminadas",
+    "builtinLabel": "Predeterminada",
     "deleteCategoryTitle": "Eliminar categoría",
-    "deleteCategoryMessage": "¿Estás seguro de que quieres eliminar la categoría \"{category}\"",
+    "deleteCategoryMessage": "¿Seguro que deseas eliminar la categoría \"{category}\"",
     "description": "Gestiona las categorías usadas en tus registros.",
     "errors": {
       "deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
-      "toggleFailed": "Error al actualizar estado. Inténtalo de nuevo.",
+      "toggleFailed": "Error al actualizar el estado. Inténtalo de nuevo.",
       "unauthorized": "No autorizado.",
       "noPermission": "Sin permiso.",
       "boardNotFound": "Tablero no encontrado.",
@@ -151,64 +231,64 @@
   "FinanceMetrics": {
     "movedExpensesLine": "Gasto movido: {value}",
     "movedIncomesLine": "Ingreso movido: {value}",
-    "movedTotalsTitle": "Registros movidos al mes siguiente",
+    "movedTotalsTitle": "Registros movidos al próximo mes",
     "userTotalIncomeShort": "Ingresos",
     "incomesLaunchesLabel": "{count, plural, one {{count} registro} other {{count} registros}}",
     "expensesLaunchesLabel": "{count, plural, one {{count} registro} other {{count} registros}}",
-    "noData": "No hay datos en este periodo para calcular métricas.",
+    "noData": "No hay registros en este período para calcular métricas.",
     "summaryTitle": "Resumen de {period}",
-    "balanceLabel": "Saldo del periodo",
+    "balanceLabel": "Saldo del período",
     "unknownUserLabel": "Usuario no identificado",
     "perUserTitle": "Métricas por persona",
-    "perUserSubtitle": "Mira cuánto movió cada persona en este tablero compartido.",
-    "topSpenderBadge": "Quién más gastó en el periodo",
+    "perUserSubtitle": "Mira cuánto movió cada persona en este período en el tablero compartido.",
+    "topSpenderBadge": "Quien más gastó en el período",
     "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total en gastos",
-    "userTopCategoriesTitle": "Categorías con más gastos",
+    "userTopCategoriesTitle": "Categorías en las que más gastó",
     "incomesTitle": "Ingresos",
     "expensesTitle": "Gastos",
     "totalPaidAndPending": "Total:",
-    "onlyFinished": "Finalizados:",
+    "onlyFinished": "Finalizadas:",
     "onlyPending": "Pendientes:",
-    "incomesOverdueLabel": "{count} vencidos",
-    "expensesOverdueLabel": "{count} vencidos",
+    "incomesOverdueLabel": "{count} en atraso",
+    "expensesOverdueLabel": "{count} en atraso",
     "expensesDistributionTitle": "Distribución de gastos por categoría",
-    "noExpensesInPeriod": "No hay gastos registrados en este periodo.",
+    "noExpensesInPeriod": "Ningún gasto registrado en este período.",
     "incomesDistributionTitle": "Distribución de ingresos por categoría",
     "categoryLine": "{total} · {percent}%",
-    "mostActivePeriodTitle": "Periodo más activo",
+    "mostActivePeriodTitle": "Período más activo",
     "mostActiveDayLine": "{count} registro(s) · movimiento de {amount}",
     "mostActiveDateFormat": "dd 'de' MMM",
-    "daysWithMovements": "Días con actividad en el periodo: {count}",
+    "daysWithMovements": "Días con movimiento en el período: {count}",
     "notEnoughData": "No hay datos suficientes para calcular.",
-    "avgTicketLabel": "Ticket promedio:",
+    "avgTicketLabel": "Ticket medio:",
     "othersCategory": "Otros"
   },
   "UserMenu": {
     "account": "Cuenta",
-    "logout": "Cerrar sesión",
+    "logout": "Salir",
     "login": "Entrar",
     "language": "Idioma",
-    "releases": "Versiones",
+    "releases": "Releases",
     "versionTitle": "Ver notas de la versión {version}"
   },
   "TodoList": {
-    "title": "Lista de Tareas",
+    "title": "Lista de tareas",
     "placeholder": "Descripción de la tarea",
     "clearAll": "Limpiar todo",
     "remaining": "restantes",
     "empty": "No hay tareas por ahora..."
   },
   "FinanceLogin": {
-    "title": "Mis Finanzas",
+    "title": "Mis finanzas",
     "description": "Inicia sesión para gestionar tus cuentas",
-    "emailUserLabel": "Email o Usuario",
-    "emailPlaceholder": "ej: tu@email.com",
+    "emailUserLabel": "Email o usuario",
+    "emailPlaceholder": "ej.: tu@email.com",
     "passwordLabel": "Contraseña",
     "passwordPlaceholder": "••••••••",
     "submitButton": "Acceder",
     "loading": "Entrando...",
-    "noAccount": "¿Aún no tienes cuenta",
+    "noAccount": "¿Todavía no tienes cuenta",
     "registerLink": "Regístrate",
     "errors": {
       "invalid": "Email o contraseña inválidos.",
@@ -216,24 +296,24 @@
     }
   },
   "FinanceRegister": {
-    "title": "Nueva Cuenta",
+    "title": "Nueva cuenta",
     "description": "Crea tu cuenta para empezar",
     "emailLabel": "Email",
     "emailPlaceholder": "tu@email.com",
     "passwordLabel": "Contraseña",
     "passwordPlaceholder": "••••••••",
-    "confirmPasswordLabel": "Confirmar Contraseña",
+    "confirmPasswordLabel": "Confirmar contraseña",
     "confirmPasswordPlaceholder": "••••••••",
-    "submitButton": "Crear Cuenta",
+    "submitButton": "Crear cuenta",
     "loading": "Creando cuenta...",
-    "hasAccount": "¿Ya tienes cuenta",
+    "hasAccount": "Ya tienes cuenta",
     "loginLink": "Entrar",
     "errors": {
       "match": "Las contraseñas no coinciden.",
       "length": "La contraseña debe tener al menos 6 caracteres.",
       "inUse": "Este email ya está en uso.",
       "invalid": "Email inválido.",
-      "general": "Error al crear cuenta. Inténtalo de nuevo."
+      "general": "Error al crear la cuenta. Inténtalo de nuevo."
     }
   },
   "FinancePage": {
@@ -241,55 +321,55 @@
     "sending": "Enviando...",
     "loading": "Cargando...",
     "openAmountLabel": "Saldo pendiente",
-    "loadingInvites": "Cargando invitaciones...",
+    "loadingInvites": "Cargando invitaciones y solicitudes...",
     "inviteByEmail": "Invitación por email para {email}",
     "requestByCode": "Solicitud de acceso por código",
     "boardLabel": "Tablero de finanzas",
     "allBoardsLabel": "Todos los tableros",
-    "balanceTitle": "Saldo en Caja",
+    "balanceTitle": "Saldo en caja",
     "entriesLabel": "Entradas",
-    "entriesForecastLabel": "Ingresos previstos (no calculados)",
+    "entriesForecastLabel": "Previsto para recibir (no calculado)",
     "exitsLabel": "Salidas",
-    "exitsForecastLabel": "Gastos previstos (no calculados)",
+    "exitsForecastLabel": "Previsto para pagar (no calculado)",
     "shareTitle": "Compartir tablero",
     "shareCodeLabel": "Código del tablero",
-    "shareCodeHint": "Envía este código a alguien para usar la opción \"Entrar a un tablero existente\".",
+    "shareCodeHint": "Envía este código para que alguien use la opción \"Entrar en un tablero existente\".",
     "shareEmailLabel": "Invitar por email",
     "shareEmailPlaceholder": "email@ejemplo.com",
     "shareEmailButton": "Enviar invitación",
     "inviteSent": "¡Invitación enviada con éxito!",
-    "overdueTitle": "Cuentas vencidas",
+    "overdueTitle": "Cuentas en atraso",
     "overdueSubtitle": "Tienes {count} cuenta(s) vencida(s).",
     "transactionsCount": "{count} registros",
     "searchByNamePlaceholder": "Buscar por nombre...",
-    "noResults": "No se encontraron registros para esta búsqueda.",
+    "noResults": "Ningún registro encontrado.",
     "noTransactions": "Ningún registro este mes.",
-    "addNow": "Añadir ahora",
+    "addNow": "Agregar ahora",
     "pendingApprovalsTitle": "Aprobaciones pendientes",
-    "pendingApprovalsMessage": "Tienes {count} solicitud(es) para entrar en tableros que administras. Ve a invitaciones para aprobar o rechazar.",
+    "pendingApprovalsMessage": "Tienes {count} solicitud(es) para entrar en tableros que administras. Accede al área de invitaciones para aprobar o rechazar.",
     "joinByCodeLabel": "Código del tablero",
     "joinByCodePlaceholder": "Pega aquí el código que recibiste",
     "joinByCodeButton": "Solicitar entrada",
     "invitesSectionTitle": "Invitaciones y aprobaciones",
     "invitesForYou": "Invitaciones para ti",
-    "noInvites": "No tienes invitaciones pendientes por ahora.",
+    "noInvites": "No tienes invitaciones pendientes por el momento.",
     "ownerRequests": "Solicitudes en tus tableros",
-    "noOwnerRequests": "Ninguna solicitud pendiente en tus tableros.",
+    "noOwnerRequests": "Ninguna solicitud pendiente en los tableros que administras.",
     "accept": "Aceptar",
     "reject": "Rechazar",
     "joinRequestSent": "¡Solicitud enviada con éxito!",
     "prevMonthAria": "Mes anterior",
-    "nextMonthAria": "Mes siguiente",
+    "nextMonthAria": "Próximo mes",
     "goTodayLabel": "Hoy",
     "tabListLabel": "Lista",
     "tabMetricsLabel": "Métricas",
-    "overdueSummaryLabel": "Saldo vencido",
+    "overdueSummaryLabel": "Saldo en atraso",
     "manageCategoriesLabel": "Gestionar categorías",
     "selectButton": "Seleccionar",
     "cancelSelection": "Cancelar selección",
     "selectedTotalLabel": "Total seleccionado",
-    "itemSingular": "elemento",
-    "itemPlural": "elementos",
+    "itemSingular": "ítem",
+    "itemPlural": "ítems",
     "errors": {
       "unauthorized": "No autorizado.",
       "invalidEmail": "Email inválido.",
@@ -307,15 +387,15 @@
     }
   },
   "FinanceBoards": {
-    "title": "Tableros de Finanzas",
-    "description": "Crea un tablero o entra a uno existente para organizar tus cuentas solo o con otros.",
+    "title": "Tableros de finanzas",
+    "description": "Crea un nuevo tablero o entra en uno existente para organizar tus finanzas solo(a) o con otras personas.",
     "createButton": "Crear tablero",
     "personalTag": "Personal",
     "sharedTag": "Compartido",
     "openBoard": "Abrir",
     "newBoardLabel": "Nuevo tablero",
-    "newBoardPlaceholder": "Nombre del tablero",
-    "emptyTitle": "Aún no tienes tableros",
+    "newBoardPlaceholder": "Ponle un nombre a este tablero",
+    "emptyTitle": "Todavía no tienes tableros",
     "emptySubtitle": "Crea un nuevo tablero para empezar a organizar tus finanzas.",
     "membersLabel": "{count, plural, one {# miembro} other {# miembros}}",
     "errors": {
@@ -323,8 +403,8 @@
     },
     "createButtonLoading": "Creando...",
     "joinTabLabel": "Entrar por código",
-    "boardMenuAriaLabel": "Opciones del tablero",
-    "menuRename": "Cambiar nombre",
+    "boardMenuAriaLabel": "Abrir opciones del tablero",
+    "menuRename": "Editar nombre",
     "menuViewMembers": "Ver miembros",
     "menuDeleteBoard": "Eliminar tablero",
     "renameModalTitle": "Renombrar tablero",
@@ -346,11 +426,11 @@
   },
   "FinanceForm": {
     "useAutoDescription": "Usar descripción automática",
-    "advancedOptionsToggle": "Opciones avanzadas",
+    "advancedOptionsToggle": "Alternar opciones avanzadas",
     "cardModeCreditLabel": "Crédito",
     "cardModeDebitLabel": "Débito",
     "editDescriptionButton": "Editar descripción",
-    "partialPaymentHint": "Si el pago fue parcial, puedes registrar el valor exacto después en la lista de registros.",
+    "partialPaymentHint": "Si el pago fue parcial, puedes registrar el valor exacto después con el botón de confirmación en la lista de registros.",
     "newTransactionTitle": "Nuevo registro",
     "editTransactionTitle": "Editar registro",
     "typeIncome": "Ingreso",
@@ -359,46 +439,46 @@
     "customCategoryPlaceholder": "Nombre de la categoría",
     "addCategory": "Añadir",
     "descriptionLabel": "Descripción",
-    "descriptionPlaceholder": "Ej: Alquiler, Salario...",
-    "amountLabel": "Valor ($)",
+    "descriptionPlaceholder": "Ej.: Alquiler, Salario...",
+    "amountLabel": "Importe (R$)",
     "dateLabel": "Fecha",
-    "alreadyPaidLabel": "¿Ya se pagó/recibió",
+    "alreadyPaidLabel": "Ya fue pagado/recibido",
     "fixedCheckboxLabel": "Registro fijo (repetir cada mes)",
     "savingButton": "Guardando...",
     "saveButton": "Guardar registro",
     "saveEditButton": "Guardar cambios",
     "cancel": "Cancelar",
-    "fixedCategoryName": "Cuentas Fijas",
+    "fixedCategoryName": "Cuentas fijas",
     "useInstallmentsLabel": "Pagar en cuotas",
     "installmentsLabel": "Número de cuotas",
-    "installmentsHint": "El valor informado es el costo de cada cuota.",
-    "fixedNotAllowedWithInstallments": "No se puede marcar como fijo un registro en cuotas.",
-    "cardSectionTitle": "Detalles de tarjeta",
+    "installmentsHint": "El importe informado es el valor de cada cuota.",
+    "fixedNotAllowedWithInstallments": "No es posible marcar como cuenta fija en registros parcelados.",
+    "cardSectionTitle": "Detalles de la tarjeta",
     "cardNameLabel": "Tarjeta",
     "cardModeLabel": "Tipo de tarjeta"
   },
   "Retroboard": {
-    "slogan": "¡Feedback que impulsa el futuro!",
+    "slogan": "¡Feedbacks que impulsan el futuro!",
     "tabs": {
-      "create": "Crear Sala",
-      "enter": "Entrar a Sala"
+      "create": "Crear sala",
+      "enter": "Entrar en sala"
     },
     "roomName": {
-      "label": "¿Qué nombre quieres para la sala",
+      "label": "¿Cómo quieres llamar a la sala",
       "default": "Predeterminado",
       "custom": "Personalizado",
       "placeholder": "Escribe el nombre de la sala",
       "defaultName": "Retrospectiva"
     },
     "userName": {
-      "label": "¿Cómo quieres que aparezcan los nombres",
-      "allowAnonymous": "Permitir Anónimo",
-      "requireName": "Nombre Obligatorio",
+      "label": "¿Cómo deben aparecer los nombres de los usuarios",
+      "allowAnonymous": "Permitir anónimo",
+      "requireName": "Nombre obligatorio",
       "placeholder": "Escribe tu nombre..."
     },
-    "createButton": "Crear Sala",
+    "createButton": "Crear sala",
     "enterRoom": {
-      "placeholder": "ID de la sala",
+      "placeholder": "Escribe el ID de la sala",
       "button": "Entrar"
     },
     "loading": "Creando sala...",
@@ -413,15 +493,15 @@
   },
   "Resume": {
     "labels": {
-      "phone": "Telfono",
-      "recado": "Recado",
+      "phone": "Teléfono",
+      "recado": "Contacto alternativo",
       "email": "Email",
       "linkedin": "LinkedIn"
     },
     "header": {
       "name": "Caio dos Santos Peixoto",
-      "role": "Desarrollador Back-End | Tech Lead",
-      "location": "Brusque  Santa Catarina - Brasil",
+      "role": "Dev Back-End | Tech Lead",
+      "location": "Brusque, Santa Catarina - Brasil",
       "phone": "",
       "recado": "",
       "email": "caiospeixoto23@gmail.com",
@@ -429,93 +509,101 @@
     },
     "objective": {
       "title": "Objetivo profesional",
-      "body": "Mejorar y optimizar procesos y servicios usando anlisis para resolver problemas y ofrecer mejor experiencia al cliente. Apasionado por aprender y explorar tecnologas emergentes. Disponible para mudarme de ciudad."
+      "body": "Actuar en la mejora y optimización de procesos y servicios, usando pensamiento analítico para resolver problemas y buscar innovaciones que entreguen una mejor experiencia al cliente. Me apasiona aprender y explorar tecnologías emergentes. Tengo disponibilidad para cambiar de ciudad."
     },
     "sections": {
-      "experience": "Experiencia profesional",
-      "education": "Formacin acadmica",
-      "courses": "Cursos",
-      "extra": "Informacin complementaria"
+      "experience": "Historial profesional",
+      "education": "Formación académica",
+      "courses": "Cursos de perfeccionamiento",
+      "extra": "Información complementaria"
     },
     "experience": [
       {
-        "title": "Questor Sistemas  Tech Lead",
-        "period": "Nov 2023  Actual",
+        "title": "Havan S.A. — Programador de Computadora",
+        "period": "Sep/2025 — Actualidad",
         "bullets": [
-          "Desarrollo continuo de sistemas con enfoque en rendimiento y optimizacin.",
-          "Planificacin tecnolgica y soporte tcnico al equipo.",
-          "Rutina gil orientada a calidad con menos tiempo y costo."
+          "Software Engineer Back-End en el equipo de Investigación y Desarrollo (I+D), construyendo soluciones escalables e inteligentes con .NET, Python e IA generativa.",
+          "Participo en la evolución arquitectónica de las plataformas internas, aplicando principios modernos de ingeniería para entregar sistemas más rápidos, estables y eficientes.",
+          "Desarrollo APIs, servicios e integraciones de alto rendimiento, aplicando DDD, Clean Architecture, SOLID, pruebas automatizadas y patrones de desacoplamiento.",
+          "También actúo directamente en la creación de flujos inteligentes con LLMs, OpenAI API, MCP Server y pgvector, utilizando IA para automatizar procesos corporativos y reducir costos operativos."
         ]
       },
       {
-        "title": "Havan S.A.  Programador de Computador",
-        "period": "Ene 2021  Sep 2023",
+        "title": "Questor Sistemas — Tech Leader",
+        "period": "Nov/2023 — Sep/2025",
         "bullets": [
-          "Back-end con .NET Core, DDD, microservicios e integraciones RabbitMQ.",
-          "Soporte en front-end con AngularJS y migracin a ReactJS.",
-          "SQL Server y MongoDB con queries, vistas, funciones y procedures.",
-          "Rol de tech lead: estndares, code review y despliegues en produccin."
+          "Desarrollo continuo de sistemas con foco en rendimiento y optimización.",
+          "Participación en la planificación tecnológica y apoyo técnico al equipo.",
+          "Rutina basada en métodos ágiles, entregando calidad con menos tiempo y costo."
         ]
       },
       {
-        "title": "Tcnica Automao Comercial  Soporte de Software",
-        "period": "2019  2021",
+        "title": "Havan S.A. — Programador de Computadora",
+        "period": "Ene/2021 — Sep/2023",
         "bullets": [
-          "Soporte ERP y soluciones internas en C#.",
-          "Mantenimiento de base de datos y hardware.",
-          "Capacitacin y anlisis de errores en aplicaciones."
+          "Back-end con .NET Core, DDD, microservicios e integraciones con RabbitMQ.",
+          "Apoyo en front-end (AngularJS) y migración a ReactJS.",
+          "SQL Server y MongoDB, con creación de queries, vistas, funciones y procedures.",
+          "Tech lead técnico: estándares, code review y despliegues en producción."
         ]
       },
       {
-        "title": "FK-Tech Telecomunicaes  Pasante de Informtica",
-        "period": "2017  2019",
+        "title": "Técnica Automação Comercial — Soporte Técnico de Software",
+        "period": "2019 — 2021",
+        "bullets": [
+          "Soporte a ERP y desarrollo de soluciones internas en C#.",
+          "Mantenimiento y gestión de bases de datos y hardware.",
+          "Capacitaciones y corrección de errores en aplicaciones."
+        ]
+      },
+      {
+        "title": "FK-Tech Telecomunicações — Practicante de Informática",
+        "period": "2017 — 2019",
         "bullets": [
           "Soporte al usuario y mantenimiento de hardware.",
-          "Programacin web (HTML, CSS, PHP, JavaScript y bases de datos).",
-          "Hotspot Mikrotik e integraciones va API con PHP."
+          "Programación web (HTML, CSS, PHP, JavaScript y base de datos).",
+          "Hotspot Mikrotik e integraciones vía API usando PHP."
         ]
       },
       {
-        "title": "Centro Universitrio So Camilo  Pasante de Informtica",
-        "period": "2015  2016",
+        "title": "Centro Universitário São Camilo — Practicante de Informática",
+        "period": "2015 — 2016",
         "bullets": [
           "Mantenimiento de hardware y soporte de red (cableado).",
-          "Soporte a usuarios y organizacin de laboratorios.",
-          "Apoyo a docentes en montaje de estructura y equipos."
+          "Apoyo a usuarios y organización de laboratorios.",
+          "Apoyo a profesores en el montaje de estructuras y equipos."
         ]
       }
     ],
     "education": [
       {
-        "title": "Posgrado en Ingeniera de Software",
-        "subtitle": "Faculdade Metropolitana",
-        "period": "2024  2024"
+        "title": "Posgrado en Ingeniería de Software",
+        "subtitle": "Faculdade Metropolitana - EAD",
+        "period": "2024 — 2024"
       },
       {
-        "title": "Licenciatura en Sistemas de Informacin",
-        "subtitle": "Multivix  Cachoeiro de Itapemirim",
-        "period": "2017  2020"
+        "title": "Licenciatura en Sistemas de Información",
+        "subtitle": "Multivix — Cachoeiro de Itapemirim",
+        "period": "2017 — 2020"
       },
       {
-        "title": "Enseanza Media Tcnica en Informtica",
-        "subtitle": "Fraternidade e Luz",
-        "period": "2014  2016"
+        "title": "Bachillerato con Técnico en Informática",
+        "subtitle": "Fraternidade e Luz — Cachoeiro de Itapemirim",
+        "period": "2014 — 2016"
       }
     ],
     "courses": [
       "DevOps Ninja: Docker, Kubernetes y Rancher (2021)",
-      "C# Completo — Programación Orientada a Objetos (2021)",
+      "C# COMPLETO — Programación Orientada a Objetos (2021)",
       "C# POO + Lógica de Programación (2020)",
       "Curso de Base de Datos y SQL (2019–2020)",
       "Inglés en Microlins Book2 (Intermedio, 2015–2017)"
     ],
     "extra": [
-      "Lectura y escritura (Inglés): Intermedio",
-      "Conversación (Inglés): Básico",
+      "Lectura y escritura (inglés): Intermedia",
       "Estado civil: Casado",
-      "Licencia de conducir: AB"
+      "Carnet de conducir: AB"
     ],
-    "download": "Descargar PDF",
-    "backToTools": "Volver a herramientas"
+    "download": "Descargar PDF"
   }
 }

@@ -37,12 +37,12 @@
     }
   },
   "Home": {
-    "title": "Oi, eu sou Caio Peixoto",
-    "subtitle": "Falo algumas coisas úteis e quase sempre funcionais.",
+    "title": "Oi, seja bem vindo",
+    "subtitle": "Faço algumas ferramentas úteis e quase sempre funcionais.",
     "description": "Este site é meu laboratório de ferramentas para meu dia a dia.",
     "ctaTools": "Abrir o inventário de ferramentas",
-    "aboutTitle": "Sobre mim (versão honesta)",
-    "aboutBody": "Gosto de resolver problemas (famoso bombeiro) e de inovar.",
+    "aboutTitle": "Sobre mim",
+    "aboutBody": "Desenvolvedor Fullstack Sênior com +8 anos de experiência, especializado em Back-End e P&D, construindo plataformas de alta performance com .NET, Python e IA Generativa. ",
     "highlightsTitle": "Superpoderes (não confirmados)",
     "highlights": [
       {
@@ -71,7 +71,7 @@
       { "year": "2017", "text": "Comecei a trabalhar como Programador Web na FK-Tech" },
       { "year": "2019", "text": "Iniciei como suporte técnico de software na Técnica Automação" },
       { "year": "2020", "text": "Me formei na faculdade e me casei" },
-      { "year": "2021", "text": "Me mudei para SC e começei a trabalhar como Programador na Havan S.A." },
+      { "year": "2021", "text": "Me mudei para SC e comecei a trabalhar como Programador na Havan S.A." },
       { "year": "2023", "text": "Comecei a trabalhar como Tech Leader na Questor Sistemas" },
       { "year": "2024", "text": "Fiz minha pós-graduação em Engenharia de Software na Faculdade Metropolitana" },
       { "year": "2025", "text": "Atualmente atuo como Programador Full Stack na Havan S.A. (um bom filho a casa torna)" }
@@ -113,27 +113,13 @@
     ],
     "ctaResume": "Ver currículo",
     "funStatsTitle": "Estatísticas não oficiais",
+    "lastProdBugAt": "abc",
+    "lastWarRoomAt": "2025-12-10",
     "funStats": [
-      {
-        "icon": "☕",
-        "value": "4826745",
-        "label": "Copos de café tomados"
-      },
-      {
-        "icon": "🐞",
-        "value": "+632",
-        "label": "Bugs resolvidos"
-      },
-      {
-        "icon": "🧯",
-        "value": "null",
-        "label": "Dias sem bug em produção"
-      },
-      {
-        "icon": "🚨",
-        "value": "34",
-        "label": "Dias sem war room"
-      }
+      { "icon": "☕", "baseValue": 4826745, "baseDate": "2026-02-01", "dailyIncrement": 120, "label": "Copos de café tomados" },
+      { "icon": "🐞", "baseValue": 632, "baseDate": "2026-02-01", "dailyIncrement": 3, "prefix": "+", "label": "Bugs resolvidos" },
+      { "icon": "🧯", "type": "daysSinceProdBug", "label": "Dias sem bug em produção" },
+      { "icon": "🚨", "type": "daysSinceWarRoom", "label": "Dias sem war room" }
     ]
   },
   "Tools": {
@@ -505,81 +491,91 @@
       "phone": "",
       "recado": "",
       "email": "caiospeixoto23@gmail.com",
-      "linkedin": "/caiodspeixoto"
+      "linkedin": "caiodspeixoto"
     },
     "objective": {
       "title": "Objetivo profissional",
-      "body": "Atuar na melhoria e otimizao de processos e servios, usando inteligncia analtica para resolver problemas e buscar inovaes que entreguem melhor experincia ao cliente. Sou apaixonado por aprender e explorar tecnologias emergentes. Tenho disponibilidade para mudana de cidade."
+      "body": "Atuar na melhoria e otimização de processos e serviços, usando inteligência analítica para resolver problemas e buscar inovações que entreguem melhor experiência ao cliente. Sou apaixonado por aprender e explorar tecnologias emergentes. Tenho disponibilidade para mudança de cidade."
     },
     "sections": {
-      "experience": "Histrico profissional",
-      "education": "Formao acadmica",
-      "courses": "Cursos de aperfeioamento",
-      "extra": "Informaes complementares"
+      "experience": "Histórico profissional",
+      "education": "Formação acadêmica",
+      "courses": "Cursos de aperfeiçoamento",
+      "extra": "Informações complementares"
     },
     "experience": [
       {
-        "title": "Questor Sistemas  Tech Leader",
-        "period": "Nov/2023  Atual",
+        "title": "Havan S.A. — Programador de Computador",
+        "period": "Set/2025 — Atual",
         "bullets": [
-          "Desenvolvimento contnuo de sistemas com foco em performance e otimizao.",
-          "Participao no planejamento das tecnologias e apoio tcnico ao time.",
-          "Rotina baseada em mtodos geis, entregando qualidade com menos tempo e custo."
+          "Software Engineer Back-End no time de Pesquisa e Desenvolvimento (P&D), construindo soluções escaláveis e inteligentes com .NET, Python e IA Generativa.",
+          "Participo da evolução arquitetural das plataformas internas, aplicando princípios modernos de engenharia para entregar sistemas mais rápidos, estáveis e eficientes.",
+          "Desenvolvo APIs, serviços e integrações de alto desempenho, aplicando DDD, Clean Architecture, SOLID, testes automatizados e padrões de desacoplamento.",
+          "Também atuo diretamente na criação de fluxos inteligentes com LLMs, OpenAI API, MCP Server e pgvector, utilizando IA para automatizar processos corporativos e reduzir custos operacionais."
         ]
       },
       {
-        "title": "Havan S.A.  Programador de Computador",
-        "period": "Jan/2021  Set/2023",
+        "title": "Questor Sistemas — Tech Leader",
+        "period": "Nov/2023 — Set/2025",
         "bullets": [
-          "Back-end com .NET Core, DDD, microsservios e integraes com RabbitMQ.",
-          "Apoio em front-end (AngularJS) e migrao para ReactJS.",
-          "SQL Server e MongoDB, com criao de queries, views, funes e procedures.",
-          "Tech lead tcnico: padres, code review e deploys em produo."
+          "Desenvolvimento contínuo de sistemas com foco em performance e otimização.",
+          "Participação no planejamento das tecnologias e apoio técnico ao time.",
+          "Rotina baseada em métodos ágeis, entregando qualidade com menos tempo e custo."
         ]
       },
       {
-        "title": "Tcnica Automao Comercial  Suporte Tcnico de Software",
-        "period": "2019  2021",
+        "title": "Havan S.A. — Programador de Computador",
+        "period": "Jan/2021 — Set/2023",
         "bullets": [
-          "Suporte a ERP e desenvolvimento de solues internas em C#.",
-          "Manuteno e gerenciamento de bancos de dados e hardware.",
-          "Treinamentos e correo de erros em aplicaes."
+          "Back-end com .NET Core, DDD, microsserviços e integrações com RabbitMQ.",
+          "Apoio em front-end (AngularJS) e migração para ReactJS.",
+          "SQL Server e MongoDB, com criação de queries, views, funções e procedures.",
+          "Tech lead técnico: padrões, code review e deploys em produção."
         ]
       },
       {
-        "title": "FK-Tech Telecomunicaes  Estagirio de Informtica",
-        "period": "2017  2019",
+        "title": "Técnica Automação Comercial — Suporte Técnico de Software",
+        "period": "2019 — 2021",
         "bullets": [
-          "Suporte ao usurio e manuteno de hardware.",
+          "Suporte a ERP e desenvolvimento de soluções internas em C#.",
+          "Manutenção e gerenciamento de bancos de dados e hardware.",
+          "Treinamentos e correção de erros em aplicações."
+        ]
+      },
+      {
+        "title": "FK-Tech Telecomunicações — Estagiário de Informática",
+        "period": "2017 — 2019",
+        "bullets": [
+          "Suporte ao usuário e manutenção de hardware.",
           "Programação web (HTML, CSS, PHP, JavaScript e banco de dados).",
-          "Hotspot Mikrotik e integraes via API usando PHP."
+          "Hotspot Mikrotik e integrações via API usando PHP."
         ]
       },
       {
-        "title": "Centro Universitrio So Camilo  Estagirio de Informtica",
-        "period": "2015  2016",
+        "title": "Centro Universitário São Camilo — Estagiário de Informática",
+        "period": "2015 — 2016",
         "bullets": [
-          "Manuteno de hardware e suporte de rede (cabeamento).",
-          "Apoio a usurios e organizao de laboratrios.",
-          "Auxlio a professores na montagem de estruturas e equipamentos."
+          "Manutenção de hardware e suporte de rede (cabeamento).",
+          "Apoio a usuários e organização de laboratórios.",
+          "Auxílio a professores na montagem de estruturas e equipamentos."
         ]
       }
     ],
     "education": [
       {
-        "title": "Ps-Graduao em Engenharia de Software",
-        "subtitle": "Faculdade Metropolitana",
-        "period": "2024  2024"
+        "title": "Pós-Graduação em Engenharia de Software",
+        "subtitle": "Faculdade Metropolitana - EAD",
+        "period": "2024 — 2024"
       },
       {
-        "title": "Bacharel em Sistemas de Informao",
-        "subtitle": "Multivix  Cachoeiro de Itapemirim",
-        "period": "2017  2020"
+        "title": "Bacharel em Sistemas de Informação",
+        "subtitle": "Multivix — Cachoeiro de Itapemirim",
+        "period": "2017 — 2020"
       },
       {
-        "title": "Ensino Mdio Integrado em Tcnico de Informtica",
-        "subtitle": "Fraternidade e Luz",
-        "period": "2014  2016"
+        "title": "Ensino Médio Integrado em Técnico de Informática",
+        "subtitle": "Fraternidade e Luz — Cachoeiro de Itapemirim",
+        "period": "2014 — 2016"
       }
     ],
     "courses": [
@@ -591,11 +587,9 @@
     ],
     "extra": [
       "Leitura e escrita (Inglês): Intermediária",
-      "Conversação (Inglês): Básico",
       "Estado civil: Casado",
       "Carteira de habilitação: AB"
     ],
-    "download": "Baixar PDF",
-    "backToTools": "Voltar para ferramentas"
+    "download": "Baixar PDF"
   }
 }
