@@ -1,0 +1,12 @@
+{
+  "name": "Validate After Task",
+  "version": "1.0.0",
+  "description": "Valida o código, testa e prepara para commit após completar uma tarefa",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Tarefa concluída. Execute a validação:\n1. Verifique erros TypeScript (npx tsc --noEmit)\n2. Teste a funcionalidade manualmente conforme testing-guidelines.md\n3. Revise o código implementado\n4. Se tudo estiver ok, faça commit seguindo o padrão de commits do git-workflow.md\n5. Resuma o que foi implementado"
+  }
+}

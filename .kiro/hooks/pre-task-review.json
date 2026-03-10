@@ -1,0 +1,12 @@
+{
+  "name": "Review Task Before Start",
+  "version": "1.0.0",
+  "description": "Revisa os requisitos da tarefa e cria uma branch antes de começar a implementação",
+  "when": {
+    "type": "preTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Antes de começar esta tarefa:\n1. Revise os requisitos e design relacionados\n2. Crie uma branch seguindo o padrão: feature/nome-da-tarefa ou bugfix/nome-da-tarefa\n3. Confirme que entendeu o escopo antes de implementar"
+  }
+}

@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# kiro
+# Commit steering files and hooks to share with team
+# Optionally ignore specific specs if they're work-in-progress
+# .kiro/specs/wip-*/
