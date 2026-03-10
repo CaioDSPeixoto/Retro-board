@@ -1,6 +1,6 @@
 {
   "Release": {
-    "title": "📌 Versions & Releases",
+    "title": "📌 Releases & Changelog",
     "version": "Version"
   },
   "CardItem": {
@@ -11,8 +11,8 @@
   },
   "Export": {
     "defaultTitle": "Board Results",
-    "exportPDF": "Export PDF",
-    "exportExcel": "Export Excel",
+    "exportPDF": "Export to PDF",
+    "exportExcel": "Export to Excel",
     "author": "Author",
     "anonymous": "Anonymous",
     "likes": "Likes",
@@ -33,153 +33,108 @@
     },
     "share": {
       "copied": "Link copied to clipboard!",
-      "whatsappUrl": "https://api.whatsapp.com/sendtext=Join the room: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}"
     }
   },
   "Home": {
-    "title": "Hi, I'm Caio Peixoto",
-    "subtitle": "I build a few useful things that almost always work.",
-    "description": "This site is my little lab of tools for everyday life.",
-    "ctaTools": "Open the tools inventory",
-    "aboutTitle": "About me (honest version)",
-    "aboutBody": "I like solving problems (classic firefighter) and trying out new ideas.",
-    "highlightsTitle": "Superpowers (unverified)",
+    "title": "Hi, welcome!",
+    "subtitle": "I build useful (and mostly functional) tools.",
+    "description": "This site is my personal lab for everyday tools.",
+    "ctaTools": "Open tools inventory",
+    "aboutTitle": "About me",
+    "aboutBody": "Senior Fullstack Developer with 8+ years of experience, specializing in Back-End and R&D. Building high-performance platforms with .NET, Python, and Generative AI.",
+    "highlightsTitle": "Superpowers (unconfirmed)",
     "highlights": [
       {
         "title": "Firefighter",
-        "desc": "Puts out fires, fixes bugs and saves the day."
+        "desc": "Puts out fires, crushes bugs, and saves the day."
       },
       {
-        "title": "Always up for it",
-        "desc": "Refactor, new language or legacy code? I'm in."
+        "title": "Jack of all trades",
+        "desc": "Refactoring, new languages, or legacy code? I'm in."
       },
       {
-        "title": "Team buddy",
-        "desc": "From shy dev to tech lead, coach, mentor, therapist, you name it."
+        "title": "The Team Player",
+        "desc": "From shy dev to tech leader, coach, mentor, and occasional life counselor."
       },
       {
-        "title": "Last to turn off the lights",
-        "desc": "Almost 24/7, always around to help with SQL, infra, planning, moving boxes, making coffee, etc."
+        "title": "The Last Man Standing",
+        "desc": "Available 24/7 (almost), always ready to help with SQL, Infra, planning, or just making coffee."
       }
     ],
-    "historyTitle": "My professional journey",
-    "historyBody": "A very quick summary:",
+    "historyTitle": "Professional Journey",
+    "historyBody": "A brief summary:",
     "timeline": [
-      { "year": "2014", "text": "Started high school integrated with an IT technician course." },
-      { "year": "2015", "text": "Interned in IT at Centro Universitário São Camilo." },
-      { "year": "2017", "text": "Started a degree in Information Systems at Multivix College." },
-      { "year": "2017", "text": "Started working as a Web Developer at FK-Tech." },
-      { "year": "2019", "text": "Joined Técnica Automação as software support." },
-      { "year": "2020", "text": "Graduated from college and got married." },
-      { "year": "2021", "text": "Moved to Santa Catarina and started working as a Developer at Havan S.A." },
-      { "year": "2023", "text": "Started working as a Tech Leader at Questor Sistemas." },
-      { "year": "2024", "text": "Completed a postgraduate degree in Software Engineering at Faculdade Metropolitana." },
-      { "year": "2025", "text": "Currently working as a Full Stack Developer at Havan S.A. (coming back home)." }
+      { "year": "2014", "text": "Started High School with an Integrated IT Technician course" },
+      { "year": "2015", "text": "IT Internship at São Camilo University Center" },
+      { "year": "2017", "text": "Started Information Systems degree at Multivix College" },
+      { "year": "2017", "text": "Started as a Web Programmer at FK-Tech" },
+      { "year": "2019", "text": "Started as Software Tech Support at Técnica Automação" },
+      { "year": "2020", "text": "Graduated college and got married" },
+      { "year": "2021", "text": "Moved to SC and started as a Programmer at Havan S.A." },
+      { "year": "2023", "text": "Started as Tech Leader at Questor Sistemas" },
+      { "year": "2024", "text": "Completed Postgraduate studies in Software Engineering at Faculdade Metropolitana" },
+      { "year": "2025", "text": "Currently a Full Stack Programmer at Havan S.A. (Back to my roots)" }
     ],
-    "stacksTitle": "Stacks and technologies",
+    "stacksTitle": "Stacks & Technologies",
     "stacks": [
-      "C#",
-      ".NET",
-      "PostgreSQL",
-      "MongoDB",
-      "Redis",
-      "Docker",
-      "RabbitMQ",
-      "Next.js",
-      "TypeScript",
-      "PHP",
-      "ReactJS",
-      "AngularJS",
-      "SQL Server",
-      "Git",
-      "Rancher",
-      "Datadog",
-      "Microservices",
-      "Clean Architecture",
-      "Agile",
-      "DDD",
-      "REST",
-      "Design Patterns",
-      "SOLID",
-      "Python",
-      "Genexus",
-      "Generative AI",
-      "LLMs",
-      "MCP Server",
-      "ChatGPT",
-      "CI/CD",
-      "Clean Code",
-      "Refactoring"
+      "C#", ".NET", "PostgreSQL", "MongoDB", "Redis", "Docker", "RabbitMQ", "Next.js", "TypeScript", "PHP", "ReactJS", "AngularJS", "SQL Server", "Git", "Rancher", "Datadog", "Microservices", "Clean Architecture", "Agile", "DDD", "REST", "Design Patterns", "SOLID", "Python", "Genexus", "Generative AI", "LLMs", "MCP Server", "ChatGPT", "CI/CD", "Clean Code", "Refactoring"
     ],
-    "ctaResume": "View resume",
-    "funStatsTitle": "Unofficial stats",
+    "ctaResume": "View Resume",
+    "funStatsTitle": "Unofficial Stats",
+    "lastProdBugAt": "abc",
+    "lastWarRoomAt": "2025-12-10",
     "funStats": [
-      {
-        "icon": "☕",
-        "value": "4826745",
-        "label": "Cups of coffee consumed"
-      },
-      {
-        "icon": "🐞",
-        "value": "+632",
-        "label": "Bugs fixed"
-      },
-      {
-        "icon": "🧯",
-        "value": "null",
-        "label": "Days without a bug in production"
-      },
-      {
-        "icon": "🚨",
-        "value": "34",
-        "label": "Days without a war room"
-      }
+      { "icon": "☕", "baseValue": 4826745, "baseDate": "2026-02-01", "dailyIncrement": 120, "label": "Cups of coffee drank" },
+      { "icon": "🐞", "baseValue": 632, "baseDate": "2026-02-01", "dailyIncrement": 3, "prefix": "+", "label": "Bugs fixed" },
+      { "icon": "🧯", "type": "daysSinceProdBug", "label": "Days without production bugs" },
+      { "icon": "🚨", "type": "daysSinceWarRoom", "label": "Days since last war room" }
     ]
   },
   "Tools": {
     "title": "Tools",
-    "description": "Choose one of the tools below.",
+    "description": "Select one of the available tools below.",
     "timeTrackerTitle": "Time Tracker",
-    "timeTrackerDesc": "Record in and out times and calculate hours worked.",
+    "timeTrackerDesc": "Log your hours and calculate work time.",
     "todoListTitle": "Tasks",
     "todoListDesc": "Manage tasks with time alerts.",
-    "financeTitle": "Finances",
-    "financeDesc": "Manage your bills and expenses.",
-    "toolSoon": "Coming soon...",
+    "financeTitle": "Finance",
+    "financeDesc": "Manage your accounts and expenses.",
+    "toolSoon": "Under construction...",
     "retroboardTitle": "RetroBoard",
-    "retroboardDesc": "Collaborative retrospectives in real time."
+    "retroboardDesc": "Real-time collaborative retrospectives."
   },
   "TimeTracker": {
     "title": "Time Tracker",
-    "addManual": "Add time entry",
+    "addManual": "Add entry",
     "workloadLabel": "Daily workload",
-    "settingsTitle": "Initial settings",
-    "bankLabel": "Time bank",
+    "settingsTitle": "Initial Settings",
+    "bankLabel": "Hours balance",
     "bankPositiveTitle": "Positive balance",
     "bankNegativeTitle": "Negative balance",
     "bankReset": "Reset",
-    "bankResetTitle": "Reset time bank",
-    "bankHint": "Optional. Enter the time and select whether it is positive or negative.",
-    "bankInvalid": "Invalid format. Use HH:MM (e.g. 01:30).",
-    "removePunchTitle": "Remove time entry",
+    "bankResetTitle": "Reset hours balance",
+    "bankHint": "Optional. Enter time and select if positive or negative.",
+    "bankInvalid": "Invalid format. Use HH:MM (e.g., 01:30).",
+    "removePunchTitle": "Remove entry",
     "worked": "Hours worked",
     "lunch": "Lunch break",
     "remaining": "Remaining",
     "extra": "Overtime",
-    "workload6": "Daily workload: 6h",
-    "workload8": "Daily workload: 8h",
-    "workload848": "Daily workload: 8h48",
-    "suggestedExit": "Suggested checkout time"
+    "workload6": "Workload: 6h",
+    "workload8": "Workload: 8h",
+    "workload848": "Workload: 8h48",
+    "suggestedExit": "Suggested clock-out"
   },
   "Finance": {
     "paymentModalMoveLabel": "Move to next month",
-    "statusMoved": "Scheduled for next month",
-    "movedBadge": "Moved to next month",
-    "modalReceiveTitle": "Record income",
-    "modalPayTitle": "Record payment",
+    "statusMoved": "Moved to next month",
+    "movedBadge": "Forwarded",
+    "modalReceiveTitle": "Record Income",
+    "modalPayTitle": "Record Payment",
     "paymentModalTotal": "Total amount",
     "paymentModalPartial": "Partial amount",
-    "paymentModalPartialHint": "The amount entered will be considered as paid now and the remaining balance will automatically be scheduled for next month.",
+    "paymentModalPartialHint": "The amount entered will be marked as paid now; the remainder will be moved to next month automatically.",
     "confirmAction": "Confirm",
     "cancel": "Cancel",
     "save": "Save",
@@ -191,64 +146,64 @@
     "expensesTitle": "Expenses",
     "noExpensesThisMonth": "No expenses recorded this month.",
     "noCategoryThisMonth": "No entries in this category this month.",
-    "launchedBy": "Created by {name}",
+    "launchedBy": "Added by {name}",
     "openAmount": "Outstanding balance: {value}",
     "statusPending": "Pending",
     "statusPaid": "Paid",
     "statusReceived": "Received",
-    "statusPartial": "Partially paid",
-    "fixedLabel": "Recurring",
-    "confirmDelete": "Are you sure you want to delete this entry",
-    "rolledFromMonth": "Carried over from {month}",
+    "statusPartial": "Partially Paid",
+    "fixedLabel": "Fixed",
+    "confirmDelete": "Are you sure you want to delete this entry?",
+    "rolledFromMonth": "Moved from {month}",
     "partialPaid": "Paid {paid} of {total}",
     "syntheticLabel": "Generated",
     "togglePaidAria": "Toggle paid status",
     "editAria": "Edit entry",
     "deleteAria": "Delete entry",
-    "confirmRevertPayment": "Do you really want to revert this payment/receipt",
+    "confirmRevertPayment": "Do you really want to revert this payment/receipt?",
     "noCustomCategories": "No custom categories found.",
     "categoriesTitle": "Manage Categories",
     "customCategoriesLabel": "Custom Categories",
     "builtinCategoriesLabel": "Default Categories",
     "builtinLabel": "Default",
     "deleteCategoryTitle": "Delete category",
-    "deleteCategoryMessage": "Are you sure you want to delete the category \"{category}\"",
-    "description": "Manage the categories used in your entries.",
+    "deleteCategoryMessage": "Are you sure you want to delete the category \"{category}\"?",
+    "description": "Manage the categories used in your transactions.",
     "errors": {
-      "deleteFailed": "Failed to delete. Please try again.",
-      "toggleFailed": "Failed to update status. Please try again.",
+      "deleteFailed": "Failed to delete. Try again.",
+      "toggleFailed": "Failed to update status. Try again.",
       "unauthorized": "Unauthorized.",
-      "noPermission": "No permission.",
+      "noPermission": "Permission denied.",
       "boardNotFound": "Board not found.",
       "itemNotFound": "Item not found.",
       "incompleteData": "Incomplete data.",
       "invalidCategoryName": "Invalid name.",
       "categoryExists": "This category already exists.",
-      "updateFailed": "Failed to update. Please try again.",
+      "updateFailed": "Failed to update. Try again.",
       "categoryInUse": "This category is in use and cannot be deleted."
     }
   },
   "FinanceMetrics": {
     "movedExpensesLine": "Moved expense: {value}",
     "movedIncomesLine": "Moved income: {value}",
-    "movedTotalsTitle": "Entries moved to next month",
+    "movedTotalsTitle": "Transactions moved to next month",
     "userTotalIncomeShort": "Income",
     "incomesLaunchesLabel": "{count, plural, one {{count} entry} other {{count} entries}}",
     "expensesLaunchesLabel": "{count, plural, one {{count} entry} other {{count} entries}}",
-    "noData": "No entries in this period to calculate metrics.",
-    "summaryTitle": "Summary for {period}",
-    "balanceLabel": "Period balance",
-    "unknownUserLabel": "Unknown user",
-    "perUserTitle": "Metrics by person",
-    "perUserSubtitle": "See how much each person moved in this period in the shared board.",
-    "topSpenderBadge": "Top spender in this period",
+    "noData": "No data available for this period.",
+    "summaryTitle": "{period} Summary",
+    "balanceLabel": "Period Balance",
+    "unknownUserLabel": "Unknown User",
+    "perUserTitle": "Metrics per person",
+    "perUserSubtitle": "Check the activity of each person in the shared board.",
+    "topSpenderBadge": "Top spender of the period",
     "rankFormat": "⭐ #{index} {name}",
     "userTotalExpenseLabel": "Total expenses",
     "userTopCategoriesTitle": "Top spending categories",
     "incomesTitle": "Income",
     "expensesTitle": "Expenses",
     "totalPaidAndPending": "Total:",
-    "onlyFinished": "Completed:",
+    "onlyFinished": "Settled:",
     "onlyPending": "Pending:",
     "incomesOverdueLabel": "{count} overdue",
     "expensesOverdueLabel": "{count} overdue",
@@ -257,10 +212,10 @@
     "incomesDistributionTitle": "Income distribution by category",
     "categoryLine": "{total} · {percent}%",
     "mostActivePeriodTitle": "Most active period",
-    "mostActiveDayLine": "{count} entry(ies) · total movement of {amount}",
+    "mostActiveDayLine": "{count} entry(ies) · volume of {amount}",
     "mostActiveDateFormat": "MMM dd",
-    "daysWithMovements": "Days with activity in the period: {count}",
-    "notEnoughData": "Not enough data to calculate.",
+    "daysWithMovements": "Days with activity: {count}",
+    "notEnoughData": "Not enough data for calculation.",
     "avgTicketLabel": "Average ticket:",
     "othersCategory": "Others"
   },
@@ -270,50 +225,50 @@
     "login": "Log in",
     "language": "Language",
     "releases": "Releases",
-    "versionTitle": "View release notes for version {version}"
+    "versionTitle": "View notes for version {version}"
   },
   "TodoList": {
-    "title": "To-do List",
+    "title": "To-Do List",
     "placeholder": "Task description",
     "clearAll": "Clear all",
     "remaining": "remaining",
-    "empty": "No tasks for now..."
+    "empty": "No tasks yet..."
   },
   "FinanceLogin": {
     "title": "My Finances",
     "description": "Log in to manage your accounts",
     "emailUserLabel": "Email or Username",
-    "emailPlaceholder": "e.g. your@email.com",
+    "emailPlaceholder": "e.g., name@email.com",
     "passwordLabel": "Password",
     "passwordPlaceholder": "••••••••",
-    "submitButton": "Sign in",
+    "submitButton": "Log In",
     "loading": "Signing in...",
-    "noAccount": "Don't have an account yet",
+    "noAccount": "Don't have an account?",
     "registerLink": "Sign up",
     "errors": {
       "invalid": "Invalid email or password.",
-      "general": "Error while authenticating. Please try again."
+      "general": "Authentication error. Please try again."
     }
   },
   "FinanceRegister": {
     "title": "New Account",
     "description": "Create your account to get started",
     "emailLabel": "Email",
-    "emailPlaceholder": "your@email.com",
+    "emailPlaceholder": "name@email.com",
     "passwordLabel": "Password",
     "passwordPlaceholder": "••••••••",
     "confirmPasswordLabel": "Confirm Password",
     "confirmPasswordPlaceholder": "••••••••",
     "submitButton": "Create Account",
     "loading": "Creating account...",
-    "hasAccount": "Already have an account",
+    "hasAccount": "Already have an account?",
     "loginLink": "Log in",
     "errors": {
       "match": "Passwords do not match.",
       "length": "Password must be at least 6 characters.",
       "inUse": "This email is already in use.",
       "invalid": "Invalid email.",
-      "general": "Error while creating account. Please try again."
+      "general": "Error creating account. Try again."
     }
   },
   "FinancePage": {
@@ -322,79 +277,79 @@
     "loading": "Loading...",
     "openAmountLabel": "Outstanding balance",
     "loadingInvites": "Loading invites and requests...",
-    "inviteByEmail": "Email invite for {email}",
+    "inviteByEmail": "Email invitation for {email}",
     "requestByCode": "Access request via code",
-    "boardLabel": "Finance board",
-    "allBoardsLabel": "All boards",
+    "boardLabel": "Finance Board",
+    "allBoardsLabel": "All Boards",
     "balanceTitle": "Cash Balance",
-    "entriesLabel": "Income",
-    "entriesForecastLabel": "Expected to receive (not included)",
-    "exitsLabel": "Expenses",
-    "exitsForecastLabel": "Expected to pay (not included)",
-    "shareTitle": "Share board",
-    "shareCodeLabel": "Board code",
-    "shareCodeHint": "Send this code to someone so they can use the \"Join an existing board\" option.",
+    "entriesLabel": "Inflow",
+    "entriesForecastLabel": "Expected Inflow (not calculated)",
+    "exitsLabel": "Outflow",
+    "exitsForecastLabel": "Expected Outflow (not calculated)",
+    "shareTitle": "Share Board",
+    "shareCodeLabel": "Board Code",
+    "shareCodeHint": "Send this code to someone to use the \"Join an existing board\" option.",
     "shareEmailLabel": "Invite by email",
     "shareEmailPlaceholder": "email@example.com",
     "shareEmailButton": "Send invite",
     "inviteSent": "Invite sent successfully!",
-    "overdueTitle": "Overdue bills",
-    "overdueSubtitle": "You have {count} overdue bill(s).",
+    "overdueTitle": "Overdue accounts",
+    "overdueSubtitle": "You have {count} overdue account(s).",
     "transactionsCount": "{count} entries",
     "searchByNamePlaceholder": "Search by name...",
     "noResults": "No entries found.",
     "noTransactions": "No entries this month.",
     "addNow": "Add now",
-    "pendingApprovalsTitle": "Pending approvals",
-    "pendingApprovalsMessage": "You have {count} request(s) to join boards you manage. Go to the invites area to approve or reject them.",
-    "joinByCodeLabel": "Board code",
-    "joinByCodePlaceholder": "Paste here the code you received",
-    "joinByCodeButton": "Request access",
-    "invitesSectionTitle": "Invites and approvals",
+    "pendingApprovalsTitle": "Pending Approvals",
+    "pendingApprovalsMessage": "You have {count} request(s) to join boards you manage. Go to invitations to approve or deny.",
+    "joinByCodeLabel": "Board Code",
+    "joinByCodePlaceholder": "Paste the code you received here",
+    "joinByCodeButton": "Request Access",
+    "invitesSectionTitle": "Invites & Approvals",
     "invitesForYou": "Invites for you",
-    "noInvites": "You have no pending invites at the moment.",
-    "ownerRequests": "Requests on your boards",
-    "noOwnerRequests": "No pending requests on boards you manage.",
+    "noInvites": "No pending invites at the moment.",
+    "ownerRequests": "Requests for your boards",
+    "noOwnerRequests": "No pending requests for boards you manage.",
     "accept": "Accept",
-    "reject": "Reject",
+    "reject": "Decline",
     "joinRequestSent": "Request sent successfully!",
     "prevMonthAria": "Previous month",
     "nextMonthAria": "Next month",
     "goTodayLabel": "Today",
     "tabListLabel": "List",
     "tabMetricsLabel": "Metrics",
-    "overdueSummaryLabel": "Overdue balance",
-    "manageCategoriesLabel": "Manage categories",
+    "overdueSummaryLabel": "Overdue Balance",
+    "manageCategoriesLabel": "Manage Categories",
     "selectButton": "Select",
     "cancelSelection": "Cancel selection",
-    "selectedTotalLabel": "Selected total",
+    "selectedTotalLabel": "Total selected",
     "itemSingular": "item",
     "itemPlural": "items",
     "errors": {
       "unauthorized": "Unauthorized.",
       "invalidEmail": "Invalid email.",
       "boardNotFound": "Board not found.",
-      "onlyOwnerCanInvite": "Only the owner can send invites.",
+      "onlyOwnerCanInvite": "Only the owner can invite.",
       "invalidCode": "Invalid code.",
       "alreadyMember": "You are already a member of this board.",
       "alreadyRequested": "You have already requested access to this board.",
       "inviteNotFound": "Invite not found.",
       "noPermission": "No permission.",
-      "inviteNotPending": "Invite is not pending.",
+      "inviteNotPending": "Invite is no longer pending.",
       "onlyInviteeCanAccept": "Only the invitee can accept.",
       "onlyOwnerCanApprove": "Only the owner can approve.",
       "requestMissingUserId": "Request missing userId."
     }
   },
   "FinanceBoards": {
-    "title": "Finance boards",
+    "title": "Finance Boards",
     "description": "Create a new board or join an existing one to organize your finances alone or with others.",
-    "createButton": "Create board",
+    "createButton": "Create Board",
     "personalTag": "Personal",
     "sharedTag": "Shared",
     "openBoard": "Open",
-    "newBoardLabel": "New board",
-    "newBoardPlaceholder": "Give this board a name",
+    "newBoardLabel": "New Board",
+    "newBoardPlaceholder": "Enter a name for this board",
     "emptyTitle": "You don't have any boards yet",
     "emptySubtitle": "Create a new board to start organizing your finances.",
     "membersLabel": "{count, plural, one {# member} other {# members}}",
@@ -402,89 +357,89 @@
       "general": "An error occurred. Please try again."
     },
     "createButtonLoading": "Creating...",
-    "joinTabLabel": "Join by code",
+    "joinTabLabel": "Join via Code",
     "boardMenuAriaLabel": "Open board options",
-    "menuRename": "Edit name",
-    "menuViewMembers": "View members",
-    "menuDeleteBoard": "Delete board",
-    "renameModalTitle": "Rename board",
+    "menuRename": "Rename",
+    "menuViewMembers": "View Members",
+    "menuDeleteBoard": "Delete Board",
+    "renameModalTitle": "Rename Board",
     "renameModalDescription": "Enter the new name for this board.",
     "renameModalCancel": "Cancel",
     "renameModalSave": "Save",
     "renameModalSaving": "Saving...",
-    "deleteModalTitle": "Delete board",
-    "deleteModalDescription": "This action is permanent. To confirm, type the board name below.",
+    "deleteModalTitle": "Delete Board",
+    "deleteModalDescription": "This action is permanent. To confirm, type the name of the board below.",
     "deleteModalPlaceholder": "Type the board name",
     "deleteModalCancel": "Cancel",
-    "deleteModalConfirm": "Delete board",
+    "deleteModalConfirm": "Delete Board",
     "deleteModalConfirming": "Deleting...",
-    "membersModalTitle": "Board members",
+    "membersModalTitle": "Board Members",
     "membersModalSubtitle": "Only the owner can remove members.",
-    "membersModalOwnerTag": "Board owner",
+    "membersModalOwnerTag": "Owner",
     "membersModalRemove": "Remove",
     "membersModalClose": "Close"
   },
   "FinanceForm": {
-    "useAutoDescription": "Use automatic description",
+    "useAutoDescription": "Use auto-description",
     "advancedOptionsToggle": "Toggle advanced options",
     "cardModeCreditLabel": "Credit",
     "cardModeDebitLabel": "Debit",
     "editDescriptionButton": "Edit description",
-    "partialPaymentHint": "If the payment was partial, you can record the exact amount later using the confirm button in the entries list.",
-    "newTransactionTitle": "New entry",
-    "editTransactionTitle": "Edit entry",
+    "partialPaymentHint": "If the payment was partial, you can record the exact amount later using the confirmation button in the transaction list.",
+    "newTransactionTitle": "New Transaction",
+    "editTransactionTitle": "Edit Transaction",
     "typeIncome": "Income",
     "typeExpense": "Expense",
     "categoryLabel": "Category",
     "customCategoryPlaceholder": "Category name",
     "addCategory": "Add",
     "descriptionLabel": "Description",
-    "descriptionPlaceholder": "E.g. Rent, Salary...",
-    "amountLabel": "Amount (R$)",
+    "descriptionPlaceholder": "e.g., Rent, Salary...",
+    "amountLabel": "Amount ($)",
     "dateLabel": "Date",
-    "alreadyPaidLabel": "Already paid/received",
-    "fixedCheckboxLabel": "Recurring entry (repeat every month)",
+    "alreadyPaidLabel": "Already settled",
+    "fixedCheckboxLabel": "Recurring (repeat every month)",
     "savingButton": "Saving...",
-    "saveButton": "Save entry",
-    "saveEditButton": "Save changes",
+    "saveButton": "Save Transaction",
+    "saveEditButton": "Save Changes",
     "cancel": "Cancel",
     "fixedCategoryName": "Fixed Bills",
     "useInstallmentsLabel": "Pay in installments",
     "installmentsLabel": "Number of installments",
-    "installmentsHint": "The amount entered is the amount of each installment.",
-    "fixedNotAllowedWithInstallments": "You can't mark as fixed for entries with installments.",
-    "cardSectionTitle": "Card details",
-    "cardNameLabel": "Card",
-    "cardModeLabel": "Card type"
+    "installmentsHint": "The value entered is the amount per installment.",
+    "fixedNotAllowedWithInstallments": "Recurring status is not allowed for installment payments.",
+    "cardSectionTitle": "Card Details",
+    "cardNameLabel": "Card Name",
+    "cardModeLabel": "Card Type"
   },
   "Retroboard": {
-    "slogan": "Feedback that fuels the future!",
+    "slogan": "Feedbacks that drive the future!",
     "tabs": {
       "create": "Create Room",
       "enter": "Join Room"
     },
     "roomName": {
-      "label": "How would you like to name the room",
+      "label": "Room name preference",
       "default": "Default",
       "custom": "Custom",
-      "placeholder": "Type the room name",
+      "placeholder": "Enter room name",
       "defaultName": "Retrospective"
     },
     "userName": {
-      "label": "How should user names appear",
+      "label": "User name preference",
       "allowAnonymous": "Allow Anonymous",
       "requireName": "Name Required",
-      "placeholder": "Type your name..."
+      "placeholder": "Enter your name..."
     },
     "createButton": "Create Room",
     "enterRoom": {
-      "placeholder": "Enter the room ID",
+      "placeholder": "Enter Room ID",
       "button": "Join"
     },
     "loading": "Creating room...",
     "alerts": {
       "requireName": "Please enter your name before creating the room!",
-      "createError": "Error while creating the room. Please try again.",
+      "createError": "Error creating room. Please try again.",
       "roomNotFound": "Room not found!"
     }
   },
@@ -494,66 +449,66 @@
   "Resume": {
     "labels": {
       "phone": "Phone",
-      "recado": "Alt. contact",
+      "recado": "Message",
       "email": "Email",
       "linkedin": "LinkedIn"
     },
     "header": {
       "name": "Caio dos Santos Peixoto",
-      "role": "Back-End Dev | Tech Lead",
+      "role": "Back-End Developer | Tech Leader",
       "location": "Brusque, Santa Catarina - Brazil",
       "phone": "",
       "recado": "",
       "email": "caiospeixoto23@gmail.com",
-      "linkedin": "/caiodspeixoto"
+      "linkedin": "caiodspeixoto"
     },
     "objective": {
-      "title": "Professional objective",
-      "body": "Work on improving and optimizing processes and services, using analytical thinking to solve problems and pursue innovations that deliver better customer experiences. I'm passionate about learning and exploring emerging technologies and I'm open to relocating."
+      "title": "Professional Objective",
+      "body": "Dedicated to improving and optimizing processes and services through analytical intelligence to solve problems and drive innovations that enhance client experience. Passionate about learning and exploring emerging technologies. Open to relocation."
     },
     "sections": {
-      "experience": "Work experience",
+      "experience": "Professional Experience",
       "education": "Education",
-      "courses": "Additional courses",
-      "extra": "Additional information"
+      "courses": "Certifications & Courses",
+      "extra": "Additional Information"
     },
     "experience": [
       {
-        "title": "Havan S.A. — Software Developer",
+        "title": "Havan S.A. — Software Engineer",
         "period": "Sep/2025 — Present",
         "bullets": [
-          "Back-end Software Engineer on the Research & Development (R&D) team, building scalable and intelligent solutions with .NET, Python and Generative AI.",
-          "Help evolve the architecture of internal platforms, applying modern engineering practices to deliver faster, more stable and efficient systems.",
-          "Develop high-performance APIs, services and integrations, applying DDD, Clean Architecture, SOLID, automated tests and decoupling patterns.",
-          "Also work directly on intelligent workflows with LLMs, OpenAI API, MCP Server and pgvector, using AI to automate corporate processes and reduce operating costs."
+          "Back-End Software Engineer in the R&D team, building scalable and intelligent solutions with .NET, Python, and Generative AI.",
+          "Participating in the architectural evolution of internal platforms, applying modern engineering principles to deliver faster, more stable, and efficient systems.",
+          "Developing high-performance APIs, services, and integrations using DDD, Clean Architecture, SOLID, automated testing, and decoupling patterns.",
+          "Directly involved in creating intelligent workflows with LLMs, OpenAI API, MCP Server, and pgvector, using AI to automate corporate processes and reduce operational costs."
         ]
       },
       {
         "title": "Questor Sistemas — Tech Leader",
         "period": "Nov/2023 — Sep/2025",
         "bullets": [
-          "Ongoing system development focused on performance and optimization.",
-          "Participation in technology planning and technical support for the team.",
-          "Agile-based routine, delivering quality with less time and cost."
+          "Continuous system development with a focus on performance and optimization.",
+          "Strategic technology planning and technical support for the development team.",
+          "Agile-based routine, delivering quality while optimizing time and cost."
         ]
       },
       {
         "title": "Havan S.A. — Software Developer",
         "period": "Jan/2021 — Sep/2023",
         "bullets": [
-          "Back end with .NET Core, DDD, microservices and integrations with RabbitMQ.",
+          "Back-end development with .NET Core, DDD, microservices, and RabbitMQ integrations.",
           "Front-end support (AngularJS) and migration to ReactJS.",
-          "SQL Server and MongoDB, creating queries, views, functions and stored procedures.",
-          "Technical lead: standards, code review and production deployments."
+          "SQL Server and MongoDB management, creating queries, views, functions, and procedures.",
+          "Technical leadership: establishing patterns, code review, and production deployments."
         ]
       },
       {
-        "title": "Técnica Automação Comercial — Software Support Technician",
+        "title": "Técnica Automação Comercial — Software Tech Support",
         "period": "2019 — 2021",
         "bullets": [
-          "ERP support and development of internal solutions in C#.",
-          "Maintenance and management of databases and hardware.",
-          "Training users and troubleshooting issues in applications."
+          "ERP support and development of internal C# solutions.",
+          "Database and hardware maintenance and management.",
+          "User training and application bug fixing."
         ]
       },
       {
@@ -561,48 +516,48 @@
         "period": "2017 — 2019",
         "bullets": [
           "User support and hardware maintenance.",
-          "Web development (HTML, CSS, PHP, JavaScript and databases).",
-          "Mikrotik hotspot and API integrations using PHP."
+          "Web programming (HTML, CSS, PHP, JavaScript, and databases).",
+          "Mikrotik Hotspot management and API integrations via PHP."
         ]
       },
       {
-        "title": "Centro Universitário São Camilo — IT Intern",
+        "title": "São Camilo University Center — IT Intern",
         "period": "2015 — 2016",
         "bullets": [
-          "Hardware maintenance and network support (cabling).",
-          "User support and lab organization.",
-          "Helping teachers set up equipment and lab structures."
+          "Hardware maintenance and network infrastructure support (cabling).",
+          "User assistance and lab organization.",
+          "Assisting faculty with equipment setup and structural organization."
         ]
       }
     ],
     "education": [
       {
         "title": "Postgraduate in Software Engineering",
-        "subtitle": "Faculdade Metropolitana - Online",
+        "subtitle": "Faculdade Metropolitana - Distance Learning",
         "period": "2024 — 2024"
       },
       {
-        "title": "Bachelor's in Information Systems",
+        "title": "B.S. in Information Systems",
         "subtitle": "Multivix — Cachoeiro de Itapemirim",
         "period": "2017 — 2020"
       },
       {
-        "title": "High School with IT Technician Program",
+        "title": "IT Technician (Integrated High School)",
         "subtitle": "Fraternidade e Luz — Cachoeiro de Itapemirim",
         "period": "2014 — 2016"
       }
     ],
     "courses": [
-      "DevOps Ninja: Docker, Kubernetes and Rancher (2021)",
-      "C# COMPLETE — Object-Oriented Programming (2021)",
-      "C# OOP + Programming Logic (2020)",
-      "Database and SQL Course (2019–2020)",
+      "DevOps Ninja: Docker, Kubernetes & Rancher (2021)",
+      "Complete C# — Object-Oriented Programming (2021)",
+      "C# OOP + Logic (2020)",
+      "Database & SQL Course (2019–2020)",
       "English at Microlins Book2 (Intermediate, 2015–2017)"
     ],
     "extra": [
-      "Reading and writing (English): Intermediate",
-      "Marital status: Married",
-      "Driver's license: AB"
+      "English: Intermediate (Reading & Writing)",
+      "Marital Status: Married",
+      "Driver's License: Category A/B"
     ],
     "download": "Download PDF"
   }
