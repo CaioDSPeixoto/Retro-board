@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { loginAction } from "@/app/[locale]/tools/finance/login/actions";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import Spinner from "@/components/ui/Spinner";
 
 type Props = {
   locale: string;
@@ -98,8 +99,9 @@ export default function LoginForm({ locale }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed"
+        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
+        {loading && <Spinner size="md" color="white" />}
         {loading ? t("loading") : t("submitButton")}
       </button>
 

@@ -81,11 +81,11 @@ export default async function ResumePage({
         {/* Cabeçalho */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">
               {header.name}
             </h1>
             {header.role && (
-              <p className="text-gray-700 mt-1 font-semibold">
+              <p className="text-blue-700 mt-1 font-semibold">
                 {header.role}
               </p>
             )}
@@ -240,9 +240,11 @@ export default async function ResumePage({
         <div className="mt-6 flex flex-wrap gap-3">
           <a
             href="/caio-peixoto-cv.pdf"
-            className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white text-sm font-semibold hover:from-blue-700 hover:to-blue-900 transition shadow-md shadow-blue-200 active:scale-95"
           >
-            {t("download")}
+            ↓ {t("download")}
           </a>
         </div>
       </section>

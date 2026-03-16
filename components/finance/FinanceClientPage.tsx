@@ -22,6 +22,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
+import Spinner from "@/components/ui/Spinner";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
@@ -381,7 +382,7 @@ export default function FinanceClientPage({
       {isRoutePending && (
         <div className="absolute inset-0 z-40 bg-gray-50/60 backdrop-blur-[1px] flex items-center justify-center">
           <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+            <Spinner size="md" color="blue" />
             <span className="text-sm font-semibold text-gray-700">
               {t("loading")}
             </span>
@@ -574,8 +575,9 @@ export default function FinanceClientPage({
                     <button
                       type="submit"
                       disabled={inviteLoading || !inviteEmail.trim()}
-                      className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0"
+                      className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0 flex items-center justify-center gap-2"
                     >
+                      {inviteLoading && <Spinner size="sm" color="white" />}
                       {inviteLoading ? t("sending") : t("shareEmailButton")}
                     </button>
                   </div>
@@ -737,8 +739,9 @@ export default function FinanceClientPage({
                   <button
                     type="submit"
                     disabled={inviteLoading || !inviteEmail.trim()}
-                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0"
+                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0 flex items-center justify-center gap-2"
                   >
+                    {inviteLoading && <Spinner size="sm" color="white" />}
                     {inviteLoading ? t("sending") : t("shareEmailButton")}
                   </button>
                 </div>

@@ -36,7 +36,7 @@ export default function ReleasesPage() {
   ];
 
   return (
-    <main className="min-h-[calc(100vh-64px)] py-10 px-6 bg-gray-50">
+    <main className="min-h-[calc(100vh-64px)] py-10 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-extrabold text-blue-600">

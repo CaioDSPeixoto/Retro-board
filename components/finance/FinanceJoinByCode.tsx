@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
 import { requestJoinByCode } from "@/app/[locale]/tools/finance/(protected)/invite-actions";
+import Spinner from "@/components/ui/Spinner";
 
 type Props = { locale: string };
 
@@ -56,8 +57,9 @@ export default function FinanceJoinByCode({ locale }: Props) {
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
+            className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0 flex items-center justify-center gap-2"
           >
+            {loading && <Spinner size="sm" color="white" />}
             {loading ? t("sending") : t("joinByCodeButton")}
           </button>
         </div>

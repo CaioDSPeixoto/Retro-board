@@ -72,10 +72,10 @@ export default async function HomePage({
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
       {/* HERO */}
       <section className="rounded-3xl bg-white/90 border border-blue-100 shadow-xl p-8 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mt-3">
+        <h1 className="text-4xl md:text-5xl font-extrabold mt-3 bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
           {t.title}
         </h1>
-        <p className="text-lg md:text-xl text-gray-700 mt-3">
+        <p className="text-lg md:text-xl text-gray-600 mt-3">
           {t.subtitle}
         </p>
       </section>

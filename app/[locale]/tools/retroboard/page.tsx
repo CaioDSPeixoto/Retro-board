@@ -6,6 +6,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { useTranslations } from "next-intl";
+import Spinner from "@/components/ui/Spinner";
 
 export default function RetroboardPage() {
   const t = useTranslations("Retroboard");
@@ -16,6 +17,7 @@ export default function RetroboardPage() {
   const [duration, setDuration] = useState(720);
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
   const [customNameEnabled, setCustomNameEnabled] = useState(false);
   const [customRoomName, setCustomRoomName] = useState("");
   const [existingRoomId, setExistingRoomId] = useState("");
@@ -71,11 +73,13 @@ export default function RetroboardPage() {
   };
 
   const handleEnterRoom = async () => {
+    setIsEntering(true);
     const exists = await checkRoomExists(existingRoomId);
     if (exists) {
       router.push(`/${locale}/room/${existingRoomId}`);
     } else {
       alert(t("alerts.roomNotFound"));
+      setIsEntering(false);
     }
   };
 
@@ -200,9 +204,10 @@ export default function RetroboardPage() {
 
             <button
               onClick={handleCreateRoom}
-              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition disabled:opacity-70"
+              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition disabled:opacity-70 flex items-center justify-center gap-2"
               disabled={isLoading}
             >
+              {isLoading && <Spinner size="md" color="white" />}
               {t("createButton")}
             </button>
           </>
@@ -219,8 +224,10 @@ export default function RetroboardPage() {
             />
             <button
               onClick={handleEnterRoom}
-              className="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition"
+              disabled={isEntering || !existingRoomId.trim()}
+              className="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition disabled:opacity-70 flex items-center justify-center gap-2"
             >
+              {isEntering && <Spinner size="md" color="white" />}
               {t("enterRoom.button")}
             </button>
           </div>
@@ -230,8 +237,9 @@ export default function RetroboardPage() {
       {/* Overlay de carregamento */}
       {isLoading && (
         <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="text-blue-600 font-bold text-xl animate-pulse">
-            {t("loading")}
+          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <Spinner size="lg" color="blue" />
+            <span className="text-sm font-semibold text-gray-700">{t("loading")}</span>
           </div>
         </div>
       )}

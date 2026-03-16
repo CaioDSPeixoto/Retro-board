@@ -101,7 +101,8 @@
     "financeTitle": "Finanzas",
     "financeDesc": "Gestiona tus cuentas y gastos.",
     "toolSoon": "En construcción...",
-    "retroboardTitle": "RetroBoard",
+    "toolSoonDesc": "Próximamente.",
+    "retroboardTitle": "Retroboard",
     "retroboardDesc": "Retrospectivas colaborativas en tiempo real."
   },
   "TimeTracker": {

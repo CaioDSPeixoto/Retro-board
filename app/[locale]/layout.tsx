@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Locale, routing } from "@/i18n/routing";
 import "./globals.css";
@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Script from "next/script";
 import AdBanner from "@/components/AdBanner";
+import NavigationProgress from "@/components/NavigationProgress";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Caio Peixoto",
@@ -28,6 +30,7 @@ export default async function RootLayout({
   }
 
   const messages = await getMessages();
+  const t = await getTranslations("Common");
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -44,6 +47,9 @@ export default async function RootLayout({
       </head>
       <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
         <NextIntlClientProvider messages={messages}>
+          <Suspense>
+            <NavigationProgress label={t("loading")} />
+          </Suspense>
           <Navbar locale={locale} />
           <main className="flex-1 w-full flex flex-col">
             {children}

@@ -20,6 +20,7 @@ import {
   applyPaymentToFinanceItem,
   revertFinanceItemPayment,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
+import Spinner from "@/components/ui/Spinner";
 
 type Props = {
   item: FinanceItem;
@@ -340,7 +341,7 @@ export default function FinanceItemCard({
                   aria-label={t("togglePaidAria")}
                 >
                   {toggling ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <Spinner size="sm" color="gray" />
                   ) : isPaid ? (
                     <FiCheckCircle size={18} />
                   ) : (
@@ -426,7 +427,7 @@ export default function FinanceItemCard({
                   }`}
               >
                 {(toggling || deleting) && (
-                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <Spinner size="sm" color="white" />
                 )}
                 {t("confirmAction")}
               </button>
@@ -527,7 +528,7 @@ export default function FinanceItemCard({
                 className="px-4 py-2 text-sm font-bold rounded-xl bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {toggling && (
-                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <Spinner size="sm" color="white" />
                 )}
                 {t("confirmAction")}
               </button>

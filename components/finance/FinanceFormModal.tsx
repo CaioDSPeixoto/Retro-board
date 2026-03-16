@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition, useRef } from "react";
 import { FiX, FiPlus, FiCheck, FiChevronDown } from "react-icons/fi";
+import Spinner from "@/components/ui/Spinner";
 import {
   addFinanceItem,
   createCategory,
@@ -194,7 +195,7 @@ export default function FinanceFormModal({
         {isPending && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-t-2xl sm:rounded-2xl">
             <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
-              <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+              <Spinner size="md" color="blue" />
               <span className="text-sm font-semibold text-gray-700">
                 {t("savingButton")}
               </span>
@@ -376,7 +377,7 @@ export default function FinanceFormModal({
                   className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
                   {addingCategory ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <Spinner size="md" color="white" />
                   ) : (
                     <FiCheck size={20} />
                   )}
@@ -658,7 +659,7 @@ export default function FinanceFormModal({
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Spinner size="md" color="white" />
                   {t("savingButton")}
                 </span>
               ) : isEditMode ? (

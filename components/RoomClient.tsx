@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
 import NameModal from "@/components/NameModal";
+import LoadingOverlay from "@/components/ui/LoadingOverlay";
 
 type RoomData = {
   requireName: boolean;
@@ -134,7 +135,7 @@ export default function RoomClient({ roomId, locale }: Props) {
     }
   };
 
-  if (!roomData) return null;
+  if (!roomData) return <LoadingOverlay fullScreen />;
 
   return (
     <div className="min-h-screen p-6 text-gray-900 relative">
