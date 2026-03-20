@@ -23,6 +23,7 @@ import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
+import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
@@ -35,26 +36,6 @@ type Props = {
   currentBoardId?: string | null;
   sessionUserId: string;
 };
-
-function normalizeForSearch(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .trim();
-}
-
-function getMonthRange(month: string): { start: string; end: string } {
-  const [yearStr, monthStr] = month.split("-");
-  const year = parseInt(yearStr, 10);
-  const m = parseInt(monthStr, 10);
-
-  const start = `${yearStr}-${monthStr}-01`;
-  const lastDay = new Date(year, m, 0).getDate();
-  const end = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
-
-  return { start, end };
-}
 
 export default function FinanceClientPage({
   initialItems,

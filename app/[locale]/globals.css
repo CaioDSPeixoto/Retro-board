@@ -74,3 +74,13 @@ body {
   -webkit-text-fill-color: var(--color-heading);
   color: var(--color-heading);
 }
+
+/* Animação de entrada suave */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}

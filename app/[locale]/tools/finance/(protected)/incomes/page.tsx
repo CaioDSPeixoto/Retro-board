@@ -24,7 +24,7 @@ export default async function IncomesPage({
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-xl font-bold text-gray-800">
+      <h1 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
         {t("incomesTitle")} –{" "}
         {format(new Date(`${currentMonth}-01`), "MMMM yyyy", {
           locale: ptBR,
@@ -32,7 +32,7 @@ export default async function IncomesPage({
       </h1>
 
       {incomeItems.length === 0 ? (
-        <p className="text-gray-400 text-sm">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {t("noIncomesThisMonth")}
         </p>
       ) : (

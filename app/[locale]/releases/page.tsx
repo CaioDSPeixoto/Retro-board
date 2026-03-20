@@ -2,9 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const releases = [
+  { version: "0.8.4", date: "20/03/2026", changes: ["REFACT: centralização de temas e padronização de codigo"] },
   { version: "0.8.3", date: "19/03/2026", changes: ["FEAT: adicionado botão de modo claro/escuro"] },
   { version: "0.8.2", date: "25/02/2026", changes: ["REFACT: ajustando alguns textos para melhor compreensão"] },
   { version: "0.8.1", date: "25/02/2026", changes: ["FEAT: adicionado novas funcionalidades no módulo financeiro"] },

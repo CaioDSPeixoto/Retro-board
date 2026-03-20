@@ -3,21 +3,9 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import type { FinanceBoard, FinanceItem, FinanceBoardInvite } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import { getMonthRange } from "@/lib/finance/utils";
 
 /* ================= utils ================= */
-
-function getMonthRange(month: string): { start: string; end: string } {
-  // month: "YYYY-MM"
-  const [yearStr, monthStr] = month.split("-");
-  const year = parseInt(yearStr, 10);
-  const m = parseInt(monthStr, 10);
-
-  const start = `${yearStr}-${monthStr}-01`;
-  const lastDay = new Date(year, m, 0).getDate(); // m é 1-12
-  const end = `${yearStr}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
-
-  return { start, end };
-}
 
 /* ================= invites ================= */
 

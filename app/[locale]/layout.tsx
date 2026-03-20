@@ -6,8 +6,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Script from "next/script";
-import AdBanner from "@/components/AdBanner";
 import NavigationProgress from "@/components/NavigationProgress";
 import ThemeProvider from "@/components/ThemeProvider";
 import { Suspense } from "react";
