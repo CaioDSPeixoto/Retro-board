@@ -43,32 +43,16 @@ export default function SelectLanguage() {
         type="button"
         onClick={() => setOpen((p) => !p)}
         aria-expanded={open}
-        className="
-          inline-flex items-center gap-2
-          h-9 px-3
-          rounded-lg
-          border border-gray-200
-          bg-white hover:bg-gray-50
-          text-gray-700
-          transition
-        "
+        className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] transition"
         title={t("language")}
       >
         <FiGlobe size={16} />
         <span className="hidden sm:inline text-sm font-medium">{locale.toUpperCase()}</span>
-        <span className="text-gray-400">{chevron}</span>
+        <span className="text-[var(--color-text-muted)]">{chevron}</span>
       </button>
 
       {open && (
-        <div
-          className="
-            absolute right-0 mt-2 w-44
-            rounded-xl border border-gray-200
-            bg-white shadow-lg
-            overflow-hidden
-            z-50
-          "
-        >
+        <div className="absolute right-0 mt-2 w-44 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg overflow-hidden z-50">
           {routing.locales.map((loc) => {
             const active = loc === locale;
             return (
@@ -76,10 +60,11 @@ export default function SelectLanguage() {
                 key={loc}
                 type="button"
                 onClick={() => onSelectChange(loc)}
-                className={`
-                  w-full text-left px-4 py-2.5 text-sm transition
-                  ${active ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-700 hover:bg-gray-50"}
-                `}
+                className={`w-full text-left px-4 py-2.5 text-sm transition ${
+                  active
+                    ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] font-semibold"
+                    : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)]"
+                }`}
               >
                 {loc.toUpperCase()}
               </button>

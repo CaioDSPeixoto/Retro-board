@@ -62,7 +62,7 @@ export default function LoginForm({ locale }: Props) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && (
-        <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg border border-red-100">
+        <div className="text-red-500 text-sm p-3 rounded-lg border border-red-300/40" style={{ background: "var(--color-surface-raised)" }}>
           {error}
         </div>
       )}
@@ -109,7 +109,7 @@ export default function LoginForm({ locale }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading && <Spinner size="md" color="white" />}
         {loading ? t("loading") : t("submitButton")}

@@ -142,7 +142,7 @@ export default async function HomePage({
         <div className="relative border-l-2 border-blue-400 ml-3 space-y-6">
           {t.timeline.map((event: any, i: number) => (
             <div key={i} className="relative pl-6 group">
-              <span className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full bg-blue-500 border-2 border-white transition-all duration-300 group-hover:scale-125 group-hover:bg-blue-600" />
+              <span className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full bg-blue-500 border-2 border-[var(--color-surface)] transition-all duration-300 group-hover:scale-125 group-hover:bg-blue-600" />
               <div
                 className="rounded-xl border p-4 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1"
                 style={{ background: "var(--color-accent-subtle)", borderColor: "var(--color-border)" }}

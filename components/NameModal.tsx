@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function NameModal({ isOpen, onSave }: Props) {
-    const t = useTranslations("Home"); // Reusing Home translations for common terms like "userName"
+    const t = useTranslations("Retroboard");
     const [name, setName] = useState("");
 
     if (!isOpen) return null;

@@ -18,7 +18,7 @@ export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
                     type="checkbox"
                     checked={task.done}
                     onChange={(e) => onToggle(e.target.checked)}
-                    className="w-5 h-5 rounded-full border-2 border-gray-300 checked:bg-green-500 checked:border-green-500 appearance-none cursor-pointer transition-colors peer"
+                    className="w-5 h-5 rounded-full border-2 border-[var(--color-border)] checked:bg-green-500 checked:border-green-500 appearance-none cursor-pointer transition-colors peer"
                 />
                 <svg
                     className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1 top-1 transition-opacity"
