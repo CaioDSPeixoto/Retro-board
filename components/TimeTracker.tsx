@@ -203,12 +203,16 @@ export default function TimeTracker() {
     typeof result.bankMinutes === "number" ? result.bankMinutes : null;
 
   return (
-    <div className="border border-blue-200 rounded-xl p-4 sm:p-6 bg-white shadow-lg">
-      <div className="mb-8 border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
-
+    <div
+      className="border rounded-xl p-4 sm:p-6 shadow-lg"
+      style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+    >
+      <div
+        className="mb-8 border rounded-2xl shadow-sm overflow-hidden"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
         {/* HEADER */}
         <div className="px-3 py-3 flex items-center gap-3">
-
           <button
             onClick={addManual}
             className="flex-[2] px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold shadow"
@@ -219,11 +223,11 @@ export default function TimeTracker() {
           <button
             type="button"
             onClick={() => setSettingsOpen((p) => !p)}
-            className="flex-1 inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition text-gray-800"
+            className="flex-1 inline-flex justify-center items-center gap-2 px-3 py-2 rounded-xl border hover:opacity-80 transition"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
             aria-expanded={settingsOpen}
           >
             <span className="text-sm font-semibold">{t("settingsTitle")}</span>
-
             <span className={`transition-transform duration-300 ${settingsOpen ? "rotate-180" : ""}`}>
               <FiChevronDown size={16} />
             </span>
@@ -232,19 +236,24 @@ export default function TimeTracker() {
 
         {/* COLLAPSE */}
         <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden bg-gray-50 ${
-            settingsOpen ? "max-h-[500px] opacity-100 border-t border-gray-200" : "max-h-0 opacity-0"
+          className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            settingsOpen ? "max-h-[500px] opacity-100 border-t" : "max-h-0 opacity-0"
           }`}
+          style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
         >
           <div className="px-4 pb-4 pt-3">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              
               <div className="lg:col-span-5">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold mb-1" style={{ color: "var(--color-text-muted)" }}>
                   {t("workloadLabel")}
                 </label>
                 <select
-                  className="w-full h-10 px-3 border border-gray-300 rounded-xl shadow-sm text-gray-800 bg-white"
+                  className="w-full h-10 px-3 border rounded-xl shadow-sm"
+                  style={{
+                    background: "var(--color-surface)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-primary)",
+                  }}
                   value={workload}
                   onChange={(e) => setWorkload(e.target.value)}
                 >
@@ -255,32 +264,28 @@ export default function TimeTracker() {
               </div>
 
               <div className="lg:col-span-7">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold mb-1" style={{ color: "var(--color-text-muted)" }}>
                   {t("bankLabel")}
                 </label>
-
                 <div className="grid grid-cols-3 gap-3">
-
-                  <div className="flex h-10 rounded-xl border border-gray-300 overflow-hidden">
+                  <div className="flex h-10 rounded-xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
                     <button
                       type="button"
                       onClick={() => setBankSign("positive")}
-                      className={`flex-1 text-sm font-bold ${
-                        bankSign === "positive"
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-700"
+                      className={`flex-1 text-sm font-bold transition-colors ${
+                        bankSign === "positive" ? "bg-blue-600 text-white" : ""
                       }`}
+                      style={bankSign !== "positive" ? { background: "var(--color-surface)", color: "var(--color-text-secondary)" } : {}}
                     >
                       +
                     </button>
                     <button
                       type="button"
                       onClick={() => setBankSign("negative")}
-                      className={`flex-1 text-sm font-bold ${
-                        bankSign === "negative"
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-700"
+                      className={`flex-1 text-sm font-bold transition-colors ${
+                        bankSign === "negative" ? "bg-blue-600 text-white" : ""
                       }`}
+                      style={bankSign !== "negative" ? { background: "var(--color-surface)", color: "var(--color-text-secondary)" } : {}}
                     >
                       -
                     </button>
@@ -295,7 +300,12 @@ export default function TimeTracker() {
                       const parsed = parseTimeMinutes(next);
                       setBankError(next.trim() && parsed == null ? t("bankInvalid") : null);
                     }}
-                    className="h-10 border border-gray-300 px-3 rounded-xl shadow-sm text-gray-800 w-full bg-white"
+                    className="h-10 border px-3 rounded-xl shadow-sm w-full"
+                    style={{
+                      background: "var(--color-surface)",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-primary)",
+                    }}
                   />
 
                   <button
@@ -305,7 +315,12 @@ export default function TimeTracker() {
                       setBankSign("positive");
                       setBankError(null);
                     }}
-                    className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition font-semibold w-full"
+                    className="h-10 px-3 rounded-xl border hover:opacity-80 transition font-semibold w-full"
+                    style={{
+                      background: "var(--color-surface)",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-secondary)",
+                    }}
                   >
                     {t("bankReset")}
                   </button>
@@ -313,9 +328,9 @@ export default function TimeTracker() {
 
                 <div className="mt-2 min-h-[14px]">
                   {bankError ? (
-                    <p className="text-[11px] text-red-600">{bankError}</p>
+                    <p className="text-[11px] text-red-500">{bankError}</p>
                   ) : (
-                    <p className="text-[11px] text-gray-500">{t("bankHint")}</p>
+                    <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>{t("bankHint")}</p>
                   )}
                 </div>
               </div>
@@ -332,10 +347,13 @@ export default function TimeTracker() {
               type="time"
               value={p}
               onChange={(e) => updatePunch(i, e.target.value)}
-              ref={(el) => {
-                punchRefs.current[i] = el;
+              ref={(el) => { punchRefs.current[i] = el; }}
+              className="border p-2 rounded-xl shadow-sm w-full"
+              style={{
+                background: "var(--color-surface-raised)",
+                borderColor: "var(--color-border)",
+                color: "var(--color-text-primary)",
               }}
-              className="border border-gray-300 p-2 rounded-xl shadow-sm text-gray-800 w-full"
             />
             <button
               onClick={() => removePunch(i)}
@@ -372,9 +390,12 @@ export default function TimeTracker() {
 
 function Result({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-blue-200 rounded-xl p-4 bg-blue-50 flex flex-col gap-1">
-      <p className="text-gray-600 font-medium">{label}</p>
-      <p className="text-xl font-semibold text-blue-700">{value}</p>
+    <div
+      className="rounded-xl border p-4 flex flex-col gap-1"
+      style={{ background: "var(--color-accent-subtle)", borderColor: "var(--color-border)" }}
+    >
+      <p className="font-medium" style={{ color: "var(--color-text-secondary)" }}>{label}</p>
+      <p className="text-xl font-semibold" style={{ color: "var(--color-accent-text)" }}>{value}</p>
     </div>
   );
 }

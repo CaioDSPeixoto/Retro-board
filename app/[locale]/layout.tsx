@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 import AdBanner from "@/components/AdBanner";
 import NavigationProgress from "@/components/NavigationProgress";
+import ThemeProvider from "@/components/ThemeProvider";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
@@ -35,6 +36,11 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+          }}
+        />
         {/* {process.env.NEXT_PUBLIC_GOOGLE_AD_CLIENT && (
           <Script
             id="google-adsense"
@@ -45,20 +51,22 @@ export default async function RootLayout({
           />
         )} */}
       </head>
-      <body className="flex flex-col min-h-screen bg-blue-100 text-gray-900">
-        <NextIntlClientProvider messages={messages}>
-          <Suspense>
-            <NavigationProgress label={t("loading")} />
-          </Suspense>
-          <Navbar locale={locale} />
-          <main className="flex-1 w-full flex flex-col">
-            {children}
-            <div className="mt-auto">
-              {/* <AdBanner /> */}
-            </div>
-          </main>
-          <Footer />
-        </NextIntlClientProvider>
+      <body className="flex flex-col min-h-screen bg-page text-text-primary">
+        <ThemeProvider>
+          <NextIntlClientProvider messages={messages}>
+            <Suspense>
+              <NavigationProgress label={t("loading")} />
+            </Suspense>
+            <Navbar locale={locale} />
+            <main className="flex-1 w-full flex flex-col">
+              {children}
+              <div className="mt-auto">
+                {/* <AdBanner /> */}
+              </div>
+            </main>
+            <Footer />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

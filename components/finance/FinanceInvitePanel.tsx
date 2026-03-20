@@ -32,21 +32,16 @@ export default function FinanceInvitesPanel({
 
   return (
     <div className="space-y-6">
-      {/* Aprovações pendentes (para quadros que eu sou dona) */}
+      {/* Aprovações pendentes */}
       {(loading || hasPending) && (
         <div className="bg-amber-50 border border-amber-100 rounded-xl shadow-sm p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-amber-800">
-                {t("pendingApprovalsTitle")}
-              </p>
+              <p className="text-sm font-semibold text-amber-800">{t("pendingApprovalsTitle")}</p>
               <p className="text-xs text-amber-700 mt-1">
-                {loading
-                  ? t("loadingInvites")
-                  : t("pendingApprovalsMessage", { count: pendingCount })}
+                {loading ? t("loadingInvites") : t("pendingApprovalsMessage", { count: pendingCount })}
               </p>
             </div>
-
             {!loading && hasPending && (
               <span className="text-xs font-semibold px-2 py-1 rounded-lg bg-amber-100 text-amber-800">
                 {pendingCount}
@@ -58,45 +53,44 @@ export default function FinanceInvitesPanel({
 
       {/* Convites / Pedidos */}
       {(loading || hasInvites) && (
-        <div className="bg-white border border-blue-100 rounded-xl shadow-sm p-4">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
+        <div
+          className="rounded-xl border shadow-sm p-4"
+          style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        >
+          <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--color-text-primary)" }}>
             {t("invitesSectionTitle")}
           </h2>
 
           {loading && (
-            <p className="text-sm text-gray-500 mb-3">{t("loadingInvites")}</p>
+            <p className="text-sm mb-3" style={{ color: "var(--color-text-muted)" }}>{t("loadingInvites")}</p>
           )}
 
-          {/* Convites para mim */}
           <div className="mb-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--color-text-secondary)" }}>
               {t("invitesForYou")}
             </h3>
-
             {!loading && invitesForMe.length === 0 ? (
-              <p className="text-xs text-gray-400">{t("noInvites")}</p>
+              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("noInvites")}</p>
             ) : (
               <div className="space-y-2">
                 {invitesForMe.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
+                    className="flex items-center justify-between rounded-xl px-3 py-2"
+                    style={{ background: "var(--color-surface-raised)" }}
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {invite.boardName}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--color-text-primary)" }}>{invite.boardName}</p>
+                      <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                         {t("inviteByEmail", { email: invite.email || "" })}
                       </p>
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>
@@ -115,36 +109,30 @@ export default function FinanceInvitesPanel({
             )}
           </div>
 
-          {/* Pedidos para meus quadros (sou dona e alguém pediu via código) */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--color-text-secondary)" }}>
               {t("ownerRequests")}
             </h3>
-
             {!loading && ownerRequests.length === 0 ? (
-              <p className="text-xs text-gray-400">{t("noOwnerRequests")}</p>
+              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("noOwnerRequests")}</p>
             ) : (
               <div className="space-y-2">
                 {ownerRequests.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
+                    className="flex items-center justify-between rounded-xl px-3 py-2"
+                    style={{ background: "var(--color-surface-raised)" }}
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        {invite.boardName}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {t("requestByCode")}
-                      </p>
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--color-text-primary)" }}>{invite.boardName}</p>
+                      <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>{t("requestByCode")}</p>
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>

@@ -34,7 +34,15 @@
     "share": {
       "copied": "Link copied to clipboard!",
       "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}"
+    },
+    "categories": {
+      "bom": "Good",
+      "ruim": "Bad",
+      "melhorar": "Improve"
     }
+  },
+  "Column": {
+    "new": "New card..."
   },
   "Home": {
     "title": "Hi, welcome!",

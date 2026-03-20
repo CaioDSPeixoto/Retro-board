@@ -42,15 +42,19 @@ export default function Column({
 
   return (
     <div className={`flex-1 p-4 rounded-xl ${categoryColor} flex flex-col shadow-md`}>
-      <h2 className="font-extrabold text-2xl mb-4 capitalize text-gray-800">
+      <h2 className="font-extrabold text-2xl mb-4 capitalize" style={{ color: "var(--color-accent-primary)" }}>
         {categoryLabel}
       </h2>
 
-      {/* Textarea com ícone de envio */}
       <div className="mb-4 flex items-start gap-2">
         <textarea
           placeholder={t(`new`)}
-          className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
+          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          style={{
+            background: "var(--color-surface)",
+            borderColor: "var(--color-border)",
+            color: "var(--color-text-primary)",
+          }}
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
           rows={2}
@@ -59,18 +63,21 @@ export default function Column({
         />
         <button
           onClick={handleAdd}
-          className="p-2 mt-1 bg-white hover:bg-gray-100 text-black rounded-lg transition-colors flex items-center justify-center border border-gray-300"
+          className="p-2 mt-1 rounded-lg transition-colors flex items-center justify-center border hover:opacity-80"
+          style={{
+            background: "var(--color-surface)",
+            borderColor: "var(--color-border)",
+            color: "var(--color-text-primary)",
+          }}
         >
           <FiSend size={20} />
         </button>
       </div>
 
-      {/* Mostrador de caracteres */}
-      <div className="text-right text-xs text-gray-500 mb-2">
+      <div className="text-right text-xs mb-2" style={{ color: "var(--color-text-muted)" }}>
         {newText.length}/{MAX_LENGTH}
       </div>
 
-      {/* Cards */}
       <div className="flex flex-col gap-4 overflow-y-auto">
         {cards.map((c) => (
           <CardItem key={c.id} card={c} vote={vote} />

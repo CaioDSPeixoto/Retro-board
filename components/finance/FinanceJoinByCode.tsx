@@ -41,7 +41,7 @@ export default function FinanceJoinByCode({ locale }: Props) {
     <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row">
         <div className="flex-1">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">
+          <label className="block text-xs font-semibold mb-1" style={{ color: "var(--color-text-secondary)" }}>
             {t("joinByCodeLabel")}
           </label>
           <input
@@ -49,7 +49,12 @@ export default function FinanceJoinByCode({ locale }: Props) {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder={t("joinByCodePlaceholder")}
-            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            style={{
+              background: "var(--color-surface-raised)",
+              borderColor: "var(--color-border)",
+              color: "var(--color-text-primary)",
+            }}
           />
         </div>
 
@@ -65,8 +70,8 @@ export default function FinanceJoinByCode({ locale }: Props) {
         </div>
       </form>
 
-      {feedback && <p className="mt-2 text-xs text-green-600">{feedback}</p>}
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {feedback && <p className="mt-2 text-xs text-green-500">{feedback}</p>}
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
     </div>
   );
 }

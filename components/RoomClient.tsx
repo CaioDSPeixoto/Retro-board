@@ -138,7 +138,7 @@ export default function RoomClient({ roomId, locale }: Props) {
   if (!roomData) return <LoadingOverlay fullScreen />;
 
   return (
-    <div className="min-h-screen p-6 text-gray-900 relative">
+    <div className="min-h-screen p-6 relative">
       <NameModal
         isOpen={showNameModal}
         onSave={handleSaveName}
@@ -157,7 +157,7 @@ export default function RoomClient({ roomId, locale }: Props) {
 
       <div className={`max-w-7xl mx-auto ${showNameModal ? 'blur-sm pointer-events-none' : ''}`}>
         <header className="mb-6 text-center">
-          <span className="text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+          <span className="text-4xl font-extrabold heading-gradient">
             {roomData.roomName}
           </span>
         </header>

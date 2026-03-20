@@ -9,7 +9,10 @@ interface TodoItemProps {
 
 export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
     return (
-        <div className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0 group">
+        <div
+            className="flex items-center gap-3 py-3 border-b last:border-0 group"
+            style={{ borderColor: "var(--color-border)" }}
+        >
             <div className="relative flex items-center">
                 <input
                     type="checkbox"
@@ -30,15 +33,18 @@ export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
 
             <div className="flex-1 flex flex-col justify-center">
                 <span
-                    className={`text-lg transition-all ${task.done ? "text-gray-400 line-through decoration-gray-300" : "text-gray-800"
-                        }`}
+                    className="text-lg transition-all"
+                    style={{
+                        color: task.done ? "var(--color-text-muted)" : "var(--color-text-primary)",
+                        textDecoration: task.done ? "line-through" : "none",
+                    }}
                 >
                     {task.text}
                 </span>
                 {task.time && (
                     <span
-                        className={`text-xs ${task.done ? "text-gray-300" : "text-blue-500 font-medium"
-                            }`}
+                        className="text-xs"
+                        style={{ color: task.done ? "var(--color-text-muted)" : "var(--color-accent-text)" }}
                     >
                         ⏰ {task.time}
                     </span>
@@ -47,7 +53,8 @@ export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
 
             <button
                 onClick={onRemove}
-                className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-2"
+                className="hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-2"
+                style={{ color: "var(--color-text-muted)" }}
                 title="Remover item"
             >
                 <FiTrash2 size={18} />

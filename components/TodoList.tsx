@@ -24,15 +24,14 @@ export default function TodoList() {
 
   return (
     <div className="max-w-xl w-full mx-auto">
-      {/* Clean Design Container */}
-      <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-
+      <div
+        className="shadow-xl rounded-2xl overflow-hidden border"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
         {/* Header */}
         <div className="bg-blue-600 p-6 flex justify-between items-center text-white">
           <div>
-            <h1 className="text-2xl font-bold">
-              {t("title")}
-            </h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="text-blue-100 text-sm mt-1">
               {tasks.filter(t => !t.done).length} {t("remaining")}
             </p>
@@ -49,23 +48,27 @@ export default function TodoList() {
 
         {/* Content */}
         <div className="p-6">
-
           {/* Input Area */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 flex gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 transition">
+            <div
+              className="flex-1 flex gap-2 p-2 rounded-xl border focus-within:ring-2 focus-within:ring-blue-300 transition"
+              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+            >
               <input
                 type="text"
                 value={newTask}
                 onChange={(e) => setNewTask(e.target.value)}
                 onKeyDown={handleAddKey}
                 placeholder={t("placeholder")}
-                className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400 outline-none"
+                className="flex-1 bg-transparent border-none focus:ring-0 placeholder-gray-400 outline-none"
+                style={{ color: "var(--color-text-primary)" }}
               />
               <input
                 type="time"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                className="w-24 bg-transparent border-l border-gray-200 pl-2 text-xs text-gray-500 focus:ring-0 outline-none"
+                className="w-24 bg-transparent border-l pl-2 text-xs focus:ring-0 outline-none"
+                style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
               />
             </div>
             <button
@@ -81,12 +84,11 @@ export default function TodoList() {
           <div className="flex flex-col gap-2">
             {tasks.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-400 text-lg font-medium">
+                <p className="text-lg font-medium" style={{ color: "var(--color-text-muted)" }}>
                   {t("empty")}
                 </p>
               </div>
             )}
-
             {tasks.map((task, i) => (
               <TodoItem
                 key={i}

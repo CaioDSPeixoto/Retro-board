@@ -34,7 +34,15 @@
     "share": {
       "copied": "Link copiado para a área de transferência!",
       "whatsappUrl": "https://api.whatsapp.com/sendtext=Entre na sala: {url}"
+    },
+    "categories": {
+      "bom": "Bom",
+      "ruim": "Ruim",
+      "melhorar": "Melhorar"
     }
+  },
+  "Column": {
+    "new": "Novo card..."
   },
   "Home": {
     "title": "Oi, seja bem vindo",

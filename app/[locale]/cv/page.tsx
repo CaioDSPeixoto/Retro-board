@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 type ResumeItem = {
@@ -23,28 +22,18 @@ type Objective = {
   body: string;
 };
 
-function ContactRow({
-  label,
-  value,
-  href,
-}: {
-  label: string;
-  value?: string;
-  href?: string;
-}) {
+function ContactRow({ label, value, href }: { label: string; value?: string; href?: string }) {
   if (!value) return null;
-
   const content = href ? (
-    <a href={href} className="text-blue-600 hover:underline break-words" target="_blank">
+    <a href={href} className="text-blue-500 hover:underline break-words" target="_blank">
       {value}
     </a>
   ) : (
     <span className="break-words">{value}</span>
   );
-
   return (
-    <p className="text-sm text-gray-700">
-      <span className="font-semibold text-gray-900">{label}:</span>{" "}
+    <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+      <span className="font-semibold" style={{ color: "var(--color-text-primary)" }}>{label}:</span>{" "}
       {content}
     </p>
   );
@@ -60,15 +49,12 @@ export default async function ResumePage({
 
   const header = t.raw("header") as Header;
   const objective = t.raw("objective") as Objective;
-
   const experience = (t.raw("experience") as ResumeItem[]) ?? [];
   const education = (t.raw("education") as ResumeItem[]) ?? [];
   const courses = (t.raw("courses") as string[]) ?? [];
   const extra = (t.raw("extra") as string[]) ?? [];
 
-  const hasContactInfo =
-    !!header.phone || !!header.recado || !!header.email || !!header.linkedin;
-
+  const hasContactInfo = !!header.phone || !!header.recado || !!header.email || !!header.linkedin;
   const linkedinHref =
     header.linkedin &&
     (header.linkedin.startsWith("http")
@@ -77,57 +63,51 @@ export default async function ResumePage({
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
-      <section className="bg-white/90 border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <section
+        className="rounded-3xl border p-6 sm:p-8 shadow-sm"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
         {/* Cabeçalho */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight heading-gradient">
               {header.name}
             </h1>
             {header.role && (
-              <p className="text-blue-700 mt-1 font-semibold">
+              <p className="mt-1 font-semibold" style={{ color: "var(--color-accent-text)" }}>
                 {header.role}
               </p>
             )}
             {header.location && (
-              <p className="text-gray-500 mt-1 text-sm">
+              <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
                 {header.location}
               </p>
             )}
           </div>
 
           {hasContactInfo && (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3 space-y-1 min-w-[220px]">
-              <ContactRow
-                label={t("labels.phone")}
-                value={header.phone}
-                href={header.phone ? `tel:${header.phone}` : undefined}
-              />
-              <ContactRow
-                label={t("labels.recado")}
-                value={header.recado}
-              />
-              <ContactRow
-                label={t("labels.email")}
-                value={header.email}
-                href={header.email ? `mailto:${header.email}` : undefined}
-              />
-              <ContactRow
-                label={t("labels.linkedin")}
-                value={header.linkedin}
-                href={linkedinHref}
-              />
+            <div
+              className="rounded-2xl border px-4 py-3 space-y-1 min-w-[220px]"
+              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+            >
+              <ContactRow label={t("labels.phone")} value={header.phone} href={header.phone ? `tel:${header.phone}` : undefined} />
+              <ContactRow label={t("labels.recado")} value={header.recado} />
+              <ContactRow label={t("labels.email")} value={header.email} href={header.email ? `mailto:${header.email}` : undefined} />
+              <ContactRow label={t("labels.linkedin")} value={header.linkedin} href={linkedinHref} />
             </div>
           )}
         </div>
 
-        {/* Objetivo profissional */}
+        {/* Objetivo */}
         {objective?.title && objective?.body && (
-          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
-            <h2 className="text-lg font-bold text-gray-900">
+          <div
+            className="mt-6 rounded-2xl border p-5"
+            style={{ background: "var(--color-accent-subtle)", borderColor: "var(--color-border)" }}
+          >
+            <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
               {objective.title}
             </h2>
-            <p className="text-gray-700 mt-2 leading-relaxed">
+            <p className="mt-2 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
               {objective.body}
             </p>
           </div>
@@ -136,39 +116,37 @@ export default async function ResumePage({
         {/* Experiência */}
         {experience.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-extrabold text-gray-900">
+            <h2 className="text-xl font-extrabold" style={{ color: "var(--color-text-primary)" }}>
               {t("sections.experience")}
             </h2>
             <div className="mt-4 space-y-4">
               {experience.map((item, index) => (
                 <article
                   key={`${item.title}-${index}`}
-                  className="rounded-2xl border border-slate-200 bg-white p-5"
+                  className="rounded-2xl border p-5"
+                  style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-base font-bold text-gray-900">
+                      <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
                         {item.title}
                       </p>
                       {item.subtitle && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
                           {item.subtitle}
                         </p>
                       )}
                     </div>
                     {item.period && (
-                      <p className="text-xs text-gray-500 font-semibold">
+                      <p className="text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
                         {item.period}
                       </p>
                     )}
                   </div>
-
                   {item.bullets && item.bullets.length > 0 && (
-                    <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5 leading-relaxed">
+                    <ul className="mt-3 list-disc list-inside text-sm space-y-1.5 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
                       {item.bullets.map((bullet, bulletIndex) => (
-                        <li key={`${item.title}-${bulletIndex}`}>
-                          {bullet}
-                        </li>
+                        <li key={`${item.title}-${bulletIndex}`}>{bullet}</li>
                       ))}
                     </ul>
                   )}
@@ -181,26 +159,20 @@ export default async function ResumePage({
         {/* Educação + Cursos */}
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           {education.length > 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div
+              className="rounded-2xl border p-5"
+              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+            >
+              <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
                 {t("sections.education")}
               </h2>
-              <div className="mt-3 space-y-3 text-sm text-gray-700">
+              <div className="mt-3 space-y-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                 {education.map((item, index) => (
-                  <div
-                    key={`${item.title}-${index}`}
-                    className="border-l-4 border-blue-500/70 pl-3"
-                  >
-                    <p className="font-semibold text-gray-900">
-                      {item.title}
-                    </p>
-                    {item.subtitle && (
-                      <p className="text-gray-600">{item.subtitle}</p>
-                    )}
+                  <div key={`${item.title}-${index}`} className="border-l-4 border-blue-500/70 pl-3">
+                    <p className="font-semibold" style={{ color: "var(--color-text-primary)" }}>{item.title}</p>
+                    {item.subtitle && <p>{item.subtitle}</p>}
                     {item.period && (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {item.period}
-                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>{item.period}</p>
                     )}
                   </div>
                 ))}
@@ -209,11 +181,14 @@ export default async function ResumePage({
           )}
 
           {courses.length > 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div
+              className="rounded-2xl border p-5"
+              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+            >
+              <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
                 {t("sections.courses")}
               </h2>
-              <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5">
+              <ul className="mt-3 list-disc list-inside text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
                 {courses.map((course, index) => (
                   <li key={`${course}-${index}`}>{course}</li>
                 ))}
@@ -224,11 +199,14 @@ export default async function ResumePage({
 
         {/* Extra */}
         {extra.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
-            <h2 className="text-lg font-bold text-gray-900">
+          <div
+            className="mt-6 rounded-2xl border p-5"
+            style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+          >
+            <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
               {t("sections.extra")}
             </h2>
-            <ul className="mt-3 list-disc list-inside text-sm text-gray-700 space-y-1.5">
+            <ul className="mt-3 list-disc list-inside text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
               {extra.map((item, index) => (
                 <li key={`${item}-${index}`}>{item}</li>
               ))}

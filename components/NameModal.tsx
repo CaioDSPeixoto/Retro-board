@@ -23,8 +23,11 @@ export default function NameModal({ isOpen, onSave }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                <h2 className="text-xl font-bold mb-4 text-gray-900">
+            <div
+                className="rounded-xl shadow-xl p-6 w-full max-w-md border"
+                style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            >
+                <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-text-primary)" }}>
                     {t("userName.label") || "Como você quer ser chamado?"}
                 </h2>
 
@@ -32,7 +35,12 @@ export default function NameModal({ isOpen, onSave }: Props) {
                     <input
                         type="text"
                         placeholder={t("userName.placeholder") || "Digite seu nome..."}
-                        className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                        className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                            background: "var(--color-surface-raised)",
+                            borderColor: "var(--color-border)",
+                            color: "var(--color-text-primary)",
+                        }}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         autoFocus

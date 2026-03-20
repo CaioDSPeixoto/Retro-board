@@ -22,8 +22,8 @@ export default function NavLink({ href, locale, exact = false, children }: Props
       href={href}
       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         isActive
-          ? "bg-blue-50 text-blue-700"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)]"
+          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]"
       }`}
     >
       {children}

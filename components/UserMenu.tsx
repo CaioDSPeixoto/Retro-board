@@ -24,26 +24,15 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  // Nome do usuário
   const [userLabel, setUserLabel] = useState<string>("");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        setUserLabel("");
-        return;
-      }
-      if (user.displayName) {
-        setUserLabel(user.displayName.split(" ")[0]);
-        return;
-      }
-      if (user.email) {
-        setUserLabel(user.email.split("@")[0]);
-        return;
-      }
+      if (!user) { setUserLabel(""); return; }
+      if (user.displayName) { setUserLabel(user.displayName.split(" ")[0]); return; }
+      if (user.email) { setUserLabel(user.email.split("@")[0]); return; }
       setUserLabel(t("account"));
     });
-
     return () => unsub();
   }, []);
 
@@ -63,7 +52,6 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
 
   const buttonLabel = isLoggedIn ? (userLabel || t("account")) : t("login");
 
-  // Idioma (dentro do menu)
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
@@ -84,41 +72,24 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
         type="button"
         onClick={() => setOpen((p) => !p)}
         aria-expanded={open}
-        className="
-          inline-flex items-center gap-2
-          h-9 px-3
-          rounded-lg
-          border border-gray-200
-          bg-white hover:bg-gray-50
-          text-gray-700
-          transition
-        "
+        className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] transition"
         title={buttonLabel}
       >
         <FiUser size={16} />
-        <span className="hidden sm:inline text-sm font-medium max-w-[140px] truncate">
+        <span className="hidden sm:inline text-sm font-medium max-w-[140px] truncate text-[var(--color-text-primary)]">
           {buttonLabel}
         </span>
-        <span className="text-gray-400">{chevron}</span>
+        <span className="text-[var(--color-text-muted)]">{chevron}</span>
       </button>
 
       {open && (
-        <div
-          className="
-            absolute right-0 mt-2 w-60
-            rounded-xl border border-gray-200
-            bg-white shadow-lg
-            overflow-hidden
-            z-50
-          "
-        >
-          {/* IDIOMA (no topo) */}
+        <div className="absolute right-0 mt-2 w-60 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg overflow-hidden z-50">
+          {/* IDIOMA */}
           <div className="px-4 py-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
               <FiGlobe size={14} />
               {t("language")}
             </div>
-
             <div className="mt-2 flex flex-wrap gap-2">
               {routing.locales.map((loc) => {
                 const active = loc === locale;
@@ -127,12 +98,11 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
                     key={loc}
                     type="button"
                     onClick={() => changeLocale(loc)}
-                    className={`
-                      px-3 py-1.5 rounded-lg text-xs font-semibold transition border
-                      ${active
-                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}
-                    `}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition border ${
+                      active
+                        ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border-[var(--color-accent-primary)]"
+                        : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-surface-raised)]"
+                    }`}
                   >
                     {loc.toUpperCase()}
                   </button>
@@ -141,7 +111,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
             </div>
           </div>
 
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-[var(--color-border-subtle)]" />
 
           {/* ENTRAR / SAIR */}
           <div className="p-1">
@@ -150,13 +120,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
                 <input type="hidden" name="locale" value={localeProp} />
                 <button
                   type="submit"
-                  className="
-                    w-full flex items-center gap-2
-                    px-3 py-2.5
-                    rounded-lg
-                    text-sm text-red-600
-                    hover:bg-red-50 transition
-                  "
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-[var(--color-surface-raised)] transition"
                 >
                   <FiLogOut size={16} />
                   <span className="font-medium">{t("logout")}</span>
@@ -166,13 +130,7 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
               <Link
                 href={`/${localeProp}/tools/finance/login`}
                 onClick={() => setOpen(false)}
-                className="
-                  flex items-center gap-2
-                  px-3 py-2.5
-                  rounded-lg
-                  text-sm text-blue-700
-                  hover:bg-blue-50 transition
-                "
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[var(--color-accent-text)] hover:bg-[var(--color-accent-subtle)] transition"
               >
                 <FiLogIn size={16} />
                 <span className="font-medium">{t("login")}</span>
@@ -180,25 +138,20 @@ export default function UserMenu({ locale: localeProp, isLoggedIn, appVersion }:
             )}
           </div>
 
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-[var(--color-border-subtle)]" />
 
-          {/* RELEASES (no final) */}
+          {/* RELEASES */}
           <Link
             href={`/${localeProp}/releases`}
             onClick={() => setOpen(false)}
-            className="
-              flex items-center justify-between
-              px-4 py-3
-              text-sm text-gray-700
-              hover:bg-gray-50 transition
-            "
+            className="flex items-center justify-between px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)] transition"
             title={t("versionTitle", { version: appVersion })}
           >
             <div className="flex items-center gap-2">
-              <FiTag size={16} className="text-gray-500" />
+              <FiTag size={16} className="text-[var(--color-text-muted)]" />
               <span className="font-medium">{t("releases")}</span>
             </div>
-            <span className="text-xs text-gray-500">v{appVersion}</span>
+            <span className="text-xs text-[var(--color-text-muted)]">v{appVersion}</span>
           </Link>
         </div>
       )}

@@ -203,13 +203,13 @@ export default function FinanceItemCard({
       <div
         className={`p-4 rounded-xl shadow-sm border flex items-center justify-between gap-3 mb-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
           ? "bg-amber-50 border-amber-200"
-          : "bg-white border-gray-200"
-          } ${selected ? "ring-2 ring-blue-500 bg-blue-50/30" : ""}`}
+          : "bg-[var(--color-surface)] border-[var(--color-border)]"
+          } ${selected ? "ring-2 ring-blue-500 bg-[var(--color-accent-subtle)]" : ""}`}
         onClick={() => selectionMode && onToggleSelection && onToggleSelection(item.id)}
       >
         {selectionMode ? (
           <div className="mr-1">
-            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}`}>
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-blue-600 border-blue-600" : "bg-[var(--color-surface)] border-[var(--color-border)]"}`}>
               {selected && <FiCheckCircle className="text-white" size={14} />}
             </div>
           </div>
@@ -226,49 +226,44 @@ export default function FinanceItemCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-gray-900 truncate">{item.title}</h3>
+            <h3 className="font-bold text-[var(--color-text-primary)] truncate">{item.title}</h3>
 
             {item.isFixed && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">
                 {t("fixedLabel")}
               </span>
             )}
-
             {isRolled && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-100">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
                 {t("rolledFromMonth", { month: item.carriedFromMonth || "" })}
               </span>
             )}
-
             {isMoved && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-[var(--color-accent-text)] border border-blue-500/20">
                 {t("movedBadge")}
               </span>
             )}
-
             {isSynthetic && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-50 text-gray-700 border border-gray-200">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-surface-raised)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
                 {t("syntheticLabel")}
               </span>
             )}
           </div>
 
-          <p className="text-xs text-gray-500 capitalize">
+          <p className="text-xs text-[var(--color-text-muted)] capitalize">
             {format(parseISO(item.date), "P", { locale: dateLocale })}
           </p>
 
           <Link
-            href={`/${locale}/tools/finance/categories/${encodeURIComponent(
-              item.category,
-            )}?month=${monthParam}${boardParam}`}
-            className="text-[11px] text-blue-600 mt-1 hover:underline inline-block"
+            href={`/${locale}/tools/finance/categories/${encodeURIComponent(item.category)}?month=${monthParam}${boardParam}`}
+            className="text-[11px] text-[var(--color-accent-text)] mt-1 hover:underline inline-block"
             onClick={(e) => selectionMode && e.preventDefault()}
           >
             {item.category}
           </Link>
 
           {item.createdByName && (
-            <p className="text-[11px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
               {t("launchedBy", { name: item.createdByName })}
             </p>
           )}
@@ -300,30 +295,22 @@ export default function FinanceItemCard({
             {formatCurrency(item.amount)}
           </span>
 
-          <div className="text-[11px] text-gray-600">
+          <div className="text-[11px] text-[var(--color-text-muted)]">
             {item.status === "paid" && (
-              <span className="text-green-600 font-semibold">
+              <span className="text-green-500 font-semibold">
                 {item.originalAmount && item.originalAmount > item.amount
                   ? t("statusPartial")
-                  : isIncome
-                    ? t("statusReceived")
-                    : t("statusPaid")}
+                  : isIncome ? t("statusReceived") : t("statusPaid")}
               </span>
             )}
             {item.status === "pending" && (
-              <span className="text-amber-600 font-semibold">
-                {t("statusPending")}
-              </span>
+              <span className="text-amber-500 font-semibold">{t("statusPending")}</span>
             )}
             {item.status === "partial" && (
-              <span className="text-blue-600 font-semibold">
-                {t("statusPartial")}
-              </span>
+              <span className="text-[var(--color-accent-text)] font-semibold">{t("statusPartial")}</span>
             )}
             {item.status === "moved" && (
-              <span className="text-blue-600 font-semibold">
-                {t("statusMoved")}
-              </span>
+              <span className="text-[var(--color-accent-text)] font-semibold">{t("statusMoved")}</span>
             )}
           </div>
 
@@ -331,46 +318,28 @@ export default function FinanceItemCard({
             <div className="flex items-center gap-3 mt-1">
               {canShowToggleButton && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToggle();
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleToggle(); }}
                   disabled={toggling || deleting}
-                  className={`${isPaid ? "text-green-500" : "text-gray-400"
-                    } hover:text-green-600 transition disabled:opacity-60 disabled:cursor-wait`}
+                  className={`${isPaid ? "text-green-500" : "text-[var(--color-text-muted)]"} hover:text-green-500 transition disabled:opacity-60 disabled:cursor-wait`}
                   aria-label={t("togglePaidAria")}
                 >
-                  {toggling ? (
-                    <Spinner size="sm" color="gray" />
-                  ) : isPaid ? (
-                    <FiCheckCircle size={18} />
-                  ) : (
-                    <FiCircle size={18} />
-                  )}
+                  {toggling ? <Spinner size="sm" color="gray" /> : isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
                 </button>
               )}
-
               {onEdit && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditClick();
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleEditClick(); }}
                   disabled={toggling || deleting || isPaid || isPartial}
-                  className="text-gray-400 hover:text-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label={t("editAria")}
                 >
                   <FiEdit2 size={16} />
                 </button>
               )}
-
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick();
-                }}
+                onClick={(e) => { e.stopPropagation(); handleDeleteClick(); }}
                 disabled={toggling || deleting || !canDelete}
-                className="text-gray-400 hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-[var(--color-text-muted)] hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={t("deleteAria")}
               >
                 <FiTrash2 size={16} />
@@ -383,22 +352,21 @@ export default function FinanceItemCard({
       {/* CONFIRMAÃ‡ÃƒO (reverter pagamento / excluir) */}
       {confirmKind && (
         <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-gray-200">
+          <div className="bg-[var(--color-surface-overlay)] w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-[var(--color-border)]">
             <h3
-              className={`text-base font-semibold mb-1 ${confirmKind === "delete" ? "text-red-600" : "text-gray-900"
-                }`}
+              className={`text-base font-semibold mb-1 ${confirmKind === "delete" ? "text-red-500" : "text-[var(--color-text-primary)]"}`}
             >
               {confirmKind === "delete" ? t("deleteAria") : t("togglePaidAria")}
             </h3>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-[var(--color-text-secondary)]">
               {confirmKind === "delete"
                 ? t("confirmDelete")
                 : t("confirmRevertPayment")}
             </p>
 
             {actionError && (
-              <p className="text-xs text-red-600 mt-2">{actionError}</p>
+              <p className="text-xs text-red-500 mt-2">{actionError}</p>
             )}
 
             <div className="flex justify-end gap-2 mt-4">
@@ -409,7 +377,7 @@ export default function FinanceItemCard({
                   setConfirmKind(null);
                   setActionError(null);
                 }}
-                className="px-4 py-2 text-sm font-semibold text-gray-700 rounded-xl hover:bg-gray-100"
+                className="px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] rounded-xl hover:bg-[var(--color-surface-raised)]"
               >
                 {t("cancel")}
               </button>
@@ -439,20 +407,20 @@ export default function FinanceItemCard({
       {/* MODAL DE PAGAMENTO / RECEBIMENTO */}
       {paymentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-gray-200">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">
+          <div className="bg-[var(--color-surface-overlay)] w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-[var(--color-border)]">
+            <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
               {isIncome ? t("modalReceiveTitle") : t("modalPayTitle")}
             </h3>
 
-            <p className="text-sm text-gray-700 mb-3">
+            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {item.title} —{" "}
-              <span className={isIncome ? "text-green-600" : "text-red-600"}>
+              <span className={isIncome ? "text-green-500" : "text-red-500"}>
                 {formatCurrency(item.amount)}
               </span>
             </p>
 
-            <div className="mt-3 border-t border-gray-100 pt-3">
-              <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+            <div className="mt-3 border-t border-[var(--color-border-subtle)] pt-3">
+              <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                 <input
                   type="radio"
                   className="w-4 h-4 text-blue-600"
@@ -467,8 +435,8 @@ export default function FinanceItemCard({
                 </span>
               </label>
 
-              <div className="mt-3 border-t border-gray-100 pt-3">
-                <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+              <div className="mt-3 border-t border-[var(--color-border-subtle)] pt-3">
+                <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                   <input
                     type="radio"
                     className="w-4 h-4 text-blue-600"
@@ -487,17 +455,17 @@ export default function FinanceItemCard({
                       value={partialValue}
                       onChange={(e) => setPartialValue(e.target.value)}
                       placeholder="Ex: 500,00"
-                      className="w-full p-2.5 bg-gray-50 rounded-xl border border-gray-300 focus:bg-white focus:border-blue-500 outline-none text-sm text-gray-900"
+                      className="w-full p-2.5 bg-[var(--color-surface-raised)] rounded-xl border border-[var(--color-border)] focus:border-blue-500 outline-none text-sm text-[var(--color-text-primary)]"
                     />
-                    <p className="text-[11px] text-gray-600">
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
                       {t("paymentModalPartialHint")}
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-3 border-t border-gray-100 pt-3">
-                <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+              <div className="mt-3 border-t border-[var(--color-border-subtle)] pt-3">
+                <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                   <input
                     type="radio"
                     className="w-4 h-4 text-blue-600"
@@ -510,14 +478,14 @@ export default function FinanceItemCard({
             </div>
 
             {actionError && (
-              <p className="text-xs text-red-600 mt-3">{actionError}</p>
+              <p className="text-xs text-red-500 mt-3">{actionError}</p>
             )}
 
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentModalOpen(false)}
-                className="px-4 py-2 text-sm font-semibold text-gray-700 rounded-xl hover:bg-gray-100"
+                className="px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] rounded-xl hover:bg-[var(--color-surface-raised)]"
               >
                 {t("cancel")}
               </button>

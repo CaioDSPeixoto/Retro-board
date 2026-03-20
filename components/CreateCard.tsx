@@ -22,11 +22,16 @@ export default function CreateCard({ addCard }: Props) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={t("author")}
-        className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        style={{
+          background: "var(--color-surface-raised)",
+          borderColor: "var(--color-border)",
+          color: "var(--color-text-primary)",
+        }}
       />
       <button
         onClick={handleAdd}
-        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
+        className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
       >
         +
       </button>

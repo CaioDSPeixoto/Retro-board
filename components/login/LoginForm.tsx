@@ -68,7 +68,7 @@ export default function LoginForm({ locale }: Props) {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
           {t("emailUserLabel")}
         </label>
         <input
@@ -78,12 +78,17 @@ export default function LoginForm({ locale }: Props) {
           placeholder={t("emailPlaceholder")}
           required
           autoFocus
-          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-900"
+          className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+          style={{
+            background: "var(--color-surface-raised)",
+            borderColor: "var(--color-border)",
+            color: "var(--color-text-primary)",
+          }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
           {t("passwordLabel")}
         </label>
         <input
@@ -92,7 +97,12 @@ export default function LoginForm({ locale }: Props) {
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("passwordPlaceholder")}
           required
-          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-900"
+          className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+          style={{
+            background: "var(--color-surface-raised)",
+            borderColor: "var(--color-border)",
+            color: "var(--color-text-primary)",
+          }}
         />
       </div>
 
@@ -106,11 +116,11 @@ export default function LoginForm({ locale }: Props) {
       </button>
 
       <div className="text-center mt-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {t("noAccount")}{" "}
           <Link
             href={`/${locale}/tools/finance/register`}
-            className="text-blue-600 font-bold hover:underline"
+            className="text-blue-500 font-bold hover:underline"
           >
             {t("registerLink")}
           </Link>

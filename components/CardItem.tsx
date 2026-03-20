@@ -10,31 +10,29 @@ export default function CardItem({ card, vote }: Props) {
   const t = useTranslations("CardItem");
 
   return (
-    <div className="p-2 bg-white rounded-xl shadow-md flex flex-col gap-2 transition-shadow hover:shadow-lg w-full min-w-0">
-      {/* Texto do card */}
-      <p className="text-gray-800 break-words whitespace-pre-wrap word-break break-all">
+    <div
+      className="p-2 rounded-xl shadow-md flex flex-col gap-2 transition-shadow hover:shadow-lg w-full min-w-0 border"
+      style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+    >
+      <p className="break-words whitespace-pre-wrap word-break break-all" style={{ color: "var(--color-text-primary)" }}>
         {card.text}
       </p>
-
-      {/* Autor */}
       {card.author && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
           {t("author")}: {card.author}
         </span>
       )}
-
-      {/* Votos */}
       <div className="flex gap-2 text-sm mt-auto">
         <button
           onClick={() => vote(card.id, "likes")}
-          className="flex items-center gap-1 text-green-600 font-bold hover:text-green-700 transition-colors"
+          className="flex items-center gap-1 text-green-500 font-bold hover:text-green-600 transition-colors"
         >
           <span role="img" aria-label="likes">👍</span>
           {card.likes}
         </button>
         <button
           onClick={() => vote(card.id, "dislikes")}
-          className="flex items-center gap-1 text-red-600 font-bold hover:text-red-700 transition-colors"
+          className="flex items-center gap-1 text-red-500 font-bold hover:text-red-600 transition-colors"
         >
           <span role="img" aria-label="dislikes">👎</span>
           {card.dislikes}

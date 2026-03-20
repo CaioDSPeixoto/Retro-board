@@ -69,31 +69,33 @@ export default function RegisterForm({ locale }: { locale: string }) {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{t("emailLabel")}</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>{t("emailLabel")}</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t("emailPlaceholder")}
           required
-          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-900"
+          className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+          style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{t("passwordLabel")}</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>{t("passwordLabel")}</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("passwordPlaceholder")}
           required
-          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-900"
+          className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+          style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
           {t("confirmPasswordLabel")}
         </label>
         <input
@@ -102,7 +104,8 @@ export default function RegisterForm({ locale }: { locale: string }) {
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder={t("confirmPasswordPlaceholder")}
           required
-          className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-gray-900"
+          className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+          style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
       </div>
 
@@ -116,9 +119,9 @@ export default function RegisterForm({ locale }: { locale: string }) {
       </button>
 
       <div className="text-center mt-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {t("hasAccount")}{" "}
-          <Link href={`/${locale}/tools/finance/login`} className="text-blue-600 font-bold hover:underline">
+          <Link href={`/${locale}/tools/finance/login`} className="text-blue-500 font-bold hover:underline">
             {t("loginLink")}
           </Link>
         </p>

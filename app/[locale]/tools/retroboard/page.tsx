@@ -84,28 +84,32 @@ export default function RetroboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-gray-900 p-6 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative">
       {/* Slogan */}
       <div className="text-center mb-8">
-        <h1 className="text-5xl font-extrabold text-blue-600">
-          <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-extrabold">
+          <span className="heading-gradient">
             RetroBoard
           </span>
         </h1>
-        <p className="text-lg text-gray-700 mt-2">{t("slogan")}</p>
+        <p className="text-lg mt-2" style={{ color: "var(--color-text-secondary)" }}>{t("slogan")}</p>
       </div>
 
-      <div className="p-8 rounded-xl shadow-lg bg-white border border-blue-300 flex flex-col items-center gap-4 w-full max-w-md">
+      <div
+        className="p-8 rounded-xl shadow-lg border flex flex-col items-center gap-4 w-full max-w-md"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
         {/* Tabs Criar / Entrar */}
         <div className="w-full mb-6">
-          <div className="flex border-b border-gray-300">
+          <div className="flex border-b" style={{ borderColor: "var(--color-border)" }}>
             <button
               onClick={() => setActiveTab("create")}
               className={`flex-1 py-2 text-center font-semibold transition-colors ${
                 activeTab === "create"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                  ? "border-b-2 border-blue-500 text-blue-500"
+                  : ""
               }`}
+              style={activeTab !== "create" ? { color: "var(--color-text-secondary)" } : {}}
             >
               {t("tabs.create")}
             </button>
@@ -113,9 +117,10 @@ export default function RetroboardPage() {
               onClick={() => setActiveTab("enter")}
               className={`flex-1 py-2 text-center font-semibold transition-colors ${
                 activeTab === "enter"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
+                  ? "border-b-2 border-blue-500 text-blue-500"
+                  : ""
               }`}
+              style={activeTab !== "enter" ? { color: "var(--color-text-secondary)" } : {}}
             >
               {t("tabs.enter")}
             </button>
@@ -126,27 +131,29 @@ export default function RetroboardPage() {
           <>
             {/* Seção: Nome das Salas */}
             <div className="w-full mb-4">
-              <label className="block mb-2 font-semibold text-gray-700">
+              <label className="block mb-2 font-semibold" style={{ color: "var(--color-text-secondary)" }}>
                 {t("roomName.label")}
               </label>
               <div className="flex gap-4 w-full justify-center">
                 <button
                   onClick={() => setCustomNameEnabled(false)}
-                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 transition-colors ${
                     !customNameEnabled
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
+                      ? "bg-blue-600 text-white"
+                      : ""
                   }`}
+                  style={customNameEnabled ? { background: "var(--color-surface-raised)", color: "var(--color-text-secondary)" } : {}}
                 >
                   {t("roomName.default")}
                 </button>
                 <button
                   onClick={() => setCustomNameEnabled(true)}
-                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 transition-colors ${
                     customNameEnabled
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
+                      ? "bg-blue-600 text-white"
+                      : ""
                   }`}
+                  style={!customNameEnabled ? { background: "var(--color-surface-raised)", color: "var(--color-text-secondary)" } : {}}
                 >
                   {t("roomName.custom")}
                 </button>
@@ -156,7 +163,12 @@ export default function RetroboardPage() {
                 <input
                   type="text"
                   placeholder={t("roomName.placeholder")}
-                  className="mt-2 w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="mt-2 w-full p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  style={{
+                    background: "var(--color-surface-raised)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-primary)",
+                  }}
                   value={customRoomName}
                   onChange={(e) => setCustomRoomName(e.target.value)}
                 />
@@ -165,27 +177,25 @@ export default function RetroboardPage() {
 
             {/* Seção: Nome dos Usuários */}
             <div className="w-full mb-4">
-              <label className="block mb-2 font-semibold text-gray-700">
+              <label className="block mb-2 font-semibold" style={{ color: "var(--color-text-secondary)" }}>
                 {t("userName.label")}
               </label>
               <div className="flex gap-4 w-full justify-center">
                 <button
                   onClick={() => setRequireName(false)}
-                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
-                    !requireName
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 transition-colors ${
+                    !requireName ? "bg-blue-600 text-white" : ""
                   }`}
+                  style={requireName ? { background: "var(--color-surface-raised)", color: "var(--color-text-secondary)" } : {}}
                 >
                   {t("userName.allowAnonymous")}
                 </button>
                 <button
                   onClick={() => setRequireName(true)}
-                  className={`px-4 py-2 rounded-lg font-semibold flex-1 ${
-                    requireName
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
+                  className={`px-4 py-2 rounded-lg font-semibold flex-1 transition-colors ${
+                    requireName ? "bg-blue-600 text-white" : ""
                   }`}
+                  style={!requireName ? { background: "var(--color-surface-raised)", color: "var(--color-text-secondary)" } : {}}
                 >
                   {t("userName.requireName")}
                 </button>
@@ -195,7 +205,12 @@ export default function RetroboardPage() {
                 <input
                   type="text"
                   placeholder={t("userName.placeholder")}
-                  className="mt-2 w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="mt-2 w-full p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  style={{
+                    background: "var(--color-surface-raised)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-primary)",
+                  }}
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                 />
@@ -204,7 +219,7 @@ export default function RetroboardPage() {
 
             <button
               onClick={handleCreateRoom}
-              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition disabled:opacity-70 flex items-center justify-center gap-2"
+              className="mt-4 w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-70 flex items-center justify-center gap-2"
               disabled={isLoading}
             >
               {isLoading && <Spinner size="md" color="white" />}
@@ -218,14 +233,19 @@ export default function RetroboardPage() {
             <input
               type="text"
               placeholder={t("enterRoom.placeholder")}
-              className="w-full p-2 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={{
+                background: "var(--color-surface-raised)",
+                borderColor: "var(--color-border)",
+                color: "var(--color-text-primary)",
+              }}
               value={existingRoomId}
               onChange={(e) => setExistingRoomId(e.target.value)}
             />
             <button
               onClick={handleEnterRoom}
               disabled={isEntering || !existingRoomId.trim()}
-              className="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition disabled:opacity-70 flex items-center justify-center gap-2"
             >
               {isEntering && <Spinner size="md" color="white" />}
               {t("enterRoom.button")}
@@ -236,10 +256,13 @@ export default function RetroboardPage() {
 
       {/* Overlay de carregamento */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.3)" }}>
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl shadow-sm border"
+            style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          >
             <Spinner size="lg" color="blue" />
-            <span className="text-sm font-semibold text-gray-700">{t("loading")}</span>
+            <span className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{t("loading")}</span>
           </div>
         </div>
       )}

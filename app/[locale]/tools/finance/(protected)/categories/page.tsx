@@ -19,83 +19,84 @@ export default async function CategoriesPage({
     const t = await getTranslations({ locale, namespace: "Finance" });
 
     const builtinSet = new Set(BUILTIN_CATEGORIES);
+    const customCategories = categories.filter((c) => !builtinSet.has(c));
+    const builtinCategories = categories.filter((c) => builtinSet.has(c));
 
     return (
-        <div className="max-w-2xl mx-auto px-6 pb-24 pt-8">
-            <header className="mb-8 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href={boardId ? `/${locale}/tools/finance?boardId=${boardId}` : `/${locale}/tools/finance`}
-                        className="p-2 -ml-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all"
-                        aria-label={t("backToBoard")}
-                    >
-                        <FiArrowLeft size={24} />
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{t("categoriesTitle")}</h1>
-                        <p className="text-gray-500 mt-1 text-sm">
-                            {boardId ? t("customCategoriesLabel") : t("description")}
-                        </p>
-                    </div>
+        <div className="max-w-2xl mx-auto px-6 pb-24 pt-6 space-y-6 animate-fadeIn">
+
+            {/* HEADER — mesmo padrão do FinanceBoardsClient */}
+            <div className="flex items-center gap-3">
+                <Link
+                    href={boardId ? `/${locale}/tools/finance?boardId=${boardId}` : `/${locale}/tools/finance`}
+                    className="p-2 -ml-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] rounded-lg transition-all"
+                    aria-label={t("backToBoard")}
+                >
+                    <FiArrowLeft size={20} />
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-extrabold heading-gradient">
+                        {t("categoriesTitle")}
+                    </h1>
+                    <p className="text-[var(--color-text-secondary)] mt-0.5 text-sm">
+                        {t("description")}
+                    </p>
                 </div>
-            </header>
+            </div>
 
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <section>
-                    <div className="flex items-center justify-between mb-3 px-1">
-                        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            {t("customCategoriesLabel")}
-                        </h2>
-                        <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            {categories.filter((c) => !builtinSet.has(c)).length}
-                        </span>
+            {/* CATEGORIAS CUSTOMIZADAS */}
+            <section>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        {t("customCategoriesLabel")}
+                    </h2>
+                    <span className="text-xs font-semibold text-[var(--color-text-muted)] bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-2.5 py-0.5 rounded-full">
+                        {customCategories.length}
+                    </span>
+                </div>
+
+                <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-sm overflow-hidden">
+                    <div className="p-3 border-b border-[var(--color-border-subtle)]">
+                        <AddCategoryForm locale={locale} boardId={boardId} />
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-2 border-b border-gray-50 bg-gray-50/50">
-                            <AddCategoryForm locale={locale} boardId={boardId} />
+                    {customCategories.length === 0 ? (
+                        <div className="py-10 text-center">
+                            <p className="text-[var(--color-text-muted)] text-sm">{t("noCustomCategories")}</p>
                         </div>
+                    ) : (
+                        <ul className="divide-y divide-[var(--color-border-subtle)]">
+                            {customCategories.map((category) => (
+                                <CategoryItem key={category} category={category} locale={locale} boardId={boardId} />
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </section>
 
-                        {categories.filter((c) => !builtinSet.has(c)).length === 0 ? (
-                            <div className="p-8 text-center bg-white">
-                                <p className="text-gray-400 text-sm mb-1">{t("noCustomCategories")}</p>
-                            </div>
-                        ) : (
-                            <ul className="divide-y divide-gray-100">
-                                {categories
-                                    .filter((c) => !builtinSet.has(c))
-                                    .map((category) => (
-                                        <CategoryItem key={category} category={category} locale={locale} boardId={boardId} />
-                                    ))}
-                            </ul>
-                        )}
-                    </div>
-                </section>
-
-                <section>
-                    <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1">
+            {/* CATEGORIAS PADRÃO */}
+            <section>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                         {t("builtinCategoriesLabel")}
                     </h2>
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <ul className="divide-y divide-gray-100">
-                            {categories
-                                .filter((c) => builtinSet.has(c))
-                                .map((category) => (
-                                    <li key={category} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-gray-700 font-medium">{category}</span>
-                                        </div>
-                                        <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wide">
-                                            {t("builtinLabel")}
-                                        </span>
-                                    </li>
-                                ))}
-                        </ul>
-                    </div>
-                </section>
-            </div>
+                    <span className="text-xs font-semibold text-[var(--color-text-muted)] bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-2.5 py-0.5 rounded-full">
+                        {builtinCategories.length}
+                    </span>
+                </div>
+                <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-sm overflow-hidden">
+                    <ul className="divide-y divide-[var(--color-border-subtle)]">
+                        {builtinCategories.map((category) => (
+                            <li key={category} className="px-5 py-3.5 flex items-center justify-between">
+                                <span className="text-[var(--color-text-primary)] font-medium text-sm">{category}</span>
+                                <span className="text-[10px] font-semibold text-[var(--color-text-muted)] bg-[var(--color-surface-raised)] border border-[var(--color-border)] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                                    {t("builtinLabel")}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </section>
         </div>
     );
 }
-
-

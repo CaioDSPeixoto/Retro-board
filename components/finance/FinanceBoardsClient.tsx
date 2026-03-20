@@ -226,12 +226,12 @@ export default function FinanceBoardsClient({
     <div className="max-w-4xl mx-auto p-6 animate-fadeIn space-y-6">
       {/* HEADER */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-extrabold text-blue-600">
-          <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-extrabold">
+          <span className="heading-gradient">
             {tBoards("title")}
           </span>
         </h1>
-        <p className="text-gray-700">{tBoards("description")}</p>
+        <p className="text-[var(--color-text-secondary)]">{tBoards("description")}</p>
       </div>
 
       {/* ERROR GLOBAL */}
@@ -242,15 +242,15 @@ export default function FinanceBoardsClient({
       )}
 
       {/* SEÇÃO DE AÇÃO (CRIAR OU ENTRAR) */}
-      <div className="bg-white border border-blue-100 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {/* SELETOR DE ABAS */}
-        <div className="flex border-b border-gray-100 bg-gray-50/50">
+        <div className="flex border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]">
           <button
             onClick={() => setActiveTab("create")}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               activeTab === "create"
-                ? "bg-white text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] border-b-2 border-[var(--color-accent-primary)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
             }`}
           >
             {tBoards("createButton")}
@@ -259,8 +259,8 @@ export default function FinanceBoardsClient({
             onClick={() => setActiveTab("join")}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               activeTab === "join"
-                ? "bg-white text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] border-b-2 border-[var(--color-accent-primary)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
             }`}
           >
             {tBoards("joinTabLabel")}
@@ -272,7 +272,7 @@ export default function FinanceBoardsClient({
           {activeTab === "create" ? (
             <form onSubmit={handleCreate} className="flex flex-col gap-3 md:flex-row">
               <div className="flex-1">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
                   {tBoards("newBoardLabel")}
                 </label>
                 <input
@@ -282,15 +282,14 @@ export default function FinanceBoardsClient({
                   placeholder={tBoards("newBoardPlaceholder")}
                   required
                   autoComplete="off"
-                  className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900"
+                  className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
-
               <div className="flex items-end">
                 <button
                   type="submit"
                   disabled={creating || !newBoardName.trim()}
-                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
+                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200/30 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
                 >
                   {creating ? tBoards("createButtonLoading") : tBoards("createButton")}
                 </button>
@@ -317,11 +316,11 @@ export default function FinanceBoardsClient({
 
       {/* LISTA DE QUADROS */}
       {boards.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-xl p-6 text-center">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">
+        <div className="bg-[var(--color-surface)] border border-dashed border-[var(--color-border)] rounded-xl p-6 text-center">
+          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-1">
             {tBoards("emptyTitle")}
           </h2>
-          <p className="text-sm text-gray-500">{tBoards("emptySubtitle")}</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">{tBoards("emptySubtitle")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -331,13 +330,12 @@ export default function FinanceBoardsClient({
             return (
               <div
                 key={board.id}
-                className="relative border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 transition bg-white flex flex-col justify-between"
+                className="relative border border-[var(--color-border)] p-5 rounded-xl shadow-sm hover:shadow-md hover:border-[var(--color-accent-primary)] transition bg-[var(--color-surface)] flex flex-col justify-between"
               >
-                {/* BOTÃO DE ENGRENAGEM (apenas dono) */}
                 {isOwner && (
                   <button
                     type="button"
-                    className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 bg-white/90 rounded-full p-1 shadow-sm"
+                    className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] bg-[var(--color-surface-raised)] rounded-full p-1 shadow-sm transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -349,41 +347,28 @@ export default function FinanceBoardsClient({
                   </button>
                 )}
 
-                {/* MENU DROPDOWN */}
                 {isOwner && menuBoardId === board.id && (
-                  <div className="absolute z-20 top-10 right-3 bg-white border border-gray-200 rounded-xl shadow-lg text-sm overflow-hidden min-w-[190px]">
+                  <div className="absolute z-20 top-10 right-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-lg text-sm overflow-hidden min-w-[190px]">
                     <button
                       type="button"
-                      className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => {
-                        setMenuBoardId(null);
-                        setRenameBoardState(board);
-                        setRenameName(board.name);
-                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] transition-colors"
+                      onClick={() => { setMenuBoardId(null); setRenameBoardState(board); setRenameName(board.name); }}
                     >
-                      <FiEdit2 size={14} className="text-gray-500" />
+                      <FiEdit2 size={14} className="text-[var(--color-text-muted)]" />
                       <span>{tBoards("menuRename")}</span>
                     </button>
                     <button
                       type="button"
-                      className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => {
-                        setMenuBoardId(null);
-                        setMembersBoard(board);
-                        setMembersError(null);
-                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] transition-colors"
+                      onClick={() => { setMenuBoardId(null); setMembersBoard(board); setMembersError(null); }}
                     >
-                      <FiUsers size={14} className="text-gray-500" />
+                      <FiUsers size={14} className="text-[var(--color-text-muted)]" />
                       <span>{tBoards("menuViewMembers")}</span>
                     </button>
                     <button
                       type="button"
-                      className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 border-t border-red-50 transition-colors"
-                      onClick={() => {
-                        setMenuBoardId(null);
-                        setDeleteBoardState(board);
-                        setDeleteNameConfirm("");
-                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-500/10 border-t border-[var(--color-border)] transition-colors"
+                      onClick={() => { setMenuBoardId(null); setDeleteBoardState(board); setDeleteNameConfirm(""); }}
                     >
                       <FiTrash2 size={14} />
                       <span>{tBoards("menuDeleteBoard")}</span>
@@ -391,27 +376,23 @@ export default function FinanceBoardsClient({
                   </div>
                 )}
 
-                {/* LINK PARA O QUADRO */}
                 <Link
-                  href={`/${locale}/tools/finance?boardId=${encodeURIComponent(
-                    board.id,
-                  )}&month=${encodeURIComponent(currentMonth)}`}
+                  href={`/${locale}/tools/finance?boardId=${encodeURIComponent(board.id)}&month=${encodeURIComponent(currentMonth)}`}
                   className="block"
                 >
                   <div>
-                    <h2 className="font-semibold text-lg text-gray-800 mb-1 truncate">
+                    <h2 className="font-semibold text-lg text-[var(--color-text-primary)] mb-1 truncate">
                       {board.name}
                     </h2>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs text-[var(--color-text-muted)] mb-2">
                       {board.isPersonal ? tBoards("personalTag") : tBoards("sharedTag")}
                     </p>
                   </div>
-
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-[var(--color-text-muted)]">
                       {membersLabel(board.memberIds?.length || 1)}
                     </span>
-                    <span className="text-sm font-semibold text-blue-600">
+                    <span className="text-sm font-semibold text-[var(--color-accent-primary)]">
                       {tBoards("openBoard")} →
                     </span>
                   </div>
@@ -422,14 +403,13 @@ export default function FinanceBoardsClient({
         </div>
       )}
 
-      {/* MODAL RENOMEAR QUADRO */}
       {renameBoardState && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+          <div className="bg-[var(--color-surface-overlay)] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
               {tBoards("renameModalTitle")}
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
               {tBoards("renameModalDescription")}
             </p>
             <form onSubmit={handleRenameSubmit} className="space-y-4">
@@ -437,16 +417,13 @@ export default function FinanceBoardsClient({
                 type="text"
                 value={renameName}
                 onChange={(e) => setRenameName(e.target.value)}
-                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900"
+                className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setRenameBoardState(null);
-                    setRenameName("");
-                  }}
-                  className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  onClick={() => { setRenameBoardState(null); setRenameName(""); }}
+                  className="px-4 py-2 text-sm rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)]"
                 >
                   {tBoards("renameModalCancel")}
                 </button>
@@ -455,9 +432,7 @@ export default function FinanceBoardsClient({
                   disabled={renameLoading || !renameName.trim()}
                   className="px-4 py-2 text-sm rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {renameLoading
-                    ? tBoards("renameModalSaving")
-                    : tBoards("renameModalSave")}
+                  {renameLoading ? tBoards("renameModalSaving") : tBoards("renameModalSave")}
                 </button>
               </div>
             </form>
@@ -465,17 +440,16 @@ export default function FinanceBoardsClient({
         </div>
       )}
 
-      {/* MODAL EXCLUIR QUADRO */}
       {deleteBoardState && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-semibold text-red-600 mb-2">
+          <div className="bg-[var(--color-surface-overlay)] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold text-red-500 mb-2">
               {tBoards("deleteModalTitle")}
             </h2>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {tBoards("deleteModalDescription")}
             </p>
-            <p className="text-sm font-semibold text-gray-800 mb-3">
+            <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">
               {deleteBoardState.name}
             </p>
             <form onSubmit={handleDeleteSubmit} className="space-y-4">
@@ -483,33 +457,23 @@ export default function FinanceBoardsClient({
                 type="text"
                 value={deleteNameConfirm}
                 onChange={(e) => setDeleteNameConfirm(e.target.value)}
-                className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:outline-none text-gray-900"
+                className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-red-500 focus:outline-none"
                 placeholder={tBoards("deleteModalPlaceholder")}
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setDeleteBoardState(null);
-                    setDeleteNameConfirm("");
-                  }}
-                  className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  onClick={() => { setDeleteBoardState(null); setDeleteNameConfirm(""); }}
+                  className="px-4 py-2 text-sm rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)]"
                 >
                   {tBoards("deleteModalCancel")}
                 </button>
                 <button
                   type="submit"
-                  disabled={
-                    deleteLoading ||
-                    !deleteNameConfirm.trim() ||
-                    deleteNameConfirm.trim().toLowerCase() !==
-                      deleteBoardState.name.trim().toLowerCase()
-                  }
+                  disabled={deleteLoading || !deleteNameConfirm.trim() || deleteNameConfirm.trim().toLowerCase() !== deleteBoardState.name.trim().toLowerCase()}
                   className="px-4 py-2 text-sm rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
                 >
-                  {deleteLoading
-                    ? tBoards("deleteModalConfirming")
-                    : tBoards("deleteModalConfirm")}
+                  {deleteLoading ? tBoards("deleteModalConfirming") : tBoards("deleteModalConfirm")}
                 </button>
               </div>
             </form>
@@ -517,47 +481,44 @@ export default function FinanceBoardsClient({
         </div>
       )}
 
-      {/* MODAL MEMBROS */}
       {membersBoard && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+          <div className="bg-[var(--color-surface-overlay)] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
               {tBoards("membersModalTitle")}
             </h2>
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {tBoards("membersModalSubtitle")}
             </p>
 
             {membersError && (
-              <p className="text-xs text-red-600 mb-2">{membersError}</p>
+              <p className="text-xs text-red-500 mb-2">{membersError}</p>
             )}
 
             <div className="max-h-56 overflow-y-auto space-y-2 mb-4">
               {(membersBoard.memberIds || []).map((memberId) => (
                 <div
                   key={memberId}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
+                  className="flex items-center justify-between bg-[var(--color-surface-raised)] rounded-xl px-3 py-2"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{memberId}</p>
+                    <p className="text-sm text-[var(--color-text-primary)] truncate">{memberId}</p>
                     {memberId === membersBoard.ownerId && (
-                      <p className="text-[11px] text-blue-600">
+                      <p className="text-[11px] text-[var(--color-accent-primary)]">
                         {tBoards("membersModalOwnerTag")}
                       </p>
                     )}
                   </div>
-
-                  {sessionUserId === membersBoard.ownerId &&
-                    memberId !== membersBoard.ownerId && (
-                      <button
-                        type="button"
-                        disabled={membersLoading}
-                        onClick={() => handleRemoveMember(membersBoard, memberId)}
-                        className="px-3 py-1 text-[11px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
-                      >
-                        {tBoards("membersModalRemove")}
-                      </button>
-                    )}
+                  {sessionUserId === membersBoard.ownerId && memberId !== membersBoard.ownerId && (
+                    <button
+                      type="button"
+                      disabled={membersLoading}
+                      onClick={() => handleRemoveMember(membersBoard, memberId)}
+                      className="px-3 py-1 text-[11px] rounded-lg border border-red-400/40 text-red-500 hover:bg-red-500/10 disabled:opacity-60"
+                    >
+                      {tBoards("membersModalRemove")}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -565,11 +526,8 @@ export default function FinanceBoardsClient({
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setMembersBoard(null);
-                  setMembersError(null);
-                }}
-                className="px-4 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50"
+                onClick={() => { setMembersBoard(null); setMembersError(null); }}
+                className="px-4 py-2 text-sm rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)]"
               >
                 {tBoards("membersModalClose")}
               </button>

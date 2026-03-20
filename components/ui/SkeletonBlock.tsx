@@ -3,5 +3,5 @@ type Props = {
 };
 
 export default function SkeletonBlock({ className = "" }: Props) {
-  return <div className={`bg-gray-200 rounded-lg animate-pulse ${className}`} />;
+  return <div className={`rounded-lg animate-pulse ${className}`} style={{ background: "var(--color-border)" }} />;
 }

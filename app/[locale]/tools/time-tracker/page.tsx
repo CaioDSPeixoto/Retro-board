@@ -6,8 +6,8 @@ export default function TimeTrackerPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 animate-fadeIn min-h-screen">
-      <h1 className="text-3xl font-extrabold text-blue-600 mb-6">
-        <span className="bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent">
+      <h1 className="text-3xl font-extrabold mb-6">
+        <span className="heading-gradient">
           {t("title")}
         </span>
       </h1>

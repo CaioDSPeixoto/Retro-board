@@ -34,7 +34,15 @@
     "share": {
       "copied": "¡Enlace copiado al portapapeles!",
       "whatsappUrl": "https://api.whatsapp.com/send?text=Entra a la sala: {url}"
+    },
+    "categories": {
+      "bom": "Bueno",
+      "ruim": "Malo",
+      "melhorar": "Mejorar"
     }
+  },
+  "Column": {
+    "new": "Nueva tarjeta..."
   },
   "Home": {
     "title": "Hola, bienvenido",

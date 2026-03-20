@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
+/* ─── Tokens de cor — light mode (padrão) ───────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-page:            #dbeafe;
+  --color-surface:         #ffffff;
+  --color-surface-raised:  #f8fafc;
+  --color-surface-overlay: #ffffff;
+  --color-border:          #e2e8f0;
+  --color-border-subtle:   #f1f5f9;
+  --color-text-primary:    #111827;
+  --color-text-secondary:  #4b5563;
+  --color-text-muted:      #9ca3af;
+  --color-accent-primary:  #2563eb;
+  --color-accent-hover:    #1d4ed8;
+  --color-accent-subtle:   #eff6ff;
+  --color-accent-text:     #1d4ed8;
+  --color-heading:         #1e40af;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── DARK MODE ───────────────────────────────────────────────────── */
+.dark {
+  --color-page:            #0f172a;
+  --color-surface:         #1e293b;
+  --color-surface-raised:  #293548;
+  --color-surface-overlay: #1e293b;
+  --color-border:          #3b4f68;
+  --color-border-subtle:   #263044;
+  --color-text-primary:    #f8fafc;
+  --color-text-secondary:  #cbd5e1;
+  --color-text-muted:      #94a3b8;
+  --color-accent-primary:  #3b82f6;
+  --color-accent-hover:    #60a5fa;
+  --color-accent-subtle:   #1e3a5f;
+  --color-accent-text:     #93c5fd;
+  --color-heading:         #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Tailwind v4 @theme — aponta para as CSS vars ───────────────── */
+@theme {
+  --color-page:            var(--color-page);
+  --color-surface:         var(--color-surface);
+  --color-surface-raised:  var(--color-surface-raised);
+  --color-surface-overlay: var(--color-surface-overlay);
+  --color-border:          var(--color-border);
+  --color-border-subtle:   var(--color-border-subtle);
+  --color-text-primary:    var(--color-text-primary);
+  --color-text-secondary:  var(--color-text-secondary);
+  --color-text-muted:      var(--color-text-muted);
+  --color-accent-primary:  var(--color-accent-primary);
+  --color-accent-hover:    var(--color-accent-hover);
+  --color-accent-subtle:   var(--color-accent-subtle);
+  --color-accent-text:     var(--color-accent-text);
+  --color-heading:         var(--color-heading);
 }
 
 body {
-  background: #dbeafe;
-  color: var(--foreground);
+  background-color: var(--color-page);
+  color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Títulos: gradiente azul no light, branco suave no dark */
+.heading-gradient {
+  background: linear-gradient(to right, #3b82f6, #1e40af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .heading-gradient {
+  background: none;
+  -webkit-text-fill-color: var(--color-heading);
+  color: var(--color-heading);
 }

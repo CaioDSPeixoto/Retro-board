@@ -380,10 +380,10 @@ export default function FinanceClientPage({
   return (
     <div className="relative pb-24" aria-busy={isRoutePending}>
       {isRoutePending && (
-        <div className="absolute inset-0 z-40 bg-gray-50/60 backdrop-blur-[1px] flex items-center justify-center">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div className="absolute inset-0 z-40 bg-[var(--color-surface-raised)]/60 backdrop-blur-[1px] flex items-center justify-center">
+          <div className="flex items-center gap-3 px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-sm">
             <Spinner size="md" color="blue" />
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-[var(--color-text-primary)]">
               {t("loading")}
             </span>
           </div>
@@ -391,12 +391,12 @@ export default function FinanceClientPage({
       )}
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
-        <div className="px-4 sm:px-6 pt-3 pb-1">
+        <div className="pt-3 pb-1">
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
               onClick={() => setShowBoardPicker((prev) => !prev)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] text-xs font-semibold border border-[var(--color-border)] transition"
               aria-expanded={showBoardPicker}
             >
               <FiList size={14} />
@@ -411,7 +411,7 @@ export default function FinanceClientPage({
                   ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
                   : `/${locale}/tools/finance/categories`
               }
-              className="px-2.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition flex items-center justify-center"
+              className="p-2 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition flex items-center justify-center"
               title={t("manageCategoriesLabel")}
             >
               <FiSettings size={14} />
@@ -419,14 +419,14 @@ export default function FinanceClientPage({
           </div>
 
           {showBoardPicker && (
-            <div className="mt-2 bg-white border border-gray-200 rounded-2xl px-3 py-3 shadow-sm">
-              <label className="block text-[11px] font-semibold text-gray-500 mb-2">
+            <div className="mt-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl px-3 py-3 shadow-sm">
+              <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] mb-2">
                 {t("boardLabel")}
               </label>
               <select
                 value={currentBoardId ?? ""}
                 onChange={(e) => handleBoardChange(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="">{t("allBoardsLabel")}</option>
                 {boards.map((board) => (
@@ -596,15 +596,15 @@ export default function FinanceClientPage({
       )}
 
       {/* LISTA / MÉTRICAS */}
-      <div className="px-6 mt-2">
-        <div className="flex justify-between items-center mb-4 px-2">
+      <div className="mt-3">
+        <div className="flex justify-between items-center mb-3">
           <div>
             {!showMetrics && (
               <button
                 onClick={toggleSelectionMode}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectionMode
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectionMode
+                  ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border-[var(--color-accent-primary)]"
+                  : "bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
                   }`}
               >
                 {selectionMode ? t("cancelSelection") : t("selectButton")}
@@ -613,13 +613,13 @@ export default function FinanceClientPage({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex bg-gray-100 rounded-xl p-1 text-xs font-semibold">
+            <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setShowMetrics(false)}
-                className={`px-3 py-1 rounded-lg transition-all ${!showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
+                className={`px-3 py-1.5 rounded-lg transition-all ${!showMetrics
+                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                   }`}
               >
                 {t("tabListLabel")}
@@ -627,9 +627,9 @@ export default function FinanceClientPage({
               <button
                 type="button"
                 onClick={() => setShowMetrics(true)}
-                className={`px-3 py-1 rounded-lg transition-all ${showMetrics
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500"
+                className={`px-3 py-1.5 rounded-lg transition-all ${showMetrics
+                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                   }`}
               >
                 {t("tabMetricsLabel")}
@@ -641,14 +641,14 @@ export default function FinanceClientPage({
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
       {!showMetrics && (
-        <div className="px-6 mb-3">
+        <div className="mb-3">
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={nameFilter}
               onChange={(e) => setNameFilter(e.target.value)}
               placeholder={t("searchByNamePlaceholder")}
-              className="flex-1 p-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="flex-1 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
 
             {overdueItems.length > 0 && (
@@ -667,13 +667,13 @@ export default function FinanceClientPage({
                 </button>
 
                 {overdueInfoOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 shadow-lg rounded-xl p-3 z-50">
-                    <p className="text-xs font-semibold text-gray-800">
+                  <div className="absolute right-0 mt-2 w-72 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-xl p-3 z-50">
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">
                       {t("overdueSubtitle", { count: overdueItems.length })}
                     </p>
-                    <p className="text-[11px] text-gray-500 mt-1">
+                    <p className="text-[11px] text-[var(--color-text-secondary)] mt-1">
                       {t("overdueSummaryLabel")}:{" "}
-                      <span className="font-semibold text-amber-700">
+                      <span className="font-semibold text-amber-600">
                         {currency(overdueTotal)}
                       </span>
                     </p>
@@ -696,24 +696,24 @@ export default function FinanceClientPage({
           </div>
 
           <div className="flex justify-end mt-1">
-            <span className="text-[11px] text-gray-500 font-medium">
+            <span className="text-[11px] text-[var(--color-text-secondary)] font-medium">
               {t("transactionsCount", { count: visibleItems.length })}
             </span>
           </div>
 
           {shareOpen && currentBoard && isOwner && (
-            <div className="mt-2 bg-white border border-blue-100 rounded-2xl shadow-sm px-4 pb-4 pt-3">
+            <div className="mt-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-sm px-4 pb-4 pt-3">
               <div className="mb-3">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
                   {t("shareCodeLabel")}
                 </label>
                 <input
                   type="text"
                   readOnly
                   value={currentBoard.id}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-700"
+                  className="w-full p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-xs text-[var(--color-text-secondary)]"
                 />
-                <p className="mt-1 text-[11px] text-gray-400">
+                <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
                   {t("shareCodeHint")}
                 </p>
               </div>
@@ -723,7 +723,7 @@ export default function FinanceClientPage({
                 className="mt-3 flex flex-col gap-3 md:flex-row"
               >
                 <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
                     {t("shareEmailLabel")}
                   </label>
                   <input
@@ -731,7 +731,7 @@ export default function FinanceClientPage({
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t("shareEmailPlaceholder")}
-                    className="w-full p-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-gray-900"
+                    className="w-full p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
 
@@ -821,13 +821,13 @@ export default function FinanceClientPage({
           rangeTo={rangeTo}
         />
       ) : visibleItems.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <p className="text-gray-400 mb-2">
+        <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
+          <p className="text-[var(--color-text-muted)] mb-2">
             {items.length === 0 ? t("noTransactions") : t("noResults")}
           </p>
           <button
             onClick={handleOpenCreateModal}
-            className="text-blue-600 font-bold text-sm"
+            className="text-[var(--color-accent-primary)] font-bold text-sm"
           >
             {t("addNow")}
           </button>
