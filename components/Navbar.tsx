@@ -13,7 +13,7 @@ export default async function Navbar({ locale }: { locale: string }) {
   const appVersion = packageInfo.version || "0.0.0";
 
   return (
-    <nav className="px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm sticky top-0 z-50">
+    <nav className="px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm sticky top-0 z-50 select-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-1 sm:gap-2">

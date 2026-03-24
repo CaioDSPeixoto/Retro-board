@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Analisar Vulnerabilidades de Pacotes",
+  "description": "Analisa vulnerabilidades nos pacotes npm a cada prompt. Roda npm audit e npm outdated, apresenta um resumo ao usuário e pergunta se deseja atualizar algum pacote.",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Execute `npm audit --registry=https://registry.npmjs.org 2>&1` e `npm outdated --registry=https://registry.npmjs.org 2>&1`. Analise a saída e, se houver vulnerabilidades ou pacotes desatualizados com patches de segurança, apresente um resumo conciso ao usuário em português (tabela com pacote, severidade, versão atual vs disponível). Pergunte se o usuário deseja atualizar. Se não houver vulnerabilidades, não diga nada — apenas continue com a tarefa principal do usuário. IMPORTANTE: não bloqueie a tarefa principal do usuário com isso, apenas informe brevemente se houver algo relevante."
+  }
+}

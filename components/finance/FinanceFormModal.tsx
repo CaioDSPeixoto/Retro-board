@@ -7,9 +7,12 @@ import {
   addFinanceItem,
   createCategory,
   updateFinanceItem,
+  addSubItem,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { useRouter } from "next/navigation";
-import type { FinanceItem } from "@/types/finance";
+import type { FinanceItem, InterestType } from "@/types/finance";
+import InterestFieldsConfig from "@/components/finance/InterestFieldsConfig";
+import SubItemsEditor from "@/components/finance/SubItemsEditor";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
@@ -60,6 +63,7 @@ export default function FinanceFormModal({
   currentMonth,
 }: Props) {
   const t = useTranslations("FinanceForm");
+  const tFinance = useTranslations("Finance");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const newCatInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +89,21 @@ export default function FinanceFormModal({
   const [useInstallments, setUseInstallments] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // Interest state
+  const [interestType, setInterestType] = useState<InterestType | "">(
+    initialItem?.interestConfig?.type ?? ""
+  );
+  const [interestRate, setInterestRate] = useState<string>(
+    initialItem?.interestConfig?.rate != null ? String(initialItem.interestConfig.rate) : ""
+  );
+  const [interestFixed, setInterestFixed] = useState<string>(
+    initialItem?.interestConfig?.fixedAmount != null ? String(initialItem.interestConfig.fixedAmount) : ""
+  );
+
   const [currentUserName, setCurrentUserName] = useState<string>("");
+
+  // sub-items (only for create mode, non-installment)
+  const [subItems, setSubItems] = useState<{ title: string; amount: number }[]>([]);
 
   // cartão
   const [cardName, setCardName] = useState<string>(initialItem?.cardName || "");
@@ -120,6 +138,10 @@ export default function FinanceFormModal({
       setCardName(initialItem.cardName || "");
       setCardMode(initialItem.cardMode || "");
       setEnableCustomDescription(false);
+      setInterestType(initialItem.interestConfig?.type ?? "");
+      setInterestRate(initialItem.interestConfig?.rate != null ? String(initialItem.interestConfig.rate) : "");
+      setInterestFixed(initialItem.interestConfig?.fixedAmount != null ? String(initialItem.interestConfig.fixedAmount) : "");
+      setSubItems([]);
       return;
     }
 
@@ -128,6 +150,10 @@ export default function FinanceFormModal({
     setCardName("");
     setCardMode("");
     setEnableCustomDescription(false);
+    setInterestType("");
+    setInterestRate("");
+    setInterestFixed("");
+    setSubItems([]);
   }, [initialCategories, initialItem?.id, isOpen, fixedCategoryName]);
 
   // Foca no input quando o formulário de nova categoria abre
@@ -256,6 +282,23 @@ export default function FinanceFormModal({
               return;
             }
 
+            // Save sub-items after creating the main item (non-installment, create mode only)
+            if (
+              !isEditMode &&
+              !useInstallments &&
+              subItems.length > 0 &&
+              res &&
+              "itemId" in res &&
+              res.itemId
+            ) {
+              await Promise.all(
+                subItems.map((si) =>
+                  addSubItem(res.itemId as string, si.title, si.amount, locale),
+                ),
+              );
+            }
+
+            setSubItems([]);
             startTransition(() => router.refresh());
             onClose();
           }}
@@ -548,6 +591,24 @@ export default function FinanceFormModal({
             {/* Toggle Opções Avançadas */}
             {!isEditMode && (
               <>
+                {/* Sub-items editor (create mode, non-installment only) */}
+                {!useInstallments && (
+                  <div
+                    className="mt-1 rounded-xl border p-3"
+                    style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+                  >
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "var(--color-text-muted)" }}>
+                      {tFinance("subItemsLabel")}
+                    </label>
+                    <SubItemsEditor
+                      parentAmount={0}
+                      parentStatus="pending"
+                      onSubItemsChange={setSubItems}
+                      initialSubItems={subItems}
+                    />
+                  </div>
+                )}
+
                 <div className="mt-1 px-1">
               <button
                 type="button"
@@ -573,7 +634,14 @@ export default function FinanceFormModal({
                         type="checkbox"
                         id="useInstallments"
                         checked={useInstallments}
-                        onChange={(e) => setUseInstallments(e.target.checked)}
+                        onChange={(e) => {
+                          setUseInstallments(e.target.checked);
+                          if (!e.target.checked) {
+                            setInterestType("");
+                            setInterestRate("");
+                            setInterestFixed("");
+                          }
+                        }}
                         className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       />
                       <label
@@ -602,6 +670,17 @@ export default function FinanceFormModal({
                         <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
                           {t("installmentsHint")}
                         </p>
+
+                        <div className="mt-3">
+                          <InterestFieldsConfig
+                            interestType={interestType}
+                            interestRate={interestRate}
+                            interestFixed={interestFixed}
+                            onInterestTypeChange={setInterestType}
+                            onInterestRateChange={setInterestRate}
+                            onInterestFixedChange={setInterestFixed}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -656,6 +735,11 @@ export default function FinanceFormModal({
                     {disableFixedForInstallments && (
                       <p className="text-[11px] pl-1" style={{ color: "var(--color-text-muted)" }}>
                         {t("fixedNotAllowedWithInstallments")}
+                      </p>
+                    )}
+                    {canUseFixed && (
+                      <p className="text-[11px] pl-1 text-amber-600">
+                        {t("fixedYearEndWarning", { year: new Date().getFullYear() })}
                       </p>
                     )}
                   </div>

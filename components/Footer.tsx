@@ -10,7 +10,7 @@ const linkedinUrl = process.env.NEXT_PUBLIC_PROFILE_LINKEDIN || "";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-[var(--color-surface)] text-[var(--color-text-secondary)] text-sm py-4 px-4 border-t border-[var(--color-border)]">
+    <footer className="mt-auto bg-[var(--color-surface)] text-[var(--color-text-secondary)] text-sm py-4 px-4 border-t border-[var(--color-border)] select-none">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         <span>
           © {new Date().getFullYear()} {profileName}

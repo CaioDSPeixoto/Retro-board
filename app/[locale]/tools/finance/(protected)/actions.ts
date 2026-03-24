@@ -4,9 +4,12 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
-import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import type { FinanceBoard, FinanceItem, FinanceStatus, InterestConfig, InterestType, InvestmentAllocation, InvestmentCategory, SubItem, ChartGroupBy, ChartDataPoint, CategoryChartDataPoint } from "@/types/finance";
+import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES, INVESTMENT_CATEGORIES } from "@/lib/finance/constants";
+import { calculateInterestInstallments } from "@/lib/finance/utils";
 import { getTranslations } from "next-intl/server";
+import { format, parseISO, startOfMonth, endOfMonth, subMonths, getISOWeek } from "date-fns";
+import { ptBR, enUS, es } from "date-fns/locale";
 
 /* ================= helpers ================= */
 
@@ -240,6 +243,18 @@ export async function addFinanceItem(formData: FormData) {
       ? (cardModeRaw as "credit" | "debit")
       : undefined;
 
+  // ========== JUROS ==========
+  const interestTypeRaw = String(formData.get("interestType") || "");
+  const interestRateStr = String(formData.get("interestRate") || "");
+  const interestFixedStr = String(formData.get("interestFixed") || "");
+
+  // ========== INVESTIMENTO ==========
+  const investmentCategoryRaw = formData.get("investmentCategory") as string | null;
+  const validInvestmentCategory =
+    investmentCategoryRaw && INVESTMENT_CATEGORIES.includes(investmentCategoryRaw as any)
+      ? (investmentCategoryRaw as InvestmentCategory)
+      : undefined;
+
   const amount = parseFloat(amountStr);
   const title = titleRaw.trim();
   const category = categoryRaw.trim();
@@ -275,6 +290,7 @@ export async function addFinanceItem(formData: FormData) {
     ...(createdByNameFromForm ? { createdByName: createdByNameFromForm } : {}),
     ...(cardName ? { cardName } : {}),
     ...(cardMode ? { cardMode } : {}),
+    ...(validInvestmentCategory ? { investmentCategory: validInvestmentCategory } : {}),
   };
 
   // ========== CASO SIMPLES (sem parcelamento) ==========
@@ -312,10 +328,10 @@ export async function addFinanceItem(formData: FormData) {
       ...(fixedTemplateId ? { fixedTemplateId } : {}),
     };
 
-    await adminDb.collection("finance_items").add(newItem);
+    const newRef = await adminDb.collection("finance_items").add(newItem);
 
     revalidatePath(`/${locale}/tools/finance`);
-    return { success: true };
+    return { success: true, itemId: newRef.id };
   }
 
   // ========== PARCELADO (N parcelas) ==========
@@ -325,13 +341,34 @@ export async function addFinanceItem(formData: FormData) {
   const baseMonthIndex = Number(monthStr) - 1; // Date: 0-11
   const baseDay = Number(dayStr) || 1;
 
-  // distribui o valor entre as parcelas em centavos (para não “perder” 1 centavo)
+  // distribui o valor entre as parcelas em centavos (para não "perder" 1 centavo)
   const totalCents = Math.round(amount * 100);
   const baseCents = Math.floor(totalCents / installments);
   const remainder = totalCents - baseCents * installments;
 
   // group id para todas as parcelas
   const installmentGroupId = adminDb.collection("finance_items").doc().id;
+
+  // ========== JUROS: build config e calcular parcelas ==========
+  let interestConfig: InterestConfig | undefined;
+  let interestBreakdowns: { base: number; interest: number; total: number }[] | undefined;
+
+  const validInterestTypes: InterestType[] = ["percentage", "fixed", "both"];
+  if (
+    validInterestTypes.includes(interestTypeRaw as InterestType) &&
+    installments > 1
+  ) {
+    const rate = parseFloat(interestRateStr);
+    const fixedAmount = parseFloat(interestFixedStr);
+
+    interestConfig = {
+      type: interestTypeRaw as InterestType,
+      ...(!Number.isNaN(rate) && rate > 0 ? { rate } : {}),
+      ...(!Number.isNaN(fixedAmount) && fixedAmount > 0 ? { fixedAmount } : {}),
+    };
+
+    interestBreakdowns = calculateInterestInstallments(amount, installments, interestConfig);
+  }
 
   for (let i = 0; i < installments; i++) {
     const d = new Date(baseYear, baseMonthIndex + i, baseDay);
@@ -340,9 +377,18 @@ export async function addFinanceItem(formData: FormData) {
     const day = String(d.getDate()).padStart(2, "0");
     const dateStr = `${y}-${m}-${day}`;
 
-    // parcela i recebe baseCents + 1 centavo enquanto tiver “resto”
-    const thisCents = baseCents + (i < remainder ? 1 : 0);
-    const installmentAmount = thisCents / 100;
+    let installmentAmount: number;
+    let interestAmount: number | undefined;
+
+    if (interestBreakdowns) {
+      // Use interest-calculated values
+      installmentAmount = interestBreakdowns[i].total;
+      interestAmount = interestBreakdowns[i].interest;
+    } else {
+      // Original cent distribution (no interest)
+      const thisCents = baseCents + (i < remainder ? 1 : 0);
+      installmentAmount = thisCents / 100;
+    }
 
     const isFirst = i === 0;
     const status: FinanceStatus = isFirst ? baseStatus : "pending";
@@ -361,6 +407,8 @@ export async function addFinanceItem(formData: FormData) {
       installmentIndex: i + 1,
       installmentTotal: installments,
       originalAmount: amount,
+      ...(interestConfig ? { interestConfig } : {}),
+      ...(interestAmount !== undefined ? { interestAmount } : {}),
     };
 
     await adminDb.collection("finance_items").add(item);
@@ -418,7 +466,7 @@ export async function updateFinanceItem(formData: FormData) {
   if (existing.status === "paid" || existing.status === "partial") {
     return {
       error:
-        "NÃ£o Ã© possÃ­vel editar lanÃ§amentos pagos/recebidos. Reverter a quitaÃ§Ã£o primeiro.",
+        "Não é possível editar lançamentos pagos/recebidos. Reverter a quitação primeiro.",
     };
   }
 
@@ -459,19 +507,27 @@ export async function deleteFinanceItem(id: string, locale: string) {
   if (!allowed) return { error: "Unauthorized" };
 
   if (existing.status === "paid" || existing.status === "partial") {
-    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos pagos/recebidos." };
+    return { error: "Não é possível excluir lançamentos pagos/recebidos." };
   }
 
   if (existing.status === "moved") {
-    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos movidos." };
+    return { error: "Não é possível excluir lançamentos movidos." };
   }
 
   if (existing.carriedFromMonth || existing.carriedFromItemId) {
-    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos repassados de outro mÃªs." };
+    return { error: "Não é possível excluir lançamentos repassados de outro mês." };
   }
 
   if (existing.installmentGroupId) {
-    return { error: "NÃ£o Ã© possÃ­vel excluir lanÃ§amentos parcelados." };
+    return { error: "Não é possível excluir lançamentos parcelados." };
+  }
+
+  // Delete sub-items in cascade (if any)
+  const subItemsSnap = await ref.collection("sub_items").get();
+  if (!subItemsSnap.empty) {
+    const batch = adminDb.batch();
+    subItemsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
   }
 
   await ref.delete();
@@ -520,7 +576,7 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
   if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status !== "paid") {
-    return { error: "LanÃ§amento nÃ£o estÃ¡ quitado totalmente." };
+    return { error: "Lançamento não está quitado totalmente." };
   }
 
   const paidAmount = Number(existing.paidAmount || 0);
@@ -722,4 +778,444 @@ export async function applyPaymentToFinanceItem(
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
+}
+
+
+/* ================= redistribuição de parcelas ================= */
+
+export async function redistributeInstallments(
+  groupId: string,
+  newAmounts: number[],
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  // Buscar todas as parcelas do grupo
+  const snap = await adminDb
+    .collection("finance_items")
+    .where("installmentGroupId", "==", groupId)
+    .get();
+
+  if (snap.empty) return { error: t("errors.itemNotFound") };
+
+  const installments = snap.docs.map(
+    (doc) => ({ id: doc.id, ...(doc.data() as any) }) as FinanceItem,
+  );
+
+  // Verificar permissão via board ou ownership
+  const first = installments[0];
+  if (first.boardId) {
+    const board = await getBoard(first.boardId);
+    if (!board || !isMember(board, sessionUser))
+      return { error: t("errors.noPermission") };
+  } else if (first.userId !== sessionUser) {
+    return { error: t("errors.noPermission") };
+  }
+
+  // Filtrar parcelas pendentes (somente essas serão atualizadas)
+  const pendingInstallments = installments.filter(
+    (item) => item.status === "pending",
+  );
+
+  if (newAmounts.length !== pendingInstallments.length) {
+    return { error: t("errors.incompleteData") };
+  }
+
+  // Calcular total original do grupo (soma de todas as parcelas, incluindo pagas/movidas)
+  const originalTotalCents = installments.reduce(
+    (sum, item) => sum + Math.round(item.amount * 100),
+    0,
+  );
+
+  // Calcular soma dos valores não-editáveis (paid, partial, moved)
+  const nonPendingTotalCents = installments
+    .filter((item) => item.status !== "pending")
+    .reduce((sum, item) => sum + Math.round(item.amount * 100), 0);
+
+  // Calcular soma dos novos valores
+  const newTotalCents = newAmounts.reduce(
+    (sum, val) => sum + Math.round(val * 100),
+    0,
+  );
+
+  // Validar que soma dos novos valores + não-editáveis = total original (tolerância 1 centavo)
+  const diff = Math.abs(originalTotalCents - (nonPendingTotalCents + newTotalCents));
+  if (diff > 1) {
+    return { error: t("errors.redistributionMismatch") };
+  }
+
+  // Ordenar parcelas pendentes por installmentIndex para manter consistência
+  pendingInstallments.sort(
+    (a, b) => (a.installmentIndex ?? 0) - (b.installmentIndex ?? 0),
+  );
+
+  // Atualizar parcelas pendentes via batch write
+  try {
+    const batch = adminDb.batch();
+
+    for (let i = 0; i < pendingInstallments.length; i++) {
+      const installment = pendingInstallments[i];
+      const ref = adminDb.collection("finance_items").doc(installment.id);
+      batch.update(ref, { amount: newAmounts[i] });
+    }
+
+    await batch.commit();
+  } catch {
+    return { error: t("errors.redistributionFailed") };
+  }
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+/* ================= sub-itens ================= */
+
+export async function addSubItem(
+  itemId: string,
+  title: string,
+  amount: number,
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  if (!title.trim() || amount <= 0) {
+    return { error: t("errors.invalidSubItem") };
+  }
+
+  const ref = adminDb.collection("finance_items").doc(itemId);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
+
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: t("errors.noPermission") };
+
+  if (existing.status !== "pending") {
+    return { error: t("errors.cannotEditPaidItem") };
+  }
+
+  await ref.collection("sub_items").add({
+    title: title.trim(),
+    amount,
+    createdAt: new Date().toISOString(),
+  });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function updateSubItem(
+  itemId: string,
+  subItemId: string,
+  title: string,
+  amount: number,
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  if (!title.trim() || amount <= 0) {
+    return { error: t("errors.invalidSubItem") };
+  }
+
+  const ref = adminDb.collection("finance_items").doc(itemId);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
+
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: t("errors.noPermission") };
+
+  if (existing.status !== "pending") {
+    return { error: t("errors.cannotEditPaidItem") };
+  }
+
+  await ref.collection("sub_items").doc(subItemId).update({
+    title: title.trim(),
+    amount,
+  });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function deleteSubItem(
+  itemId: string,
+  subItemId: string,
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  const ref = adminDb.collection("finance_items").doc(itemId);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
+
+  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const allowed = await canEditItem(existing, sessionUser);
+  if (!allowed) return { error: t("errors.noPermission") };
+
+  if (existing.status !== "pending") {
+    return { error: t("errors.cannotEditPaidItem") };
+  }
+
+  await ref.collection("sub_items").doc(subItemId).delete();
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+/* ================= investimentos ================= */
+
+export async function saveInvestmentConfig(
+  boardId: string | null,
+  allocations: InvestmentAllocation[],
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  // Validate board membership if boardId provided
+  if (boardId) {
+    const board = await getBoard(boardId);
+    if (!board) return { error: t("errors.boardNotFound") };
+    if (!isMember(board, sessionUser)) return { error: t("errors.noPermission") };
+  }
+
+  // Validate allocations sum to 100% (with 1% tolerance for rounding)
+  const sum = allocations.reduce((acc, a) => acc + a.percentage, 0);
+  if (Math.abs(sum - 100) > 1) {
+    return { error: t("errors.allocationSumInvalid") };
+  }
+
+  // Check if config already exists for this user + board
+  let query = adminDb
+    .collection("finance_investment_configs")
+    .where("userId", "==", sessionUser);
+
+  if (boardId) {
+    query = query.where("boardId", "==", boardId);
+  }
+
+  const snap = await query.get();
+
+  // Filter for exact match (personal configs have no boardId field)
+  const existing = snap.docs.find((doc) => {
+    const data = doc.data() as any;
+    if (boardId) return data.boardId === boardId;
+    return !data.boardId;
+  });
+
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // Update existing config
+    await adminDb.collection("finance_investment_configs").doc(existing.id).update({
+      allocations,
+      updatedAt: now,
+    });
+  } else {
+    // Create new config
+    await adminDb.collection("finance_investment_configs").add({
+      userId: sessionUser,
+      ...(boardId ? { boardId } : {}),
+      allocations,
+      updatedAt: now,
+    });
+  }
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+/* ================= gráficos ================= */
+
+function getDateLocale(locale: string) {
+  if (locale === "pt") return ptBR;
+  if (locale === "es") return es;
+  return enUS;
+}
+
+export async function getChartData(
+  boardId: string | null,
+  period: string,
+  groupBy: ChartGroupBy,
+  locale: string,
+): Promise<{ lineData: ChartDataPoint[]; barData: CategoryChartDataPoint[] } | { error: string }> {
+  const t = await getTranslations({ locale, namespace: "Finance" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  if (boardId) {
+    const board = await getBoard(boardId);
+    if (!board) return { error: t("errors.boardNotFound") };
+    if (!isMember(board, sessionUser)) return { error: t("errors.noPermission") };
+  }
+
+  // Determine date range based on groupBy
+  let startDate: string;
+  let endDate: string;
+
+  if (groupBy === "week") {
+    // Items within the specified month, grouped by week number
+    const [yearStr, monthStr] = period.split("-");
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const monthStart = new Date(year, month - 1, 1);
+    const monthEnd = endOfMonth(monthStart);
+    startDate = format(monthStart, "yyyy-MM-dd");
+    endDate = format(monthEnd, "yyyy-MM-dd");
+  } else if (groupBy === "month") {
+    // Last 12 months ending at the specified month
+    const [yearStr, monthStr] = period.split("-");
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const periodEnd = endOfMonth(new Date(year, month - 1, 1));
+    const periodStart = startOfMonth(subMonths(new Date(year, month - 1, 1), 11));
+    startDate = format(periodStart, "yyyy-MM-dd");
+    endDate = format(periodEnd, "yyyy-MM-dd");
+  } else {
+    // "year" — all available data grouped by year
+    startDate = "2000-01-01";
+    endDate = "2099-12-31";
+  }
+
+  // Query finance_items with timeout
+  const timeoutMs = 10_000;
+  let items: FinanceItem[];
+
+  try {
+    const queryPromise = (async () => {
+      let queryRef = adminDb
+        .collection("finance_items")
+        .where("date", ">=", startDate)
+        .where("date", "<=", endDate);
+
+      if (boardId) {
+        queryRef = queryRef.where("boardId", "==", boardId);
+      } else {
+        queryRef = queryRef.where("userId", "==", sessionUser);
+      }
+
+      const snap = await queryRef.get();
+
+      return snap.docs.map((doc) => {
+        const data = doc.data() as any;
+        return {
+          id: doc.id,
+          userId: data.userId,
+          boardId: data.boardId,
+          title: data.title,
+          amount: data.amount,
+          date: data.date,
+          type: data.type,
+          status: data.status,
+          category: data.category,
+          createdAt: data.createdAt,
+        } as FinanceItem;
+      });
+    })();
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), timeoutMs),
+    );
+
+    items = await Promise.race([queryPromise, timeoutPromise]);
+  } catch {
+    return { error: t("errors.incompleteData") };
+  }
+
+  // Filter out items with status "moved"
+  const filtered = items.filter((item) => item.status !== "moved");
+
+  // Group items by period
+  const dateLocale = getDateLocale(locale);
+
+  function deriveGroupKeyAndLabel(itemDate: Date): { groupKey: string; label: string } {
+    if (groupBy === "week") {
+      const weekNum = getISOWeek(itemDate);
+      const label = locale === "pt" ? `Sem ${weekNum}` : locale === "es" ? `Sem ${weekNum}` : `Wk ${weekNum}`;
+      return { groupKey: `w${weekNum}`, label };
+    } else if (groupBy === "month") {
+      const groupKey = format(itemDate, "yyyy-MM");
+      let label = format(itemDate, "MMM yyyy", { locale: dateLocale });
+      label = label.charAt(0).toUpperCase() + label.slice(1);
+      return { groupKey, label };
+    } else {
+      const year = format(itemDate, "yyyy");
+      return { groupKey: year, label: year };
+    }
+  }
+
+  const lineMap = new Map<string, { income: number; expense: number }>();
+  const barMap = new Map<string, Map<string, number>>();
+  const labelMap = new Map<string, string>();
+
+  for (const item of filtered) {
+    const itemDate = parseISO(item.date);
+    const { groupKey, label } = deriveGroupKeyAndLabel(itemDate);
+
+    if (!labelMap.has(groupKey)) {
+      labelMap.set(groupKey, label);
+    }
+
+    // Line chart data
+    if (!lineMap.has(groupKey)) {
+      lineMap.set(groupKey, { income: 0, expense: 0 });
+    }
+    const entry = lineMap.get(groupKey)!;
+    if (item.type === "income") {
+      entry.income += item.amount;
+    } else {
+      entry.expense += item.amount;
+    }
+
+    // Bar chart data (expenses by category)
+    if (item.type === "expense") {
+      if (!barMap.has(groupKey)) {
+        barMap.set(groupKey, new Map<string, number>());
+      }
+      const catMap = barMap.get(groupKey)!;
+      catMap.set(item.category, (catMap.get(item.category) ?? 0) + item.amount);
+    }
+  }
+
+  // Build sorted keys
+  const sortedKeys = Array.from(lineMap.keys()).sort();
+
+  // Build lineData
+  const lineData: ChartDataPoint[] = sortedKeys.map((key) => {
+    const entry = lineMap.get(key)!;
+    const income = Math.round(entry.income * 100) / 100;
+    const expense = Math.round(entry.expense * 100) / 100;
+    return {
+      label: labelMap.get(key) ?? key,
+      income,
+      expense,
+      balance: Math.round((income - expense) * 100) / 100,
+    };
+  });
+
+  // Build barData
+  const barData: CategoryChartDataPoint[] = sortedKeys.map((key) => {
+    const point: CategoryChartDataPoint = {
+      label: labelMap.get(key) ?? key,
+    };
+    const catMap = barMap.get(key);
+    if (catMap) {
+      for (const [category, total] of catMap) {
+        point[category] = Math.round(total * 100) / 100;
+      }
+    }
+    return point;
+  });
+
+  return { lineData, barData };
 }

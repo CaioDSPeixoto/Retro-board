@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, InvestmentConfig } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -18,6 +18,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
+import RedistributeParcelModal from "@/components/finance/RedistributeParcelModal";
+import FinanceChartsPanel from "@/components/finance/FinanceChartsPanel";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -35,6 +37,7 @@ type Props = {
   boards: FinanceBoard[];
   currentBoardId?: string | null;
   sessionUserId: string;
+  investmentConfig?: InvestmentConfig | null;
 };
 
 export default function FinanceClientPage({
@@ -45,6 +48,7 @@ export default function FinanceClientPage({
   boards,
   currentBoardId,
   sessionUserId,
+  investmentConfig = null,
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
@@ -63,11 +67,12 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [showMetrics, setShowMetrics] = useState(false);
+  const [activeTab, setActiveTab] = useState<"list" | "metrics" | "charts">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
+  const [redistributeGroupId, setRedistributeGroupId] = useState<string | null>(null);
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -132,6 +137,9 @@ export default function FinanceClientPage({
           originalAmount: data.originalAmount,
           cardName: data.cardName,
           cardMode: data.cardMode,
+          interestConfig: data.interestConfig,
+          interestAmount: data.interestAmount,
+          investmentCategory: data.investmentCategory,
         });
       });
 
@@ -179,7 +187,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveTab("list");
     });
   };
 
@@ -193,7 +201,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveTab("list");
     });
   };
 
@@ -207,7 +215,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveTab("list");
     });
   };
 
@@ -220,7 +228,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveTab("list");
     });
   };
 
@@ -284,13 +292,13 @@ export default function FinanceClientPage({
   );
 
   useEffect(() => {
-    if (showMetrics) {
+    if (activeTab !== "list") {
       setShareOpen(false);
       setSelectionMode(false);
       setSelectedItems(new Set());
     }
     setOverdueInfoOpen(false);
-  }, [showMetrics]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
@@ -328,6 +336,15 @@ export default function FinanceClientPage({
     setEditingItem(item);
     setIsModalOpen(true);
   };
+
+  const handleRedistribute = (installmentGroupId: string) => {
+    setRedistributeGroupId(installmentGroupId);
+  };
+
+  const redistributeInstallments = useMemo(() => {
+    if (!redistributeGroupId) return [];
+    return items.filter((i) => i.installmentGroupId === redistributeGroupId);
+  }, [items, redistributeGroupId]);
 
   const handleInviteByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -580,7 +597,7 @@ export default function FinanceClientPage({
       <div className="mt-3">
         <div className="flex justify-between items-center mb-3">
           <div>
-            {!showMetrics && (
+            {activeTab === "list" && (
               <button
                 onClick={toggleSelectionMode}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectionMode
@@ -597,8 +614,8 @@ export default function FinanceClientPage({
             <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => setShowMetrics(false)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${!showMetrics
+                onClick={() => setActiveTab("list")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "list"
                   ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                   }`}
@@ -607,13 +624,23 @@ export default function FinanceClientPage({
               </button>
               <button
                 type="button"
-                onClick={() => setShowMetrics(true)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${showMetrics
+                onClick={() => setActiveTab("metrics")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "metrics"
                   ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                   }`}
               >
                 {t("tabMetricsLabel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("charts")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "charts"
+                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                  }`}
+              >
+                {t("tabChartsLabel")}
               </button>
             </div>
           </div>
@@ -621,7 +648,7 @@ export default function FinanceClientPage({
       </div>
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
-      {!showMetrics && (
+      {activeTab === "list" && (
         <div className="mb-3">
           <div className="flex items-center gap-2">
             <input
@@ -739,7 +766,7 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {false && !showMetrics && overdueItems.length > 0 && (
+      {false && activeTab === "list" && overdueItems.length > 0 && (
         <div className="mb-4">
           <details className="bg-amber-50/50 border border-amber-100/70 rounded-xl px-3 py-2 group opacity-80 hover:opacity-100 transition">
             <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
@@ -794,12 +821,18 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {showMetrics ? (
+      {activeTab === "metrics" ? (
         <FinanceMetricsPanel
           items={items}
           currentMonth={currentMonth}
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
+        />
+      ) : activeTab === "charts" ? (
+        <FinanceChartsPanel
+          boardId={currentBoardId ?? ""}
+          selectedMonth={currentMonth}
+          locale={locale}
         />
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
@@ -821,6 +854,7 @@ export default function FinanceClientPage({
               item={item}
               locale={locale}
               onEdit={handleEditItem}
+              onRedistribute={handleRedistribute}
               selectionMode={selectionMode}
               selected={selectedItems.has(item.id)}
               onToggleSelection={handleToggleItemSelection}
@@ -848,7 +882,7 @@ export default function FinanceClientPage({
 
       {/* BOTÃO FLOAT – só na LISTA e se NÃO estiver em seleção */}
       {
-        !showMetrics && !selectionMode && (
+        activeTab === "list" && !selectionMode && (
           <button
             onClick={handleOpenCreateModal}
             className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
@@ -869,6 +903,15 @@ export default function FinanceClientPage({
         boardId={currentBoardId ?? null}
         currentMonth={currentMonth}
       />
+
+      {/* MODAL DE REDISTRIBUIÇÃO */}
+      {redistributeGroupId && redistributeInstallments.length > 0 && (
+        <RedistributeParcelModal
+          installments={redistributeInstallments}
+          onClose={() => setRedistributeGroupId(null)}
+          locale={locale}
+        />
+      )}
     </div >
   );
 }

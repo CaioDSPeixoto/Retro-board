@@ -1,11 +1,70 @@
 // app/[locale]/tools/finance/(protected)/data.ts
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
-import type { FinanceBoard, FinanceItem, FinanceBoardInvite } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceBoardInvite, SubItem, InvestmentConfig, InvestmentCategory } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange } from "@/lib/finance/utils";
 
 /* ================= utils ================= */
+
+/* ================= investimentos ================= */
+
+export async function getInvestmentConfig(
+  boardId?: string | null,
+): Promise<InvestmentConfig | null> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return null;
+
+  let query = adminDb
+    .collection("finance_investment_configs")
+    .where("userId", "==", sessionUserId);
+
+  if (boardId) {
+    query = query.where("boardId", "==", boardId);
+  }
+
+  const snap = await query.get();
+
+  // Find exact match (personal configs have no boardId field)
+  const doc = snap.docs.find((d) => {
+    const data = d.data() as any;
+    if (boardId) return data.boardId === boardId;
+    return !data.boardId;
+  });
+
+  if (!doc) return null;
+
+  const data = doc.data() as any;
+  return {
+    id: doc.id,
+    userId: data.userId,
+    boardId: data.boardId,
+    allocations: data.allocations ?? [],
+    updatedAt: data.updatedAt,
+  };
+}
+
+/* ================= sub-itens ================= */
+
+export async function getSubItems(itemId: string): Promise<SubItem[]> {
+  const snap = await adminDb
+    .collection("finance_items")
+    .doc(itemId)
+    .collection("sub_items")
+    .get();
+
+  const subItems: SubItem[] = snap.docs.map((doc) => {
+    const data = doc.data() as any;
+    return {
+      id: doc.id,
+      title: data.title,
+      amount: data.amount,
+      createdAt: data.createdAt,
+    };
+  });
+
+  return subItems.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
 
 /* ================= invites ================= */
 
@@ -137,6 +196,7 @@ async function ensureFixedItemsForMonth(
     category: string;
     type?: "income" | "expense";
     boardId?: string;
+    investmentCategory?: InvestmentCategory;
   }[] = [];
 
   templatesSnap.forEach((doc) => {
@@ -149,6 +209,7 @@ async function ensureFixedItemsForMonth(
       category: data.category,
       type: data.type,
       boardId: data.boardId,
+      ...(data.investmentCategory ? { investmentCategory: data.investmentCategory } : {}),
     });
   });
 
@@ -160,6 +221,11 @@ async function ensureFixedItemsForMonth(
   if (templates.length === 0) return existingItems;
 
   const items = [...existingItems];
+
+  // Limitar itens fixos até dezembro do ano atual
+  const currentYear = new Date().getFullYear();
+  const [reqYear] = month.split("-").map(Number);
+  if (reqYear > currentYear) return existingItems;
 
   for (const tpl of templates) {
     // verifica se já existe item deste template neste mês
@@ -192,6 +258,7 @@ async function ensureFixedItemsForMonth(
       createdBy: userId,
       fixedTemplateId: tpl.id,
       paidAmount: 0,
+      ...(tpl.investmentCategory ? { investmentCategory: tpl.investmentCategory } : {}),
     };
 
     // só adiciona boardId se existir (pra não mandar undefined pro Firestore)
@@ -257,6 +324,9 @@ export async function getFinanceItemsData(
       installmentIndex: data.installmentIndex,
       installmentTotal: data.installmentTotal,
       originalAmount: data.originalAmount,
+      interestConfig: data.interestConfig,
+      interestAmount: data.interestAmount,
+      investmentCategory: data.investmentCategory,
     });
   });
 

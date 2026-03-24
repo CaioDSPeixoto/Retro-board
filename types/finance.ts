@@ -1,5 +1,59 @@
 export type FinanceStatus = "paid" | "pending" | "partial" | "moved";
 
+// ====== INTEREST ======
+
+export type InterestType = "percentage" | "fixed" | "both";
+
+export type InterestConfig = {
+  type: InterestType;
+  rate?: number; // 0-100, percentual
+  fixedAmount?: number; // valor fixo por parcela
+};
+
+// ====== SUB-ITEMS ======
+
+export type SubItem = {
+  id: string;
+  title: string;
+  amount: number;
+  createdAt: string;
+};
+
+// ====== INVESTMENTS ======
+
+export type InvestmentCategory = "emergency" | "fixed-income" | "variable-income";
+
+export type InvestmentAllocation = {
+  category: InvestmentCategory;
+  percentage: number; // 0-100
+};
+
+export type InvestmentConfig = {
+  id: string;
+  userId: string;
+  boardId?: string;
+  allocations: InvestmentAllocation[];
+  updatedAt: string;
+};
+
+// ====== CHARTS ======
+
+export type ChartGroupBy = "week" | "month" | "year";
+
+export type ChartDataPoint = {
+  label: string;
+  income: number;
+  expense: number;
+  balance: number;
+};
+
+export type CategoryChartDataPoint = {
+  label: string;
+  [category: string]: number | string;
+};
+
+// ====== FINANCE ITEM ======
+
 export type FinanceItem = {
   id: string;
   userId: string;
@@ -41,6 +95,13 @@ export type FinanceItem = {
   // cartão (opcional)
   cardName?: string; // "Nubank", "Santander", etc.
   cardMode?: "credit" | "debit"; // crédito / débito
+
+  // juros (opcional)
+  interestConfig?: InterestConfig;
+  interestAmount?: number; // valor de juros calculado para esta parcela
+
+  // investimento (opcional)
+  investmentCategory?: InvestmentCategory;
 };
 
 // ====== BOARDS ======

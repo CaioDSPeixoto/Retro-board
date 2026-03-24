@@ -11,6 +11,9 @@ import {
   FiCircle,
   FiTrash2,
   FiEdit2,
+  FiSliders,
+  FiEye,
+  FiX,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,11 +24,13 @@ import {
   revertFinanceItemPayment,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import Spinner from "@/components/ui/Spinner";
+import SubItemsList from "@/components/finance/SubItemsList";
 
 type Props = {
   item: FinanceItem;
   locale: string;
   onEdit?: (item: FinanceItem) => void;
+  onRedistribute?: (installmentGroupId: string) => void;
   selectionMode?: boolean;
   selected?: boolean;
   onToggleSelection?: (itemId: string) => void;
@@ -35,6 +40,7 @@ export default function FinanceItemCard({
   item,
   locale,
   onEdit,
+  onRedistribute,
   selectionMode,
   selected,
   onToggleSelection,
@@ -45,6 +51,7 @@ export default function FinanceItemCard({
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [confirmKind, setConfirmKind] = useState<"delete" | "revert" | null>(
     null,
   );
@@ -295,6 +302,19 @@ export default function FinanceItemCard({
             {formatCurrency(item.amount)}
           </span>
 
+          {!!item.interestAmount && item.interestAmount > 0 && (
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[10px] text-[var(--color-text-muted)]">
+                {formatCurrency(item.amount - item.interestAmount)}
+              </span>
+              <span className="text-[10px] text-amber-600 font-medium">
+                {t("interestAmountDisplay", {
+                  value: formatCurrency(item.interestAmount),
+                })}
+              </span>
+            </div>
+          )}
+
           <div className="text-[11px] text-[var(--color-text-muted)]">
             {item.status === "paid" && (
               <span className="text-green-500 font-semibold">
@@ -326,10 +346,20 @@ export default function FinanceItemCard({
                   {toggling ? <Spinner size="sm" color="gray" /> : isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
                 </button>
               )}
-              {onEdit && (
+              {isInstallment && onRedistribute && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRedistribute(item.installmentGroupId!); }}
+                  disabled={toggling || deleting}
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label={t("redistributeAria")}
+                >
+                  <FiSliders size={16} />
+                </button>
+              )}
+              {onEdit && !isPaid && !isPartial && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleEditClick(); }}
-                  disabled={toggling || deleting || isPaid || isPartial}
+                  disabled={toggling || deleting}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label={t("editAria")}
                 >
@@ -337,17 +367,159 @@ export default function FinanceItemCard({
                 </button>
               )}
               <button
-                onClick={(e) => { e.stopPropagation(); handleDeleteClick(); }}
-                disabled={toggling || deleting || !canDelete}
-                className="text-[var(--color-text-muted)] hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                aria-label={t("deleteAria")}
+                onClick={(e) => { e.stopPropagation(); setDetailOpen(true); }}
+                className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition"
+                aria-label={t("detailAria")}
               >
-                <FiTrash2 size={16} />
+                <FiEye size={16} />
               </button>
+              {canDelete && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteClick(); }}
+                  disabled={toggling || deleting}
+                  className="text-[var(--color-text-muted)] hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label={t("deleteAria")}
+                >
+                  <FiTrash2 size={16} />
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* MODAL DE DETALHES */}
+      {detailOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border"
+            style={{
+              background: "var(--color-surface-overlay)",
+              borderColor: "var(--color-border)",
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 pb-3">
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">
+                {t("detailTitle")}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setDetailOpen(false)}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+                aria-label={t("detailClose")}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Info */}
+            <div className="px-5 pb-4 space-y-3">
+              {/* Título + badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className={`p-2 rounded-full ${isIncome ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                  {isIncome ? <FiArrowUp size={16} /> : <FiArrowDown size={16} />}
+                </div>
+                <span className="font-bold text-[var(--color-text-primary)]">{item.title}</span>
+                {item.isFixed && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                    {t("fixedLabel")}
+                  </span>
+                )}
+                {isRolled && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    {t("rolledFromMonth", { month: item.carriedFromMonth || "" })}
+                  </span>
+                )}
+                {isMoved && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-[var(--color-accent-text)] border border-blue-500/20">
+                    {t("movedBadge")}
+                  </span>
+                )}
+              </div>
+
+              {/* Campos */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailAmount")}</p>
+                  <p className={`text-sm font-bold ${isIncome ? "text-green-600" : "text-red-600"}`}>
+                    {isIncome ? "+ " : "- "}{formatCurrency(item.amount)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailDate")}</p>
+                  <p className="text-sm text-[var(--color-text-primary)]">
+                    {format(parseISO(item.date), "P", { locale: dateLocale })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailCategory")}</p>
+                  <p className="text-sm text-[var(--color-accent-text)]">{item.category}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailStatus")}</p>
+                  <p className="text-sm">
+                    {item.status === "paid" && <span className="text-green-500 font-semibold">{isIncome ? t("statusReceived") : t("statusPaid")}</span>}
+                    {item.status === "pending" && <span className="text-amber-500 font-semibold">{t("statusPending")}</span>}
+                    {item.status === "partial" && <span className="text-[var(--color-accent-text)] font-semibold">{t("statusPartial")}</span>}
+                    {item.status === "moved" && <span className="text-[var(--color-accent-text)] font-semibold">{t("statusMoved")}</span>}
+                  </p>
+                </div>
+              </div>
+
+              {/* Juros */}
+              {!!item.interestAmount && item.interestAmount > 0 && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">{t("detailInterest")}</p>
+                  <p className="text-sm text-amber-700 font-semibold">
+                    {t("interestAmountDisplay", { value: formatCurrency(item.interestAmount) })}
+                  </p>
+                </div>
+              )}
+
+              {/* Parcela */}
+              {isInstallment && (
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  {t("detailInstallment", { index: item.installmentIndex ?? 1, total: item.installmentTotal ?? 1 })}
+                </p>
+              )}
+
+              {/* Investimento */}
+              {item.investmentCategory && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailInvestmentCategory")}</p>
+                  <p className="text-sm text-[var(--color-text-primary)]">{item.investmentCategory}</p>
+                </div>
+              )}
+
+              {/* Lançado por */}
+              {item.createdByName && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t("detailCreatedBy")}</p>
+                  <p className="text-sm text-[var(--color-text-primary)]">{item.createdByName}</p>
+                </div>
+              )}
+
+              {/* Pagamento parcial */}
+              {isPartial && (
+                <p className="text-xs text-blue-600">
+                  {t("partialPaid", { paid: formatCurrency(paidAmount), total: formatCurrency(item.amount) })}
+                </p>
+              )}
+
+              {/* Sub-itens */}
+              <div className="border-t border-[var(--color-border-subtle)] pt-3">
+                <SubItemsList
+                  itemId={item.id}
+                  parentAmount={item.amount}
+                  parentStatus={item.status}
+                  locale={locale}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CONFIRMAÃ‡ÃƒO (reverter pagamento / excluir) */}
       {confirmKind && (

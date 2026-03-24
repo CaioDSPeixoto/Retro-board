@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* ─── Overscroll — impede bounce/rubber-band ao forçar scroll ──── */
+html, body {
+  overscroll-behavior: none;
+}
+
 /* ─── Tokens de cor — light mode (padrão) ───────────────────────── */
 :root {
   --color-page:            #dbeafe;
