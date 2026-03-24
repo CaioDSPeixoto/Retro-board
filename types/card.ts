@@ -5,6 +5,7 @@ export type Card = {
   likes: number;
   dislikes: number;
   author?: string;
+  authorId?: string;
 };
 
 // Informações fixas (cores)

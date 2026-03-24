@@ -2,35 +2,30 @@
 
 import { Card } from "@/types/card";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import { useTranslations } from "next-intl";
 
 type Props = {
   cards: Card[];
-  title?: string; // título customizável opcional
+  title?: string;
 };
 
 export default function ExportButtons({ cards, title }: Props) {
   const t = useTranslations("Export");
 
-  // Ordem das categorias
   const CATEGORY_ORDER: Record<Card["category"], number> = {
     bom: 0,
     ruim: 1,
     melhorar: 2,
   };
 
-  // Cores do PDF
   const CATEGORY_COLORS: Record<Card["category"], string> = {
     bom: "#d1fae5",
     ruim: "#fee2e2",
     melhorar: "#fef3c7",
   };
 
-  // Sanitiza nomes de arquivo/planilha
   const sanitizeFileName = (name: string) => name.replace(/[/\\?%*:|"<>]/g, "_");
 
-  // Exporta PDF
   const exportPDF = () => {
     const reportTitle = title || t("defaultTitle");
     const sortedCards = [...cards].sort(
@@ -58,7 +53,6 @@ export default function ExportButtons({ cards, title }: Props) {
       doc.text(line, 14, y);
       y += 10;
 
-      // Quebra de página
       if (y > 280) {
         doc.addPage();
         y = 20;
@@ -68,27 +62,39 @@ export default function ExportButtons({ cards, title }: Props) {
     doc.save(`${sanitizeFileName(reportTitle)}.pdf`);
   };
 
-  // Exporta Excel
-  const exportExcel = () => {
+  const escapeCsvField = (value: string | number) => {
+    const str = String(value);
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const exportCSV = () => {
     const reportTitle = title || t("defaultTitle");
     const sortedCards = [...cards].sort(
       (a, b) => CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category]
     );
 
-    const worksheetData = sortedCards.map((card) => ({
-      [t("category")]: card.category,
-      [t("content")]: card.text,
-      [t("author")]: card.author || t("anonymous"),
-      [t("likes")]: card.likes,
-      [t("dislikes")]: card.dislikes,
-    }));
+    const headers = [t("category"), t("content"), t("author"), t("likes"), t("dislikes")];
+    const rows = sortedCards.map((card) => [
+      escapeCsvField(card.category),
+      escapeCsvField(card.text),
+      escapeCsvField(card.author || t("anonymous")),
+      escapeCsvField(card.likes),
+      escapeCsvField(card.dislikes),
+    ]);
 
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
+    const bom = "\uFEFF";
+    const csv = bom + [headers.map(escapeCsvField).join(","), ...rows.map((r) => r.join(","))].join("\n");
 
-    const sheetName = sanitizeFileName(reportTitle);
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${sheetName}.xlsx`);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${sanitizeFileName(reportTitle)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -100,10 +106,10 @@ export default function ExportButtons({ cards, title }: Props) {
         {t("exportPDF")}
       </button>
       <button
-        onClick={exportExcel}
+        onClick={exportCSV}
         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
       >
-        {t("exportExcel")}
+        {t("exportCSV")}
       </button>
     </div>
   );

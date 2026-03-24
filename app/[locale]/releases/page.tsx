@@ -4,6 +4,24 @@ import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
 
 const releases = [
+  { version: "1.0.0", date: "23/03/2026", changes: [
+    "FEAT: sistema de planos (free/pro/team) com limites por funcionalidade",
+    "FEAT: painel admin para gerenciamento manual de assinaturas",
+    "FEAT: migração Todo e Time Tracker para Firestore (cloud sync)",
+    "FEAT: listas nomeadas no Todo com limites por plano",
+    "FEAT: calendário no Time Tracker com histórico de dias",
+    "FEAT: drag & drop e exclusão de cards no Retroboard",
+    "FEAT: TTL/expiração de salas no Retroboard",
+    "FEAT: aba de investimentos no módulo financeiro",
+    "FEAT: limites de categorias customizadas por plano",
+    "FEAT: feature flags integrados ao código existente",
+    "FEAT: validação Zod para server actions",
+    "FEAT: animações e melhorias visuais na página inicial e currículo",
+    "FIX: correção de dark theme com nova paleta de cores",
+    "FIX: correção de múltiplos bugs (Firestore index, re-renders, sub-items)",
+    "REFACT: i18n completo em server actions (remoção de strings hardcoded)",
+    "REFACT: regras Firestore atualizadas para novas collections",
+  ] },
   { version: "0.8.4", date: "20/03/2026", changes: ["REFACT: centralização de temas e padronização de codigo"] },
   { version: "0.8.3", date: "19/03/2026", changes: ["FEAT: adicionado botão de modo claro/escuro"] },
   { version: "0.8.2", date: "25/02/2026", changes: ["REFACT: ajustando alguns textos para melhor compreensão"] },

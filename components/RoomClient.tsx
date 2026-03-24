@@ -8,6 +8,7 @@ import {
   addDoc,
   doc,
   updateDoc,
+  deleteDoc,
   getDoc,
   increment,
 } from "firebase/firestore";
@@ -20,6 +21,8 @@ import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
 import NameModal from "@/components/NameModal";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
+import { PLAN_LIMITS } from "@/types/user";
+import type { SubscriptionPlan } from "@/types/user";
 
 type RoomData = {
   requireName: boolean;
@@ -29,9 +32,11 @@ type RoomData = {
 type Props = {
   roomId: string;
   locale: string;
+  exportEnabled?: boolean;
+  userPlan?: SubscriptionPlan;
 };
 
-export default function RoomClient({ roomId, locale }: Props) {
+export default function RoomClient({ roomId, locale, exportEnabled = true, userPlan = "free" }: Props) {
   const t = useTranslations("Room");
   const router = useRouter();
 
@@ -39,13 +44,24 @@ export default function RoomClient({ roomId, locale }: Props) {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [userName, setUserName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
+  const [userId, setUserId] = useState("");
 
   const [isMobile, setIsMobile] = useState(false);
   const [origin, setOrigin] = useState("");
 
+  const maxCardsPerUser = PLAN_LIMITS[userPlan]?.maxRetroCardsPerColumn ?? 5;
+
   useEffect(() => {
     setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
     setOrigin(window.location.origin);
+
+    // Generate or retrieve a persistent anonymous user ID
+    let storedId = localStorage.getItem("retroboard:userId");
+    if (!storedId) {
+      storedId = `anon-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      localStorage.setItem("retroboard:userId", storedId);
+    }
+    setUserId(storedId);
   }, []);
 
   useEffect(() => {
@@ -66,8 +82,6 @@ export default function RoomClient({ roomId, locale }: Props) {
 
       const storedName = localStorage.getItem("userName");
 
-      // Se a sala exige nome e não temos um salvo, abre modal.
-      // E NÃO seta o userName ainda, para evitar escrita "anônima" prematura.
       if (data.requireName && !storedName) {
         setShowNameModal(true);
       } else if (storedName) {
@@ -76,7 +90,8 @@ export default function RoomClient({ roomId, locale }: Props) {
     };
 
     fetchRoom();
-  }, [roomId, locale, router, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, locale]);
 
   const handleSaveName = (name: string) => {
     localStorage.setItem("userName", name);
@@ -115,6 +130,7 @@ export default function RoomClient({ roomId, locale }: Props) {
       likes: 0,
       dislikes: 0,
       author: userName || t("defaults.anonymous"),
+      authorId: userId,
       createdAt: new Date(),
     });
   };
@@ -122,6 +138,20 @@ export default function RoomClient({ roomId, locale }: Props) {
   const vote = async (id: string, type: "likes" | "dislikes") => {
     await updateDoc(doc(db, "rooms", roomId, "cards", id), {
       [type]: increment(1),
+    });
+  };
+
+  const deleteCard = async (cardId: string) => {
+    const card = cards.find((c) => c.id === cardId);
+    if (!card || card.authorId !== userId) return;
+    await deleteDoc(doc(db, "rooms", roomId, "cards", cardId));
+  };
+
+  const moveCard = async (cardId: string, toCategory: Card["category"]) => {
+    const card = cards.find((c) => c.id === cardId);
+    if (!card || card.category === toCategory) return;
+    await updateDoc(doc(db, "rooms", roomId, "cards", cardId), {
+      category: toCategory,
     });
   };
 
@@ -162,8 +192,16 @@ export default function RoomClient({ roomId, locale }: Props) {
           </span>
         </header>
 
-        <Board cards={cards} addCard={addCard} vote={vote} />
-        <ExportButtons cards={cards} title={roomData.roomName} />
+        <Board
+          cards={cards}
+          addCard={addCard}
+          vote={vote}
+          onMoveCard={moveCard}
+          onDeleteCard={deleteCard}
+          currentUserId={userId}
+          maxCardsPerUser={maxCardsPerUser}
+        />
+        {exportEnabled && <ExportButtons cards={cards} title={roomData.roomName} />}
       </div>
     </div>
   );

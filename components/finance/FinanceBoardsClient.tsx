@@ -136,7 +136,7 @@ export default function FinanceBoardsClient({
     const res = await createFinanceBoard(trimmed, locale);
 
     if (res && "error" in res && res.error) {
-      setError(tBoards("errors.general"));
+      setError(res.error as string);
       setCreating(false);
       return;
     }

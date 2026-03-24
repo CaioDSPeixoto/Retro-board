@@ -8,8 +8,9 @@ import {
   getFinanceItemsData,
   getCategoriesData,
   getBoardsData,
+  getInvestmentBuckets,
 } from "./data";
-import type { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, InvestmentBucket } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
@@ -108,6 +109,7 @@ export default async function FinancePage({
   }
 
   const categories = await getCategoriesData(boardId);
+  const buckets = await getInvestmentBuckets(boardId);
 
   return (
     <div className="max-w-5xl mx-auto px-6 pb-10 pt-4">
@@ -119,6 +121,7 @@ export default async function FinancePage({
         boards={boards}
         currentBoardId={boardId}
         sessionUserId={safeSessionUserId}
+        initialBuckets={buckets}
       />
     </div>
   );

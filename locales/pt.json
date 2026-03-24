@@ -4,7 +4,9 @@
     "version": "Versão"
   },
   "CardItem": {
-    "author": "Autor"
+    "author": "Autor",
+    "deleteCard": "Excluir card",
+    "confirmDelete": "Tem certeza que deseja excluir este card?"
   },
   "CreateCard": {
     "author": "Seu nome..."
@@ -12,7 +14,7 @@
   "Export": {
     "defaultTitle": "Resultados do Board",
     "exportPDF": "Exportar PDF",
-    "exportExcel": "Exportar Excel",
+    "exportCSV": "Exportar CSV",
     "author": "Autor",
     "anonymous": "Anônimo",
     "likes": "Curtidas",
@@ -24,7 +26,8 @@
     "home": "Início",
     "tools": "Ferramentas",
     "language": "Idioma",
-    "resume": "Currículo"
+    "resume": "Currículo",
+    "admin": "Admin"
   },
   "Room": {
     "defaults": {
@@ -42,7 +45,9 @@
     }
   },
   "Column": {
-    "new": "Novo card..."
+    "new": "Novo card...",
+    "cardLimitReached": "Limite de cards atingido nesta coluna.",
+    "dropHere": "Solte aqui"
   },
   "Home": {
     "title": "Oi, seja bem vindo",
@@ -50,7 +55,17 @@
     "description": "Este site é meu laboratório de ferramentas para meu dia a dia.",
     "ctaTools": "Abrir o inventário de ferramentas",
     "aboutTitle": "Sobre mim",
-    "aboutBody": "Desenvolvedor Fullstack Sênior com +8 anos de experiência, especializado em Back-End e P&D, construindo plataformas de alta performance com .NET, Python e IA Generativa. ",
+    "aboutExperience": "+9 anos",
+    "aboutExperienceSuffix": "de experiência",
+    "aboutBio": "Apaixonado por resolver problemas complexos com código limpo. Atuo principalmente em Back-End e P&D, mas transito bem pelo Front-End quando preciso. Gosto de construir plataformas robustas, automatizar o que for possível e explorar os limites da IA Generativa aplicada a produtos reais.",
+    "aboutTechsTitle": "Clique numa tech pra ver um projeto de destaque",
+    "aboutTechs": [
+      { "name": "C# / .NET", "project": "Plataforma de processamento de documentos fiscais em larga escala — milhões de NF-es/mês com filas, workers e APIs REST de alta disponibilidade." },
+      { "name": "Python", "project": "Motor de IA Generativa para análise e extração inteligente de dados de contratos jurídicos, usando LLMs com RAG e pipelines de NLP." },
+      { "name": "React / Next.js", "project": "Esta plataforma que você está usando agora — multi-ferramenta pessoal com SSR, real-time, i18n e Tailwind." },
+      { "name": "Banco de Dados", "project": "Modelagem e otimização de bases SQL Server e PostgreSQL com +500M de registros, incluindo particionamento, índices e tuning de queries críticas." },
+      { "name": "Tech Lead", "project": "Liderança técnica de squads de 4-8 devs, definindo arquitetura, code review, mentoria e alinhamento com produto em ciclos ágeis." }
+    ],
     "highlightsTitle": "Superpoderes (não confirmados)",
     "highlights": [
       {
@@ -160,7 +175,18 @@
     "workload6": "Carga diária: 6h",
     "workload8": "Carga diária: 8h",
     "workload848": "Carga diária: 8h48",
-    "suggestedExit": "Sugestão de saída"
+    "suggestedExit": "Sugestão de saída",
+    "today": "Hoje",
+    "calendarTitle": "Histórico de dias",
+    "noEntries": "Nenhum registro neste dia.",
+    "deleteDay": "Excluir dia",
+    "confirmDeleteDay": "Tem certeza que deseja excluir o registro deste dia?",
+    "savedDays": "{count, plural, one {# dia salvo} other {# dias salvos}}",
+    "errors": {
+      "unauthorized": "Não autorizado.",
+      "notFound": "Registro não encontrado.",
+      "dayLimitReached": "Você atingiu o limite de dias do seu plano."
+    }
   },
   "Finance": {
     "paymentModalMoveLabel": "Mover para o próximo mês",
@@ -237,9 +263,11 @@
       "noPermission": "Sem permissão.",
       "boardNotFound": "Quadro não encontrado.",
       "itemNotFound": "Item não encontrado.",
+      "rateLimited": "Muitas requisições. Aguarde um momento.",
       "incompleteData": "Dados incompletos.",
       "invalidCategoryName": "Nome inválido.",
       "categoryExists": "Essa categoria já existe.",
+      "categoryLimitReached": "Você atingiu o limite de categorias do seu plano.",
       "updateFailed": "Erro ao atualizar. Tente novamente.",
       "categoryInUse": "Esta categoria está em uso e não pode ser excluída.",
       "redistributionMismatch": "A soma dos novos valores não corresponde ao total original das parcelas.",
@@ -247,7 +275,25 @@
       "invalidSubItem": "Sub-item inválido. Informe título e valor positivo.",
       "cannotEditPaidItem": "Não é possível editar sub-itens de lançamentos pagos ou movidos.",
       "allocationSumInvalid": "A soma das proporções de alocação deve ser 100%",
-      "invalidInvestmentAmount": "O valor do aporte deve ser positivo"
+      "invalidInvestmentAmount": "O valor do aporte deve ser positivo",
+      "invalidName": "Nome inválido.",
+      "onlyOwnerCanRename": "Somente o dono pode renomear.",
+      "onlyOwnerCanDelete": "Somente o dono pode excluir.",
+      "boardNameMismatch": "Nome do quadro não confere.",
+      "boardNeedsOneMember": "Quadro precisa ter pelo menos 1 membro.",
+      "onlyOwnerCanRemoveMembers": "Somente o dono pode remover membros.",
+      "categoryRequired": "Categoria é obrigatória.",
+      "cannotDeletePaid": "Não é possível excluir lançamentos pagos/recebidos.",
+      "cannotDeleteMoved": "Não é possível excluir lançamentos movidos.",
+      "cannotDeleteCarried": "Não é possível excluir lançamentos repassados de outro mês.",
+      "cannotDeleteInstallment": "Não é possível excluir lançamentos parcelados.",
+      "cannotEditPaid": "Não é possível editar lançamentos pagos/recebidos. Reverter a quitação primeiro.",
+      "notFullyPaid": "Lançamento não está quitado totalmente.",
+      "onlyFullPaymentsRevertible": "Somente pagamentos totais podem ser revertidos.",
+      "invalidAmount": "Valor inválido no lançamento.",
+      "invalidPartialAmount": "Valor parcial inválido.",
+      "boardLimitReached": "Você atingiu o limite de quadros do seu plano. Faça upgrade para criar mais.",
+      "exportNotAvailable": "Exportação não disponível no plano gratuito."
     }
   },
   "FinanceMetrics": {
@@ -299,7 +345,24 @@
     "placeholder": "Descrição da tarefa",
     "clearAll": "Limpar tudo",
     "remaining": "restantes",
-    "empty": "Nenhuma tarefa por enquanto..."
+    "empty": "Nenhuma tarefa por enquanto...",
+    "newListPlaceholder": "Nome da nova lista",
+    "createList": "Criar lista",
+    "deleteList": "Excluir lista",
+    "renameList": "Renomear lista",
+    "confirmDeleteList": "Tem certeza que deseja excluir esta lista e todas as suas tarefas?",
+    "cancelDelete": "Cancelar",
+    "noLists": "Nenhuma lista criada ainda.",
+    "tasksCount": "{count, plural, one {# tarefa} other {# tarefas}}",
+    "loginHint": "Faça login para salvar suas listas na nuvem.",
+    "errors": {
+      "unauthorized": "Não autorizado.",
+      "emptyName": "O nome não pode ser vazio.",
+      "listLimitReached": "Você atingiu o limite de listas do seu plano.",
+      "todoLimitReached": "Você atingiu o limite de tarefas por lista do seu plano.",
+      "notFound": "Item não encontrado.",
+      "empty": "A tarefa não pode ser vazia."
+    }
   },
   "FinanceLogin": {
     "title": "Minhas Finanças",
@@ -464,7 +527,7 @@
     "addCategory": "Adicionar",
     "descriptionLabel": "Descrição",
     "descriptionPlaceholder": "Ex: Aluguel, Salário...",
-    "amountLabel": "Valor (R$)",
+    "amountLabel": "Valor total (R$)",
     "dateLabel": "Data",
     "alreadyPaidLabel": "Já foi pago/recebido",
     "fixedCheckboxLabel": "Lançamento fixo (repetir todo mês)",
@@ -528,25 +591,68 @@
       "requireName": "Por favor, digite seu nome antes de criar a sala!",
       "createError": "Erro ao criar a sala. Tente novamente.",
       "roomNotFound": "Sala não encontrada!"
+    },
+    "history": {
+      "title": "Salas recentes",
+      "empty": "Nenhuma sala visitada ainda.",
+      "open": "Abrir",
+      "remove": "Remover",
+      "clearAll": "Limpar histórico",
+      "confirmClearAll": "Tem certeza que deseja limpar todo o histórico de salas?",
+      "confirmRemove": "Tem certeza que deseja remover esta sala do histórico?",
+      "confirmClear": "Limpar",
+      "confirmDelete": "Remover",
+      "cancel": "Cancelar",
+      "expiresAt": "Expira em {date}",
+      "expired": "Expirada"
     }
   },
   "FinanceInvestments": {
-    "configTitle": "Configuração de Alocação",
-    "allocationLabel": "Proporção de Alocação",
-    "saveConfig": "Salvar Configuração",
-    "emergencyLabel": "Reserva de Emergência",
-    "fixedIncomeLabel": "Renda Fixa",
-    "variableIncomeLabel": "Renda Variável",
-    "allocationSumError": "A soma das proporções deve ser 100%",
-    "configSaved": "Configuração salva com sucesso",
-    "suggestedLabel": "Sugestão",
-    "investedLabel": "Investido",
     "panelTitle": "Investimentos",
-    "totalInvested": "Total Investido",
-    "monthlyHistory": "Histórico Mensal",
-    "noInvestments": "Nenhum investimento registrado",
-    "suggestedAllocation": "Alocação Sugerida",
-    "last12Months": "Últimos 12 meses"
+    "totalBalance": "Saldo Total",
+    "noBuckets": "Nenhuma caixinha criada ainda.",
+    "noBucketsHint": "Crie sua primeira caixinha para começar a organizar seus investimentos.",
+    "createBucket": "Nova caixinha",
+    "editBucket": "Editar caixinha",
+    "deleteBucket": "Excluir caixinha",
+    "confirmDeleteBucket": "Tem certeza que deseja excluir esta caixinha?",
+    "bucketNameLabel": "Nome da caixinha",
+    "bucketNamePlaceholder": "Ex: Reserva de emergência",
+    "currentBalanceLabel": "Saldo atual",
+    "autoAllocationTitle": "Alocação automática",
+    "autoAllocationHint": "Configure para alocar automaticamente parte de uma receita nesta caixinha.",
+    "allocationTypeLabel": "Tipo de alocação",
+    "allocationPercentage": "Percentual",
+    "allocationFixed": "Valor fixo",
+    "allocationNone": "Nenhuma",
+    "allocationValueLabel": "Valor da alocação",
+    "allocationPercentHint": "% sobre o valor da receita selecionada",
+    "allocationFixedHint": "Valor fixo a ser alocado",
+    "linkedIncomeLabel": "Receita vinculada",
+    "linkedIncomePlaceholder": "Selecione uma receita...",
+    "noIncomesAvailable": "Nenhuma receita disponível para vincular.",
+    "saveBucket": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "balanceLabel": "Saldo",
+    "allocationLabel": "Alocação",
+    "ofIncome": "de {title}",
+    "perMonth": "/mês",
+    "updateBalanceLabel": "Atualizar saldo",
+    "newBalancePlaceholder": "Novo saldo",
+    "confirmUpdateBalance": "Atualizar",
+    "bucketSaved": "Caixinha salva com sucesso!",
+    "bucketDeleted": "Caixinha excluída.",
+    "balanceUpdated": "Saldo atualizado.",
+    "errors": {
+      "emptyName": "O nome não pode ser vazio.",
+      "invalidBalance": "Saldo inválido.",
+      "invalidAllocationValue": "Valor de alocação inválido.",
+      "needLinkedIncome": "Selecione uma receita para vincular a alocação.",
+      "bucketNotFound": "Caixinha não encontrada.",
+      "saveFailed": "Erro ao salvar. Tente novamente.",
+      "deleteFailed": "Erro ao excluir. Tente novamente."
+    }
   },
   "FinanceCharts": {
     "title": "Gráficos Financeiros",
@@ -562,8 +668,38 @@
     "categoryDistributionTitle": "Distribuição por Categoria",
     "evolutionTitle": "Evolução Financeira"
   },
+  "Admin": {
+    "title": "Painel Administrativo",
+    "description": "Gerencie usuários, planos e permissões da plataforma.",
+    "searchPlaceholder": "Buscar por nome ou email...",
+    "statsTotal": "Total de usuários",
+    "statsFree": "Plano Free",
+    "statsPro": "Plano Pro",
+    "statsTeam": "Plano Team",
+    "editUser": "Editar usuário",
+    "editUserTitle": "Editar Usuário",
+    "planLabel": "Plano",
+    "roleLabel": "Papel",
+    "expiresLabel": "Expiração do plano",
+    "expiresAt": "Expira em",
+    "roleAdmin": "Admin",
+    "roleUser": "Usuário",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "userUpdated": "Usuário atualizado com sucesso.",
+    "noUsers": "Nenhum usuário encontrado.",
+    "errors": {
+      "unauthorized": "Não autorizado.",
+      "notAdmin": "Acesso restrito a administradores.",
+      "invalidData": "Dados inválidos."
+    }
+  },
   "Common": {
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "errorTitle": "Algo deu errado",
+    "errorDescription": "Ocorreu um erro inesperado. Tente novamente ou volte para a página inicial.",
+    "errorRetry": "Tentar novamente",
+    "errorGoHome": "Voltar ao início"
   },
   "Resume": {
     "labels": {

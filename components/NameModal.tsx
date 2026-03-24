@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useModalA11y } from "@/hooks/useModalA11y";
 
 type Props = {
     isOpen: boolean;
@@ -11,6 +12,7 @@ type Props = {
 export default function NameModal({ isOpen, onSave }: Props) {
     const t = useTranslations("Retroboard");
     const [name, setName] = useState("");
+    const modalRef = useModalA11y(isOpen, () => {});
 
     if (!isOpen) return null;
 
@@ -22,8 +24,9 @@ export default function NameModal({ isOpen, onSave }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
             <div
+                ref={modalRef}
                 className="rounded-xl shadow-xl p-6 w-full max-w-md border"
                 style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
             >

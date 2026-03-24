@@ -1,4 +1,5 @@
 import RoomClient from "@/components/RoomClient";
+import { canExport, getCurrentUserPlan } from "@/lib/auth/plan-check";
 
 type RoomPageProps = {
   params: Promise<{
@@ -16,5 +17,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
     return <p>Room's ID not found.</p>;
   }
 
-  return <RoomClient roomId={roomId} locale={locale} />;
+  const exportEnabled = await canExport();
+  const userPlan = await getCurrentUserPlan();
+
+  return <RoomClient roomId={roomId} locale={locale} exportEnabled={exportEnabled} userPlan={userPlan} />;
 }

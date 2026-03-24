@@ -1,7 +1,8 @@
-import { FiHome, FiTool, FiFileText } from "react-icons/fi";
+import { FiHome, FiTool, FiFileText, FiShield } from "react-icons/fi";
 import UserMenu from "./UserMenu";
 import { getTranslations } from "next-intl/server";
 import { getSession } from "@/lib/auth/session";
+import { getUserProfile } from "@/lib/auth/user-profile";
 import packageInfo from '../package.json';
 import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -9,6 +10,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 export default async function Navbar({ locale }: { locale: string }) {
   const t = await getTranslations("Navbar");
   const session = await getSession();
+
+  let isAdminUser = false;
+  if (session) {
+    const profile = await getUserProfile(session);
+    isAdminUser = profile?.role === "admin";
+  }
 
   const appVersion = packageInfo.version || "0.0.0";
 
@@ -31,6 +38,13 @@ export default async function Navbar({ locale }: { locale: string }) {
             <FiFileText size={18} />
             <span className="hidden sm:inline">{t("resume")}</span>
           </NavLink>
+
+          {isAdminUser && (
+            <NavLink href={`/${locale}/admin`} locale={locale}>
+              <FiShield size={18} />
+              <span className="hidden sm:inline">{t("admin")}</span>
+            </NavLink>
+          )}
         </div>
 
         {/* RIGHT */}

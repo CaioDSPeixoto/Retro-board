@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Spinner from "@/components/ui/Spinner";
 import { redistributeInstallments } from "@/app/[locale]/tools/finance/(protected)/actions";
 import type { FinanceItem } from "@/types/finance";
+import { useModalA11y } from "@/hooks/useModalA11y";
 
 type Props = {
   installments: FinanceItem[];
@@ -30,6 +31,7 @@ export default function RedistributeParcelModal({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const modalRef = useModalA11y(true, onClose);
 
   const sorted = useMemo(
     () =>
@@ -109,8 +111,9 @@ export default function RedistributeParcelModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true">
       <div
+        ref={modalRef}
         className="relative w-full sm:w-[480px] rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl border flex flex-col"
         style={{
           background: "var(--color-surface)",

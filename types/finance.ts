@@ -19,7 +19,7 @@ export type SubItem = {
   createdAt: string;
 };
 
-// ====== INVESTMENTS ======
+// ====== INVESTMENTS (legacy — kept for backward compat) ======
 
 export type InvestmentCategory = "emergency" | "fixed-income" | "variable-income";
 
@@ -33,6 +33,24 @@ export type InvestmentConfig = {
   userId: string;
   boardId?: string;
   allocations: InvestmentAllocation[];
+  updatedAt: string;
+};
+
+// ====== INVESTMENT BUCKETS (new model — "caixinhas") ======
+
+export type BucketAllocationType = "percentage" | "fixed";
+
+export type InvestmentBucket = {
+  id: string;
+  userId: string;
+  boardId: string;
+  name: string;
+  currentBalance: number;
+  allocationType: BucketAllocationType | null; // null = sem auto-alocação
+  allocationValue: number; // % (0-100) ou valor fixo
+  linkedIncomeItemId: string | null; // id do FinanceItem de receita vinculada
+  linkedIncomeTitle: string | null; // título da receita pra exibir
+  createdAt: string;
   updatedAt: string;
 };
 

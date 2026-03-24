@@ -1,11 +1,10 @@
 import { FiTrash2 } from "react-icons/fi";
-import { Todo } from "@/hooks/useTodos";
 
-interface TodoItemProps {
-    task: Todo;
+type TodoItemProps = {
+    task: { text: string; done: boolean; time?: string };
     onToggle: (done: boolean) => void;
     onRemove: () => void;
-}
+};
 
 export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
     return (

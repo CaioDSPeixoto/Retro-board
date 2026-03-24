@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceItem, InvestmentConfig } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, InvestmentBucket } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,6 +20,7 @@ import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import RedistributeParcelModal from "@/components/finance/RedistributeParcelModal";
 import FinanceChartsPanel from "@/components/finance/FinanceChartsPanel";
+import InvestmentPanel from "@/components/finance/InvestmentPanel";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -37,7 +38,7 @@ type Props = {
   boards: FinanceBoard[];
   currentBoardId?: string | null;
   sessionUserId: string;
-  investmentConfig?: InvestmentConfig | null;
+  initialBuckets?: InvestmentBucket[];
 };
 
 export default function FinanceClientPage({
@@ -48,7 +49,7 @@ export default function FinanceClientPage({
   boards,
   currentBoardId,
   sessionUserId,
-  investmentConfig = null,
+  initialBuckets = [],
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<"list" | "metrics" | "charts">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "metrics" | "charts" | "investments">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
@@ -642,6 +643,16 @@ export default function FinanceClientPage({
               >
                 {t("tabChartsLabel")}
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("investments")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "investments"
+                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                  }`}
+              >
+                {t("tabInvestmentsLabel")}
+              </button>
             </div>
           </div>
         </div>
@@ -694,7 +705,7 @@ export default function FinanceClientPage({
               <button
                 type="button"
                 onClick={() => setShareOpen((prev) => !prev)}
-                className="p-2 rounded-xl bg-white/80 hover:bg-white border border-gray-200 text-gray-700 shadow-sm transition"
+                className="p-2 rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] border border-[var(--color-border)] text-[var(--color-text-secondary)] shadow-sm transition"
                 aria-label={t("shareTitle")}
                 title={t("shareTitle")}
               >
@@ -834,6 +845,13 @@ export default function FinanceClientPage({
           selectedMonth={currentMonth}
           locale={locale}
         />
+      ) : activeTab === "investments" ? (
+        <InvestmentPanel
+          items={items}
+          buckets={initialBuckets}
+          boardId={currentBoardId ?? null}
+          locale={locale}
+        />
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
           <p className="text-[var(--color-text-muted)] mb-2">
@@ -865,15 +883,15 @@ export default function FinanceClientPage({
 
       {
         selectionMode && selectedItems.size > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
+              <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
               <span className={`text-lg font-bold ${selectedTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {currency(selectedTotal)}
               </span>
             </div>
-            <div className="h-8 w-px bg-gray-200 mx-1" />
-            <span className="text-xs text-gray-400 font-medium">
+            <div className="h-8 w-px bg-[var(--color-border)] mx-1" />
+            <span className="text-xs text-[var(--color-text-muted)] font-medium">
               {selectedItems.size} {selectedItems.size === 1 ? t("itemSingular") : t("itemPlural")}
             </span>
           </div>

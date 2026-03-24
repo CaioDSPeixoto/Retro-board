@@ -4,7 +4,9 @@
     "version": "Version"
   },
   "CardItem": {
-    "author": "Author"
+    "author": "Author",
+    "deleteCard": "Delete card",
+    "confirmDelete": "Are you sure you want to delete this card?"
   },
   "CreateCard": {
     "author": "Your name..."
@@ -12,7 +14,7 @@
   "Export": {
     "defaultTitle": "Board Results",
     "exportPDF": "Export to PDF",
-    "exportExcel": "Export to Excel",
+    "exportCSV": "Export to CSV",
     "author": "Author",
     "anonymous": "Anonymous",
     "likes": "Likes",
@@ -24,7 +26,8 @@
     "home": "Home",
     "tools": "Tools",
     "language": "Language",
-    "resume": "Resume"
+    "resume": "Resume",
+    "admin": "Admin"
   },
   "Room": {
     "defaults": {
@@ -42,7 +45,9 @@
     }
   },
   "Column": {
-    "new": "New card..."
+    "new": "New card...",
+    "cardLimitReached": "Card limit reached in this column.",
+    "dropHere": "Drop here"
   },
   "Home": {
     "title": "Hi, welcome!",
@@ -50,7 +55,17 @@
     "description": "This site is my personal lab for everyday tools.",
     "ctaTools": "Open tools inventory",
     "aboutTitle": "About me",
-    "aboutBody": "Senior Fullstack Developer with 8+ years of experience, specializing in Back-End and R&D. Building high-performance platforms with .NET, Python, and Generative AI.",
+    "aboutExperience": "9+ years",
+    "aboutExperienceSuffix": "of experience",
+    "aboutBio": "Passionate about solving complex problems with clean code. I work mainly in Back-End and R&D, but I'm comfortable on the Front-End when needed. I enjoy building robust platforms, automating everything possible, and pushing the boundaries of Generative AI applied to real products.",
+    "aboutTechsTitle": "Click a tech to see a featured project",
+    "aboutTechs": [
+      { "name": "C# / .NET", "project": "Large-scale tax document processing platform — millions of invoices/month with queues, workers, and high-availability REST APIs." },
+      { "name": "Python", "project": "Generative AI engine for intelligent analysis and extraction of legal contract data, using LLMs with RAG and NLP pipelines." },
+      { "name": "React / Next.js", "project": "This very platform you're using right now — a personal multi-tool with SSR, real-time, i18n, and Tailwind." },
+      { "name": "Databases", "project": "Modeling and optimization of SQL Server and PostgreSQL databases with 500M+ records, including partitioning, indexing, and critical query tuning." },
+      { "name": "Tech Lead", "project": "Technical leadership of 4-8 dev squads, defining architecture, code review, mentoring, and product alignment in agile cycles." }
+    ],
     "highlightsTitle": "Superpowers (unconfirmed)",
     "highlights": [
       {
@@ -129,7 +144,18 @@
     "workload6": "Workload: 6h",
     "workload8": "Workload: 8h",
     "workload848": "Workload: 8h48",
-    "suggestedExit": "Suggested clock-out"
+    "suggestedExit": "Suggested clock-out",
+    "today": "Today",
+    "calendarTitle": "Day history",
+    "noEntries": "No entries for this day.",
+    "deleteDay": "Delete day",
+    "confirmDeleteDay": "Are you sure you want to delete this day's entry?",
+    "savedDays": "{count, plural, one {# saved day} other {# saved days}}",
+    "errors": {
+      "unauthorized": "Unauthorized.",
+      "notFound": "Entry not found.",
+      "dayLimitReached": "You have reached the day limit for your plan."
+    }
   },
   "Finance": {
     "paymentModalMoveLabel": "Move to next month",
@@ -206,9 +232,11 @@
       "noPermission": "Permission denied.",
       "boardNotFound": "Board not found.",
       "itemNotFound": "Item not found.",
+      "rateLimited": "Too many requests. Please wait a moment.",
       "incompleteData": "Incomplete data.",
       "invalidCategoryName": "Invalid name.",
       "categoryExists": "This category already exists.",
+      "categoryLimitReached": "You have reached the category limit for your plan.",
       "updateFailed": "Failed to update. Try again.",
       "categoryInUse": "This category is in use and cannot be deleted.",
       "redistributionMismatch": "The sum of new values does not match the original installment total.",
@@ -216,7 +244,25 @@
       "invalidSubItem": "Invalid sub-item. Provide a title and positive amount.",
       "cannotEditPaidItem": "Cannot edit sub-items of paid or moved entries.",
       "allocationSumInvalid": "Allocation proportions must sum to 100%",
-      "invalidInvestmentAmount": "Investment amount must be positive"
+      "invalidInvestmentAmount": "Investment amount must be positive",
+      "invalidName": "Invalid name.",
+      "onlyOwnerCanRename": "Only the owner can rename.",
+      "onlyOwnerCanDelete": "Only the owner can delete.",
+      "boardNameMismatch": "Board name does not match.",
+      "boardNeedsOneMember": "Board must have at least 1 member.",
+      "onlyOwnerCanRemoveMembers": "Only the owner can remove members.",
+      "categoryRequired": "Category is required.",
+      "cannotDeletePaid": "Cannot delete paid/received entries.",
+      "cannotDeleteMoved": "Cannot delete moved entries.",
+      "cannotDeleteCarried": "Cannot delete entries carried from another month.",
+      "cannotDeleteInstallment": "Cannot delete installment entries.",
+      "cannotEditPaid": "Cannot edit paid/received entries. Revert the payment first.",
+      "notFullyPaid": "Entry is not fully paid.",
+      "onlyFullPaymentsRevertible": "Only full payments can be reverted.",
+      "invalidAmount": "Invalid amount in entry.",
+      "invalidPartialAmount": "Invalid partial amount.",
+      "boardLimitReached": "You have reached the board limit for your plan. Upgrade to create more.",
+      "exportNotAvailable": "Export is not available on the free plan."
     }
   },
   "FinanceMetrics": {
@@ -268,7 +314,24 @@
     "placeholder": "Task description",
     "clearAll": "Clear all",
     "remaining": "remaining",
-    "empty": "No tasks yet..."
+    "empty": "No tasks yet...",
+    "newListPlaceholder": "New list name",
+    "createList": "Create list",
+    "deleteList": "Delete list",
+    "renameList": "Rename list",
+    "confirmDeleteList": "Are you sure you want to delete this list and all its tasks?",
+    "cancelDelete": "Cancel",
+    "noLists": "No lists created yet.",
+    "tasksCount": "{count, plural, one {# task} other {# tasks}}",
+    "loginHint": "Log in to save your lists to the cloud.",
+    "errors": {
+      "unauthorized": "Unauthorized.",
+      "emptyName": "Name cannot be empty.",
+      "listLimitReached": "You have reached the list limit for your plan.",
+      "todoLimitReached": "You have reached the task limit per list for your plan.",
+      "notFound": "Item not found.",
+      "empty": "Task cannot be empty."
+    }
   },
   "FinanceLogin": {
     "title": "My Finances",
@@ -433,7 +496,7 @@
     "addCategory": "Add",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "e.g., Rent, Salary...",
-    "amountLabel": "Amount ($)",
+    "amountLabel": "Total amount ($)",
     "dateLabel": "Date",
     "alreadyPaidLabel": "Already settled",
     "fixedCheckboxLabel": "Recurring (repeat every month)",
@@ -497,25 +560,68 @@
       "requireName": "Please enter your name before creating the room!",
       "createError": "Error creating room. Please try again.",
       "roomNotFound": "Room not found!"
+    },
+    "history": {
+      "title": "Recent rooms",
+      "empty": "No rooms visited yet.",
+      "open": "Open",
+      "remove": "Remove",
+      "clearAll": "Clear history",
+      "confirmClearAll": "Are you sure you want to clear all room history?",
+      "confirmRemove": "Are you sure you want to remove this room from history?",
+      "confirmClear": "Clear",
+      "confirmDelete": "Remove",
+      "cancel": "Cancel",
+      "expiresAt": "Expires on {date}",
+      "expired": "Expired"
     }
   },
   "FinanceInvestments": {
-    "configTitle": "Allocation Configuration",
-    "allocationLabel": "Allocation Proportion",
-    "saveConfig": "Save Configuration",
-    "emergencyLabel": "Emergency Fund",
-    "fixedIncomeLabel": "Fixed Income",
-    "variableIncomeLabel": "Variable Income",
-    "allocationSumError": "Allocation proportions must sum to 100%",
-    "configSaved": "Configuration saved successfully",
-    "suggestedLabel": "Suggested",
-    "investedLabel": "Invested",
     "panelTitle": "Investments",
-    "totalInvested": "Total Invested",
-    "monthlyHistory": "Monthly History",
-    "noInvestments": "No investments recorded",
-    "suggestedAllocation": "Suggested Allocation",
-    "last12Months": "Last 12 months"
+    "totalBalance": "Total Balance",
+    "noBuckets": "No buckets created yet.",
+    "noBucketsHint": "Create your first bucket to start organizing your investments.",
+    "createBucket": "New bucket",
+    "editBucket": "Edit bucket",
+    "deleteBucket": "Delete bucket",
+    "confirmDeleteBucket": "Are you sure you want to delete this bucket?",
+    "bucketNameLabel": "Bucket name",
+    "bucketNamePlaceholder": "E.g., Emergency fund",
+    "currentBalanceLabel": "Current balance",
+    "autoAllocationTitle": "Auto allocation",
+    "autoAllocationHint": "Set up automatic allocation of part of an income to this bucket.",
+    "allocationTypeLabel": "Allocation type",
+    "allocationPercentage": "Percentage",
+    "allocationFixed": "Fixed amount",
+    "allocationNone": "None",
+    "allocationValueLabel": "Allocation value",
+    "allocationPercentHint": "% of the selected income value",
+    "allocationFixedHint": "Fixed amount to allocate",
+    "linkedIncomeLabel": "Linked income",
+    "linkedIncomePlaceholder": "Select an income...",
+    "noIncomesAvailable": "No incomes available to link.",
+    "saveBucket": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "balanceLabel": "Balance",
+    "allocationLabel": "Allocation",
+    "ofIncome": "of {title}",
+    "perMonth": "/month",
+    "updateBalanceLabel": "Update balance",
+    "newBalancePlaceholder": "New balance",
+    "confirmUpdateBalance": "Update",
+    "bucketSaved": "Bucket saved successfully!",
+    "bucketDeleted": "Bucket deleted.",
+    "balanceUpdated": "Balance updated.",
+    "errors": {
+      "emptyName": "Name cannot be empty.",
+      "invalidBalance": "Invalid balance.",
+      "invalidAllocationValue": "Invalid allocation value.",
+      "needLinkedIncome": "Select an income to link the allocation.",
+      "bucketNotFound": "Bucket not found.",
+      "saveFailed": "Failed to save. Try again.",
+      "deleteFailed": "Failed to delete. Try again."
+    }
   },
   "FinanceCharts": {
     "title": "Financial Charts",
@@ -531,8 +637,38 @@
     "categoryDistributionTitle": "Distribution by Category",
     "evolutionTitle": "Financial Evolution"
   },
+  "Admin": {
+    "title": "Admin Panel",
+    "description": "Manage users, plans, and platform permissions.",
+    "searchPlaceholder": "Search by name or email...",
+    "statsTotal": "Total users",
+    "statsFree": "Free plan",
+    "statsPro": "Pro plan",
+    "statsTeam": "Team plan",
+    "editUser": "Edit user",
+    "editUserTitle": "Edit User",
+    "planLabel": "Plan",
+    "roleLabel": "Role",
+    "expiresLabel": "Plan expiration",
+    "expiresAt": "Expires on",
+    "roleAdmin": "Admin",
+    "roleUser": "User",
+    "save": "Save",
+    "cancel": "Cancel",
+    "userUpdated": "User updated successfully.",
+    "noUsers": "No users found.",
+    "errors": {
+      "unauthorized": "Unauthorized.",
+      "notAdmin": "Admin access only.",
+      "invalidData": "Invalid data."
+    }
+  },
   "Common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "An unexpected error occurred. Try again or go back to the home page.",
+    "errorRetry": "Try again",
+    "errorGoHome": "Go home"
   },
   "Resume": {
     "labels": {

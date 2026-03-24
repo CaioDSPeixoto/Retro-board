@@ -25,20 +25,20 @@ html, body {
 
 /* ─── DARK MODE ───────────────────────────────────────────────────── */
 .dark {
-  --color-page:            #0f172a;
-  --color-surface:         #1e293b;
-  --color-surface-raised:  #293548;
-  --color-surface-overlay: #1e293b;
-  --color-border:          #3b4f68;
-  --color-border-subtle:   #263044;
-  --color-text-primary:    #f8fafc;
-  --color-text-secondary:  #cbd5e1;
-  --color-text-muted:      #94a3b8;
-  --color-accent-primary:  #3b82f6;
-  --color-accent-hover:    #60a5fa;
-  --color-accent-subtle:   #1e3a5f;
-  --color-accent-text:     #93c5fd;
-  --color-heading:         #e2e8f0;
+  --color-page:            #0b1120;
+  --color-surface:         #151d2e;
+  --color-surface-raised:  #1c2740;
+  --color-surface-overlay: #151d2e;
+  --color-border:          #283550;
+  --color-border-subtle:   #1e2d45;
+  --color-text-primary:    #e8edf5;
+  --color-text-secondary:  #a0b1c9;
+  --color-text-muted:      #6b7f99;
+  --color-accent-primary:  #4f8ff7;
+  --color-accent-hover:    #6ba3fa;
+  --color-accent-subtle:   #162544;
+  --color-accent-text:     #7db4fc;
+  --color-heading:         #d0dff0;
 }
 
 /* ─── Tailwind v4 @theme — aponta para as CSS vars ───────────────── */
@@ -80,12 +80,156 @@ body {
   color: var(--color-heading);
 }
 
-/* Animação de entrada suave */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
+/* ─── Dark mode semantic color adjustments ────────────────────────── */
+.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.15); }
+.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.15); }
+.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.15); }
+.dark .bg-green-200 { background-color: rgba(34, 197, 94, 0.2); }
+.dark .bg-red-200 { background-color: rgba(239, 68, 68, 0.2); }
+.dark .bg-yellow-200 { background-color: rgba(234, 179, 8, 0.2); }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.1); }
+.dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.1); }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.1); }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1); }
+.dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.15); }
+.dark .hover\:bg-blue-50:hover { background-color: rgba(59, 130, 246, 0.15); }
+
+/* ─── Animações ───────────────────────────────────────────────────── */
+
+/* Fade in de baixo para cima */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Fade in da esquerda */
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade in da direita */
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade in simples */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scale in suave */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Slide up para modais */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse suave para chamar atenção */
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* Shimmer / brilho passando */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Float suave (ícones decorativos) */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Stagger delay helpers */
+.anim-delay-100 { animation-delay: 100ms; }
+.anim-delay-200 { animation-delay: 200ms; }
+.anim-delay-300 { animation-delay: 300ms; }
+.anim-delay-400 { animation-delay: 400ms; }
+.anim-delay-500 { animation-delay: 500ms; }
+.anim-delay-600 { animation-delay: 600ms; }
+.anim-delay-700 { animation-delay: 700ms; }
+.anim-delay-800 { animation-delay: 800ms; }
+
+/* Classes de animação */
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fadeInUp {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fadeInLeft {
+  opacity: 0;
+  animation: fadeInLeft 0.6s ease-out forwards;
+}
+
+.animate-fadeInRight {
+  opacity: 0;
+  animation: fadeInRight 0.6s ease-out forwards;
+}
+
+.animate-scaleIn {
+  opacity: 0;
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+.animate-slideUp {
+  opacity: 0;
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-gentlePulse {
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* Typing cursor */
+.typing-cursor::after {
+  content: "|";
+  animation: blink 0.8s step-end infinite;
+  color: var(--color-accent-primary);
+  font-weight: 300;
 }

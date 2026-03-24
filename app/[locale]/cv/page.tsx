@@ -64,22 +64,22 @@ export default async function ResumePage({
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       <section
-        className="rounded-3xl border p-6 sm:p-8 shadow-sm"
+        className="rounded-3xl border p-6 sm:p-8 shadow-sm animate-scaleIn"
         style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
         {/* Cabeçalho */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+          <div className="animate-fadeInLeft">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight heading-gradient">
               {header.name}
             </h1>
             {header.role && (
-              <p className="mt-1 font-semibold" style={{ color: "var(--color-accent-text)" }}>
+              <p className="mt-1 font-semibold animate-fadeInUp anim-delay-100" style={{ color: "var(--color-accent-text)" }}>
                 {header.role}
               </p>
             )}
             {header.location && (
-              <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+              <p className="mt-1 text-sm animate-fadeInUp anim-delay-200" style={{ color: "var(--color-text-muted)" }}>
                 {header.location}
               </p>
             )}
@@ -87,7 +87,7 @@ export default async function ResumePage({
 
           {hasContactInfo && (
             <div
-              className="rounded-2xl border px-4 py-3 space-y-1 min-w-[220px]"
+              className="rounded-2xl border px-4 py-3 space-y-1 min-w-[220px] animate-fadeInRight anim-delay-200"
               style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
             >
               <ContactRow label={t("labels.phone")} value={header.phone} href={header.phone ? `tel:${header.phone}` : undefined} />
@@ -101,7 +101,7 @@ export default async function ResumePage({
         {/* Objetivo */}
         {objective?.title && objective?.body && (
           <div
-            className="mt-6 rounded-2xl border p-5"
+            className="mt-6 rounded-2xl border p-5 animate-fadeInUp anim-delay-200"
             style={{ background: "var(--color-accent-subtle)", borderColor: "var(--color-border)" }}
           >
             <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -116,15 +116,19 @@ export default async function ResumePage({
         {/* Experiência */}
         {experience.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-extrabold" style={{ color: "var(--color-text-primary)" }}>
+            <h2 className="text-xl font-extrabold animate-fadeInUp anim-delay-300" style={{ color: "var(--color-text-primary)" }}>
               {t("sections.experience")}
             </h2>
             <div className="mt-4 space-y-4">
               {experience.map((item, index) => (
                 <article
                   key={`${item.title}-${index}`}
-                  className="rounded-2xl border p-5"
-                  style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+                  className="rounded-2xl border p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-fadeInUp"
+                  style={{
+                    background: "var(--color-surface-raised)",
+                    borderColor: "var(--color-border)",
+                    animationDelay: `${350 + index * 120}ms`,
+                  }}
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -160,7 +164,7 @@ export default async function ResumePage({
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           {education.length > 0 && (
             <div
-              className="rounded-2xl border p-5"
+              className="rounded-2xl border p-5 animate-fadeInLeft anim-delay-400 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
             >
               <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -182,7 +186,7 @@ export default async function ResumePage({
 
           {courses.length > 0 && (
             <div
-              className="rounded-2xl border p-5"
+              className="rounded-2xl border p-5 animate-fadeInRight anim-delay-500 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
             >
               <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -200,7 +204,7 @@ export default async function ResumePage({
         {/* Extra */}
         {extra.length > 0 && (
           <div
-            className="mt-6 rounded-2xl border p-5"
+            className="mt-6 rounded-2xl border p-5 animate-fadeInUp anim-delay-600 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
           >
             <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -213,19 +217,6 @@ export default async function ResumePage({
             </ul>
           </div>
         )}
-
-        {/* Ações — botão de download comentado (PDF desatualizado, será reativado futuramente)
-        <div className="mt-6 flex flex-wrap gap-3">
-          <a
-            href="/caio-peixoto-cv.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white text-sm font-semibold hover:from-blue-700 hover:to-blue-900 transition shadow-md shadow-blue-600/20 active:scale-95"
-          >
-            ↓ {t("download")}
-          </a>
-        </div>
-        */}
       </section>
     </div>
   );

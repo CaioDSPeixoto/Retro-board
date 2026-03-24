@@ -1,7 +1,7 @@
 // app/[locale]/tools/finance/(protected)/data.ts
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
-import type { FinanceBoard, FinanceItem, FinanceBoardInvite, SubItem, InvestmentConfig, InvestmentCategory } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceBoardInvite, SubItem, InvestmentConfig, InvestmentCategory, InvestmentBucket } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange } from "@/lib/finance/utils";
 
@@ -42,6 +42,40 @@ export async function getInvestmentConfig(
     allocations: data.allocations ?? [],
     updatedAt: data.updatedAt,
   };
+}
+
+/* ================= investment buckets ================= */
+
+export async function getInvestmentBuckets(
+  boardId: string,
+): Promise<InvestmentBucket[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return [];
+
+  const snap = await adminDb
+    .collection("investment_buckets")
+    .where("userId", "==", sessionUserId)
+    .where("boardId", "==", boardId)
+    .get();
+
+  const buckets: InvestmentBucket[] = snap.docs.map((doc) => {
+    const data = doc.data() as any;
+    return {
+      id: doc.id,
+      userId: data.userId,
+      boardId: data.boardId,
+      name: data.name,
+      currentBalance: data.currentBalance ?? 0,
+      allocationType: data.allocationType ?? null,
+      allocationValue: data.allocationValue ?? 0,
+      linkedIncomeItemId: data.linkedIncomeItemId ?? null,
+      linkedIncomeTitle: data.linkedIncomeTitle ?? null,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  });
+
+  return buckets.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /* ================= sub-itens ================= */

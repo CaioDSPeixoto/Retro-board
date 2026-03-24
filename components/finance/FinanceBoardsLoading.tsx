@@ -12,7 +12,7 @@ export default function FinanceBoardsLoading() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="border border-gray-200 p-5 rounded-xl bg-white shadow-sm space-y-3">
+          <div key={i} className="border border-[var(--color-border)] p-5 rounded-xl bg-[var(--color-surface)] shadow-sm space-y-3">
             <SkeletonBlock className="h-4 w-40" />
             <SkeletonBlock className="h-3 w-24" />
             <div className="flex items-center justify-between mt-2">

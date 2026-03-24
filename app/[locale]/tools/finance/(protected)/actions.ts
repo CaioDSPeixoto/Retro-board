@@ -4,12 +4,15 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import type { FinanceBoard, FinanceItem, FinanceStatus, InterestConfig, InterestType, InvestmentAllocation, InvestmentCategory, SubItem, ChartGroupBy, ChartDataPoint, CategoryChartDataPoint } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceStatus, InterestConfig, InterestType, InvestmentAllocation, InvestmentCategory, InvestmentBucket, BucketAllocationType, SubItem, ChartGroupBy, ChartDataPoint, CategoryChartDataPoint } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES, INVESTMENT_CATEGORIES } from "@/lib/finance/constants";
 import { calculateInterestInstallments } from "@/lib/finance/utils";
+import { canCreateBoard } from "@/lib/auth/plan-check";
+import { getPlanLimits } from "@/lib/auth/plan-check";
 import { getTranslations } from "next-intl/server";
 import { format, parseISO, startOfMonth, endOfMonth, subMonths, getISOWeek } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
+import { isRateLimited } from "@/lib/rate-limit";
 
 /* ================= helpers ================= */
 
@@ -45,6 +48,24 @@ export async function createCategory(name: string, locale: string, boardId?: str
 
   if (BUILTIN_CATEGORIES.includes(trimmed))
     return { error: t("errors.categoryExists") };
+
+  // Check plan limit for custom categories
+  const limits = await getPlanLimits();
+  if (limits.maxCustomCategories !== -1) {
+    let countQuery = adminDb
+      .collection("finance_categories")
+      .where("userId", "==", sessionUser);
+    if (boardId) {
+      countQuery = countQuery.where("boardId", "==", boardId);
+    }
+    const countSnap = await countQuery.get();
+    const customCount = boardId
+      ? countSnap.size
+      : countSnap.docs.filter((d) => !d.data().boardId).length;
+    if (customCount >= limits.maxCustomCategories) {
+      return { error: t("errors.categoryLimitReached") };
+    }
+  }
 
   if (boardId) {
     const board = await getBoard(boardId);
@@ -97,11 +118,20 @@ export async function createCategory(name: string, locale: string, boardId?: str
 /* ================= boards ================= */
 
 export async function createFinanceBoard(name: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Nome inválido" };
+  if (!trimmed) return { error: t("errors.invalidName") };
+
+  // Feature flag: verificar limite de boards do plano
+  const existingBoards = await adminDb
+    .collection("finance_boards")
+    .where("ownerId", "==", sessionUser)
+    .get();
+  const allowed = await canCreateBoard(existingBoards.size);
+  if (!allowed) return { error: t("errors.boardLimitReached") };
 
   const ref = await adminDb.collection("finance_boards").add({
     name: trimmed,
@@ -120,19 +150,20 @@ export async function renameFinanceBoard(
   newName: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const trimmed = newName.trim();
-  if (!trimmed) return { error: "Nome inválido" };
+  if (!trimmed) return { error: t("errors.invalidName") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode renomear" };
+    return { error: t("errors.onlyOwnerCanRename") };
 
   await ref.update({ name: trimmed });
 
@@ -145,19 +176,20 @@ export async function deleteFinanceBoard(
   confirmName: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode excluir" };
+    return { error: t("errors.onlyOwnerCanDelete") };
 
   if (board.name.trim().toLowerCase() !== confirmName.trim().toLowerCase()) {
-    return { error: "Nome do quadro não confere" };
+    return { error: t("errors.boardNameMismatch") };
   }
 
   // apaga items do quadro
@@ -181,21 +213,22 @@ export async function removeMemberFromBoard(
   memberId: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode remover membros" };
+    return { error: t("errors.onlyOwnerCanRemoveMembers") };
 
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];
   const newMembers = members.filter((id) => id !== memberId);
   if (newMembers.length === 0) {
-    return { error: "Quadro precisa ter pelo menos 1 membro" };
+    return { error: t("errors.boardNeedsOneMember") };
   }
 
   await ref.update({ memberIds: newMembers });
@@ -213,16 +246,20 @@ export async function removeMemberFromBoard(
  *   com o VALOR DIVIDIDO entre as parcelas e metadados de grupo.
  */
 export async function addFinanceItem(formData: FormData) {
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  if (isRateLimited(`finance:write:${sessionUser}`, 30)) {
+    return { error: t("errors.rateLimited") };
+  }
 
   const titleRaw = String(formData.get("title") || "");
   const amountStr = String(formData.get("amount") || "");
   const date = String(formData.get("date") || "");
   const type = formData.get("type") as "income" | "expense" | null;
   const categoryRaw = String(formData.get("category") || "");
-  const locale = String(formData.get("locale") || "pt").toLowerCase();
-  const t = await getTranslations({ locale, namespace: "Finance" });
 
   const statusField = formData.get("status") as FinanceStatus | null;
   const isFixedFlag = formData.get("isFixed") === "true";
@@ -262,15 +299,15 @@ export async function addFinanceItem(formData: FormData) {
   if (!title || Number.isNaN(amount) || !date || !type) {
     return { error: t("errors.incompleteData") };
   }
-  if (!category) return { error: "Categoria é obrigatória" };
+  if (!category) return { error: t("errors.categoryRequired") };
 
   // valida board se veio
   let boardId: string | undefined;
   if (boardIdRaw) {
     const board = await getBoard(boardIdRaw);
-    if (!board) return { error: "Quadro não encontrado" };
+    if (!board) return { error: t("errors.boardNotFound") };
     if (!isMember(board, sessionUser))
-      return { error: "Sem permissão para lançar neste quadro" };
+      return { error: t("errors.noPermission") };
     boardId = boardIdRaw;
   }
 
@@ -425,6 +462,10 @@ export async function updateFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
 
+  if (isRateLimited(`finance:write:${sessionUser}`, 30)) {
+    return { error: t("errors.rateLimited") };
+  }
+
   const id = String(formData.get("id") || "");
   const title = String(formData.get("title") || "");
   const amountStr = String(formData.get("amount") || "");
@@ -452,12 +493,12 @@ export async function updateFinanceItem(formData: FormData) {
     !category.trim() ||
     !type
   ) {
-    return { error: "Dados incompletos" };
+    return { error: t("errors.incompleteData") };
   }
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item não encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
@@ -465,8 +506,7 @@ export async function updateFinanceItem(formData: FormData) {
 
   if (existing.status === "paid" || existing.status === "partial") {
     return {
-      error:
-        "Não é possível editar lançamentos pagos/recebidos. Reverter a quitação primeiro.",
+      error: t("errors.cannotEditPaid"),
     };
   }
 
@@ -495,31 +535,36 @@ export async function updateFinanceItem(formData: FormData) {
 }
 
 export async function deleteFinanceItem(id: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+
+  if (isRateLimited(`finance:write:${sessionUser}`, 30)) {
+    return { error: t("errors.rateLimited") };
+  }
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item não encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status === "paid" || existing.status === "partial") {
-    return { error: "Não é possível excluir lançamentos pagos/recebidos." };
+    return { error: t("errors.cannotDeletePaid") };
   }
 
   if (existing.status === "moved") {
-    return { error: "Não é possível excluir lançamentos movidos." };
+    return { error: t("errors.cannotDeleteMoved") };
   }
 
   if (existing.carriedFromMonth || existing.carriedFromItemId) {
-    return { error: "Não é possível excluir lançamentos repassados de outro mês." };
+    return { error: t("errors.cannotDeleteCarried") };
   }
 
   if (existing.installmentGroupId) {
-    return { error: "Não é possível excluir lançamentos parcelados." };
+    return { error: t("errors.cannotDeleteInstallment") };
   }
 
   // Delete sub-items in cascade (if any)
@@ -540,16 +585,17 @@ export async function toggleStatus(
   currentStatus: FinanceStatus,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item não encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   const amount = existing.amount;
   const newStatus: FinanceStatus =
@@ -576,7 +622,7 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
   if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status !== "paid") {
-    return { error: "Lançamento não está quitado totalmente." };
+    return { error: t("errors.notFullyPaid") };
   }
 
   const paidAmount = Number(existing.paidAmount || 0);
@@ -589,7 +635,7 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
     paidAmount < amount ||
     originalAmount > amount
   ) {
-    return { error: "Somente pagamentos totais podem ser revertidos." };
+    return { error: t("errors.onlyFullPaymentsRevertible") };
   }
 
   await ref.update({ status: "pending" as FinanceStatus, paidAmount: 0 });
@@ -604,21 +650,22 @@ export async function applyPaymentToFinanceItem(
   partialAmountInput: string | null,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item não encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
 
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   const totalAmount = existing.amount;
   if (typeof totalAmount !== "number" || Number.isNaN(totalAmount)) {
-    return { error: "Valor inválido no lançamento" };
+    return { error: t("errors.invalidAmount") };
   }
 
   // helper pra calcular data do próximo mês
@@ -703,7 +750,7 @@ export async function applyPaymentToFinanceItem(
   );
 
   if (Number.isNaN(parsed) || parsed <= 0) {
-    return { error: "Valor parcial inválido" };
+    return { error: t("errors.invalidPartialAmount") };
   }
 
   // Se o valor informado for >= total, trata como total
@@ -1030,6 +1077,116 @@ export async function saveInvestmentConfig(
       updatedAt: now,
     });
   }
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+/* ================= investment buckets ================= */
+
+export async function saveBucket(
+  data: {
+    id?: string;
+    boardId: string;
+    name: string;
+    currentBalance: number;
+    allocationType: BucketAllocationType | null;
+    allocationValue: number;
+    linkedIncomeItemId: string | null;
+    linkedIncomeTitle: string | null;
+  },
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "FinanceInvestments" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.saveFailed") };
+
+  const board = await getBoard(data.boardId);
+  if (!board) return { error: t("errors.saveFailed") };
+  if (!isMember(board, sessionUser)) return { error: t("errors.saveFailed") };
+
+  if (!data.name.trim()) return { error: t("errors.emptyName") };
+  if (data.currentBalance < 0) return { error: t("errors.invalidBalance") };
+  if (data.allocationType && data.allocationValue <= 0) return { error: t("errors.invalidAllocationValue") };
+  if (data.allocationType && !data.linkedIncomeItemId) return { error: t("errors.needLinkedIncome") };
+
+  const now = new Date().toISOString();
+
+  if (data.id) {
+    // Update existing bucket
+    const docRef = adminDb.collection("investment_buckets").doc(data.id);
+    const existing = await docRef.get();
+    if (!existing.exists) return { error: t("errors.bucketNotFound") };
+
+    await docRef.update({
+      name: data.name.trim(),
+      currentBalance: data.currentBalance,
+      allocationType: data.allocationType,
+      allocationValue: data.allocationType ? data.allocationValue : 0,
+      linkedIncomeItemId: data.allocationType ? data.linkedIncomeItemId : null,
+      linkedIncomeTitle: data.allocationType ? data.linkedIncomeTitle : null,
+      updatedAt: now,
+    });
+  } else {
+    // Create new bucket
+    await adminDb.collection("investment_buckets").add({
+      userId: sessionUser,
+      boardId: data.boardId,
+      name: data.name.trim(),
+      currentBalance: data.currentBalance,
+      allocationType: data.allocationType,
+      allocationValue: data.allocationType ? data.allocationValue : 0,
+      linkedIncomeItemId: data.allocationType ? data.linkedIncomeItemId : null,
+      linkedIncomeTitle: data.allocationType ? data.linkedIncomeTitle : null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function deleteBucket(bucketId: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "FinanceInvestments" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.deleteFailed") };
+
+  const docRef = adminDb.collection("investment_buckets").doc(bucketId);
+  const snap = await docRef.get();
+  if (!snap.exists) return { error: t("errors.bucketNotFound") };
+
+  const data = snap.data() as any;
+  if (data.userId !== sessionUser) return { error: t("errors.deleteFailed") };
+
+  await docRef.delete();
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function updateBucketBalance(
+  bucketId: string,
+  newBalance: number,
+  locale: string,
+) {
+  const t = await getTranslations({ locale, namespace: "FinanceInvestments" });
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: t("errors.saveFailed") };
+
+  if (newBalance < 0) return { error: t("errors.invalidBalance") };
+
+  const docRef = adminDb.collection("investment_buckets").doc(bucketId);
+  const snap = await docRef.get();
+  if (!snap.exists) return { error: t("errors.bucketNotFound") };
+
+  const data = snap.data() as any;
+  if (data.userId !== sessionUser) return { error: t("errors.saveFailed") };
+
+  await docRef.update({
+    currentBalance: newBalance,
+    updatedAt: new Date().toISOString(),
+  });
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };

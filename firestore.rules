@@ -1,0 +1,425 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =============================================
+    // HELPER FUNCTIONS
+    // =============================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isBoardMember(boardData) {
+      return isSignedIn() && (
+        boardData.ownerId == request.auth.uid ||
+        (boardData.memberIds is list && request.auth.uid in boardData.memberIds)
+      );
+    }
+
+    function isBoardOwner(boardData) {
+      return isSignedIn() && boardData.ownerId == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/user_profiles/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/user_profiles/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // =============================================
+    // USER PROFILES
+    // =============================================
+
+    match /user_profiles/{userId} {
+      // Usuário pode ler seu próprio perfil; admin pode ler todos
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId || isAdmin()
+      );
+
+      // Criação: apenas o próprio usuário (via server action) ou admin
+      allow create: if isSignedIn() && (
+        request.auth.uid == userId || isAdmin()
+      );
+
+      // Atualização: admin pode alterar qualquer perfil;
+      // usuário pode alterar apenas displayName do próprio
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == userId &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(["displayName", "updatedAt"]))
+      );
+
+      allow delete: if false;
+    }
+
+    // =============================================
+    // FINANCE BOARDS
+    // =============================================
+
+    match /finance_boards/{boardId} {
+      allow read: if isSignedIn() && isBoardMember(resource.data);
+
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds
+        && request.resource.data.keys().hasOnly([
+          "name", "ownerId", "memberIds", "createdAt", "isPersonal",
+          "code", "inviteCode"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.memberIds is list;
+
+      allow update: if isSignedIn()
+        && isBoardOwner(resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["name", "memberIds", "isPersonal", "code", "inviteCode"]);
+
+      allow delete: if isSignedIn() && isBoardOwner(resource.data);
+    }
+
+    // =============================================
+    // FINANCE ITEMS
+    // =============================================
+
+    match /finance_items/{itemId} {
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.boardId != null &&
+         exists(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)) &&
+         isBoardMember(get(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)).data))
+      );
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "title", "amount", "date", "type", "status",
+          "category", "createdAt", "isFixed", "isSynthetic",
+          "createdBy", "createdByName", "boardId",
+          "paidAmount", "openAmount",
+          "carriedFromMonth", "carriedFromItemId",
+          "fixedTemplateId",
+          "installmentGroupId", "installmentIndex", "installmentTotal",
+          "originalAmount",
+          "cardName", "cardMode",
+          "interestConfig", "interestAmount",
+          "investmentCategory"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.amount is number
+        && request.resource.data.date is string
+        && request.resource.data.type in ["income", "expense"]
+        && request.resource.data.status in ["paid", "pending", "partial", "moved"]
+        && request.resource.data.category is string
+        && request.resource.data.createdAt is string
+        && (!("cardName" in request.resource.data) || request.resource.data.cardName is string)
+        && (!("cardMode" in request.resource.data) || request.resource.data.cardMode in ["credit", "debit"])
+        && (!("createdByName" in request.resource.data) || request.resource.data.createdByName is string)
+        && (!("createdBy" in request.resource.data) || request.resource.data.createdBy is string)
+        && (!("boardId" in request.resource.data) ||
+          (exists(/databases/$(database)/documents/finance_boards/$(request.resource.data.boardId)) &&
+           isBoardMember(get(/databases/$(database)/documents/finance_boards/$(request.resource.data.boardId)).data)))
+        && (!("paidAmount" in request.resource.data) || request.resource.data.paidAmount is number)
+        && (!("originalAmount" in request.resource.data) || request.resource.data.originalAmount is number)
+        && (!("installmentIndex" in request.resource.data) || request.resource.data.installmentIndex is number)
+        && (!("installmentTotal" in request.resource.data) || request.resource.data.installmentTotal is number)
+        && (!("investmentCategory" in request.resource.data) ||
+          request.resource.data.investmentCategory in ["emergency", "fixed-income", "variable-income"]);
+
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.boardId != null &&
+         exists(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)) &&
+         isBoardMember(get(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)).data))
+      )
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["title", "amount", "date", "type", "status",
+            "category", "paidAmount", "openAmount", "originalAmount",
+            "cardName", "cardMode",
+            "isFixed", "isSynthetic"])
+        && request.resource.data.userId == resource.data.userId;
+
+      allow delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.boardId != null &&
+         exists(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)) &&
+         isBoardMember(get(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)).data))
+      );
+
+      // Sub-items subcollection
+      match /sub_items/{subItemId} {
+        allow read: if isSignedIn() && (
+          get(/databases/$(database)/documents/finance_items/$(itemId)).data.userId == request.auth.uid ||
+          (get(/databases/$(database)/documents/finance_items/$(itemId)).data.boardId != null &&
+           isBoardMember(get(/databases/$(database)/documents/finance_boards/$(get(/databases/$(database)/documents/finance_items/$(itemId)).data.boardId)).data))
+        );
+
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasOnly(["title", "amount", "createdAt"])
+          && request.resource.data.title is string
+          && request.resource.data.amount is number
+          && request.resource.data.createdAt is string;
+
+        allow update: if isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(["title", "amount"]);
+
+        allow delete: if isSignedIn();
+      }
+    }
+
+    // =============================================
+    // FINANCE CATEGORIES
+    // =============================================
+
+    match /finance_categories/{catId} {
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.boardId != null &&
+         exists(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)) &&
+         isBoardMember(get(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)).data))
+      );
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly(["userId", "name", "createdAt", "boardId"])
+        && request.resource.data.name is string
+        && request.resource.data.createdAt is string;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // FINANCE FIXED TEMPLATES
+    // =============================================
+
+    match /finance_fixed_templates/{templateId} {
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.boardId != null &&
+         exists(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)) &&
+         isBoardMember(get(/databases/$(database)/documents/finance_boards/$(resource.data.boardId)).data))
+      );
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "title", "amount", "day", "category", "type",
+          "createdAt", "active", "boardId", "investmentCategory"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.amount is number
+        && request.resource.data.day is number
+        && request.resource.data.type in ["income", "expense"];
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // FINANCE INVESTMENT CONFIGS
+    // =============================================
+
+    match /finance_investment_configs/{configId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "boardId", "allocations", "updatedAt"
+        ])
+        && request.resource.data.allocations is list;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["allocations", "updatedAt"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // FINANCE BOARD INVITES
+    // =============================================
+
+    // =============================================
+    // INVESTMENT BUCKETS (caixinhas)
+    // =============================================
+
+    match /investment_buckets/{bucketId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "boardId", "name", "currentBalance",
+          "allocationType", "allocationValue",
+          "linkedIncomeItemId", "linkedIncomeTitle",
+          "createdAt", "updatedAt"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.currentBalance is number;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["name", "currentBalance", "allocationType", "allocationValue",
+            "linkedIncomeItemId", "linkedIncomeTitle", "updatedAt"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // FINANCE BOARD INVITES
+    // =============================================
+
+    match /finance_board_invites/{inviteId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      );
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          "boardId", "boardName", "ownerId", "type",
+          "email", "userId", "status",
+          "createdBy", "createdAt", "respondedAt"
+        ])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.type in ["email", "code"]
+        && request.resource.data.boardId is string
+        && request.resource.data.boardName is string
+        && request.resource.data.createdAt is string;
+
+      allow update: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      )
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["status", "respondedAt", "userId"])
+        && request.resource.data.status in ["accepted", "rejected", "cancelled"];
+
+      allow delete: if false;
+    }
+
+    // =============================================
+    // USER TODO LISTS (cloud sync)
+    // =============================================
+
+    match /user_todo_lists/{listId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "name", "createdAt"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.createdAt is string;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // USER TODOS (cloud sync)
+    // =============================================
+
+    match /user_todos/{todoId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "listId", "text", "done", "time", "createdAt"
+        ])
+        && request.resource.data.listId is string
+        && request.resource.data.text is string
+        && request.resource.data.done is bool
+        && request.resource.data.createdAt is string;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["done"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // USER TIME TRACKER (cloud sync)
+    // =============================================
+
+    match /user_time_tracker/{entryId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "userId", "date", "punches", "workload", "bankTime", "bankSign", "updatedAt"
+        ])
+        && request.resource.data.date is string
+        && request.resource.data.punches is list
+        && request.resource.data.updatedAt is string;
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["punches", "workload", "bankTime", "bankSign", "updatedAt"]);
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // =============================================
+    // RETROBOARD (rooms)
+    // =============================================
+
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+
+      match /cards/{cardId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if true;
+        // Qualquer um pode deletar (o controle de authorId é feito no client/server)
+        // mas se quiser restringir: resource.data.authorId == ???
+        // Como o retroboard usa IDs anônimos (não Firebase Auth), mantemos aberto
+        allow delete: if true;
+      }
+    }
+
+    // =============================================
+    // CATCH-ALL
+    // =============================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

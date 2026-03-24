@@ -17,6 +17,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
 import { CARD_FIXED_CATEGORY } from "@/lib/finance/constants";
+import { useModalA11y } from "@/hooks/useModalA11y";
 
 const DEFAULT_CARD_OPTIONS = ["Nubank", "Santander", "Inter", "C6", "Mercado Pago", "XP", "Will Bank", "Havan"];
 
@@ -67,6 +68,7 @@ export default function FinanceFormModal({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const newCatInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   const isEditMode = !!initialItem;
 
@@ -104,6 +106,9 @@ export default function FinanceFormModal({
 
   // sub-items (only for create mode, non-installment)
   const [subItems, setSubItems] = useState<{ title: string; amount: number }[]>([]);
+
+  // controlled amount for SubItemsEditor parentAmount
+  const [formAmount, setFormAmount] = useState<number>(initialItem?.amount ?? 0);
 
   // cartão
   const [cardName, setCardName] = useState<string>(initialItem?.cardName || "");
@@ -154,6 +159,7 @@ export default function FinanceFormModal({
     setInterestRate("");
     setInterestFixed("");
     setSubItems([]);
+    setFormAmount(0);
   }, [initialCategories, initialItem?.id, isOpen, fixedCategoryName]);
 
   // Foca no input quando o formulário de nova categoria abre
@@ -216,8 +222,9 @@ export default function FinanceFormModal({
       : "";
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true">
       <div
+        ref={modalRef}
         className="relative w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto border"
         style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
@@ -569,6 +576,7 @@ export default function FinanceFormModal({
                   required
                   placeholder="0.00"
                   defaultValue={initialItem ? String(initialItem.amount) : ""}
+                  onChange={(e) => setFormAmount(parseFloat(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
                   style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
                 />
@@ -601,7 +609,7 @@ export default function FinanceFormModal({
                       {tFinance("subItemsLabel")}
                     </label>
                     <SubItemsEditor
-                      parentAmount={0}
+                      parentAmount={formAmount}
                       parentStatus="pending"
                       onSubItemsChange={setSubItems}
                       initialSubItems={subItems}

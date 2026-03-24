@@ -13,11 +13,11 @@ export default function FinanceCategoryDetailLoading() {
         </div>
       </div>
 
-      <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100">
+      <div className="mt-8 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-[var(--color-border)]">
           <SkeletonBlock className="h-10 rounded-xl" />
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-[var(--color-border-subtle)]">
           {[0, 1, 2].map((i) => (
             <SkeletonBlock key={i} className="h-14 rounded-none" />
           ))}

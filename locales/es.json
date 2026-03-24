@@ -4,7 +4,9 @@
     "version": "Versión"
   },
   "CardItem": {
-    "author": "Autor"
+    "author": "Autor",
+    "deleteCard": "Eliminar tarjeta",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta tarjeta?"
   },
   "CreateCard": {
     "author": "Tu nombre..."
@@ -12,7 +14,7 @@
   "Export": {
     "defaultTitle": "Resultados del Tablero",
     "exportPDF": "Exportar PDF",
-    "exportExcel": "Exportar Excel",
+    "exportCSV": "Exportar CSV",
     "author": "Autor",
     "anonymous": "Anónimo",
     "likes": "Me gusta",
@@ -24,7 +26,8 @@
     "home": "Inicio",
     "tools": "Herramientas",
     "language": "Idioma",
-    "resume": "Currículum"
+    "resume": "Currículum",
+    "admin": "Admin"
   },
   "Room": {
     "defaults": {
@@ -42,7 +45,9 @@
     }
   },
   "Column": {
-    "new": "Nueva tarjeta..."
+    "new": "Nueva tarjeta...",
+    "cardLimitReached": "Límite de tarjetas alcanzado en esta columna.",
+    "dropHere": "Soltar aquí"
   },
   "Home": {
     "title": "Hola, bienvenido",
@@ -50,7 +55,17 @@
     "description": "Este sitio es mi laboratorio personal de herramientas diarias.",
     "ctaTools": "Abrir el inventario de herramientas",
     "aboutTitle": "Sobre mí",
-    "aboutBody": "Desarrollador Fullstack Senior con +8 años de experiencia, especializado en Back-End e I+D, construyendo plataformas de alto rendimiento con .NET, Python e IA Generativa.",
+    "aboutExperience": "+9 años",
+    "aboutExperienceSuffix": "de experiencia",
+    "aboutBio": "Apasionado por resolver problemas complejos con código limpio. Trabajo principalmente en Back-End e I+D, pero me desenvuelvo bien en el Front-End cuando es necesario. Me gusta construir plataformas robustas, automatizar todo lo posible y explorar los límites de la IA Generativa aplicada a productos reales.",
+    "aboutTechsTitle": "Haz clic en una tech para ver un proyecto destacado",
+    "aboutTechs": [
+      { "name": "C# / .NET", "project": "Plataforma de procesamiento de documentos fiscales a gran escala — millones de facturas/mes con colas, workers y APIs REST de alta disponibilidad." },
+      { "name": "Python", "project": "Motor de IA Generativa para análisis y extracción inteligente de datos de contratos jurídicos, usando LLMs con RAG y pipelines de NLP." },
+      { "name": "React / Next.js", "project": "Esta misma plataforma que estás usando ahora — multi-herramienta personal con SSR, real-time, i18n y Tailwind." },
+      { "name": "Bases de Datos", "project": "Modelado y optimización de bases SQL Server y PostgreSQL con +500M de registros, incluyendo particionamiento, índices y tuning de queries críticas." },
+      { "name": "Tech Lead", "project": "Liderazgo técnico de squads de 4-8 devs, definiendo arquitectura, code review, mentoría y alineación con producto en ciclos ágiles." }
+    ],
     "highlightsTitle": "Superpoderes (no confirmados)",
     "highlights": [
       {
@@ -129,7 +144,18 @@
     "workload6": "Jornada: 6h",
     "workload8": "Jornada: 8h",
     "workload848": "Jornada: 8h48",
-    "suggestedExit": "Sugerencia de salida"
+    "suggestedExit": "Sugerencia de salida",
+    "today": "Hoy",
+    "calendarTitle": "Historial de días",
+    "noEntries": "Sin registros para este día.",
+    "deleteDay": "Eliminar día",
+    "confirmDeleteDay": "¿Estás seguro de que deseas eliminar el registro de este día?",
+    "savedDays": "{count, plural, one {# día guardado} other {# días guardados}}",
+    "errors": {
+      "unauthorized": "No autorizado.",
+      "notFound": "Registro no encontrado.",
+      "dayLimitReached": "Has alcanzado el límite de días de tu plan."
+    }
   },
   "Finance": {
     "paymentModalMoveLabel": "Mover al mes siguiente",
@@ -206,9 +232,11 @@
       "noPermission": "Sin permiso.",
       "boardNotFound": "Tablero no encontrado.",
       "itemNotFound": "Ítem no encontrado.",
+      "rateLimited": "Demasiadas solicitudes. Espera un momento.",
       "incompleteData": "Datos incompletos.",
       "invalidCategoryName": "Nombre inválido.",
       "categoryExists": "Esta categoría ya existe.",
+      "categoryLimitReached": "Has alcanzado el límite de categorías de tu plan.",
       "updateFailed": "Error al actualizar. Inténtalo de nuevo.",
       "categoryInUse": "Esta categoría está en uso y no se puede eliminar.",
       "redistributionMismatch": "La suma de los nuevos valores no coincide con el total original de las cuotas.",
@@ -216,7 +244,25 @@
       "invalidSubItem": "Sub-ítem inválido. Informe título y valor positivo.",
       "cannotEditPaidItem": "No se pueden editar sub-ítems de lanzamientos pagados o movidos.",
       "allocationSumInvalid": "Las proporciones de asignación deben sumar 100%",
-      "invalidInvestmentAmount": "El monto de inversión debe ser positivo"
+      "invalidInvestmentAmount": "El monto de inversión debe ser positivo",
+      "invalidName": "Nombre inválido.",
+      "onlyOwnerCanRename": "Solo el dueño puede renombrar.",
+      "onlyOwnerCanDelete": "Solo el dueño puede eliminar.",
+      "boardNameMismatch": "El nombre del tablero no coincide.",
+      "boardNeedsOneMember": "El tablero debe tener al menos 1 miembro.",
+      "onlyOwnerCanRemoveMembers": "Solo el dueño puede eliminar miembros.",
+      "categoryRequired": "Categoría es obligatoria.",
+      "cannotDeletePaid": "No se pueden eliminar registros pagados/recibidos.",
+      "cannotDeleteMoved": "No se pueden eliminar registros movidos.",
+      "cannotDeleteCarried": "No se pueden eliminar registros trasladados de otro mes.",
+      "cannotDeleteInstallment": "No se pueden eliminar registros en cuotas.",
+      "cannotEditPaid": "No se pueden editar registros pagados/recibidos. Revierta el pago primero.",
+      "notFullyPaid": "El registro no está totalmente pagado.",
+      "onlyFullPaymentsRevertible": "Solo los pagos totales pueden ser revertidos.",
+      "invalidAmount": "Monto inválido en el registro.",
+      "invalidPartialAmount": "Monto parcial inválido.",
+      "boardLimitReached": "Has alcanzado el límite de tableros de tu plan. Actualiza para crear más.",
+      "exportNotAvailable": "La exportación no está disponible en el plan gratuito."
     }
   },
   "FinanceMetrics": {
@@ -268,7 +314,24 @@
     "placeholder": "Descripción de la tarea",
     "clearAll": "Limpiar todo",
     "remaining": "restantes",
-    "empty": "No hay tareas por ahora..."
+    "empty": "No hay tareas por ahora...",
+    "newListPlaceholder": "Nombre de la nueva lista",
+    "createList": "Crear lista",
+    "deleteList": "Eliminar lista",
+    "renameList": "Renombrar lista",
+    "confirmDeleteList": "¿Estás seguro de que deseas eliminar esta lista y todas sus tareas?",
+    "cancelDelete": "Cancelar",
+    "noLists": "Ninguna lista creada aún.",
+    "tasksCount": "{count, plural, one {# tarea} other {# tareas}}",
+    "loginHint": "Inicia sesión para guardar tus listas en la nube.",
+    "errors": {
+      "unauthorized": "No autorizado.",
+      "emptyName": "El nombre no puede estar vacío.",
+      "listLimitReached": "Has alcanzado el límite de listas de tu plan.",
+      "todoLimitReached": "Has alcanzado el límite de tareas por lista de tu plan.",
+      "notFound": "Ítem no encontrado.",
+      "empty": "La tarea no puede estar vacía."
+    }
   },
   "FinanceLogin": {
     "title": "Mis Finanzas",
@@ -433,7 +496,7 @@
     "addCategory": "Añadir",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Ej: Alquiler, Salario...",
-    "amountLabel": "Valor ($)",
+    "amountLabel": "Valor total ($)",
     "dateLabel": "Fecha",
     "alreadyPaidLabel": "Ya fue pagado/recibido",
     "fixedCheckboxLabel": "Registro fijo (repetir cada mes)",
@@ -497,25 +560,68 @@
       "requireName": "¡Por favor, escribe tu nombre antes de crear la sala!",
       "createError": "Error al crear la sala. Inténtalo de nuevo.",
       "roomNotFound": "¡Sala no encontrada!"
+    },
+    "history": {
+      "title": "Salas recientes",
+      "empty": "Ninguna sala visitada aún.",
+      "open": "Abrir",
+      "remove": "Eliminar",
+      "clearAll": "Limpiar historial",
+      "confirmClearAll": "¿Estás seguro de que deseas limpiar todo el historial de salas?",
+      "confirmRemove": "¿Estás seguro de que deseas eliminar esta sala del historial?",
+      "confirmClear": "Limpiar",
+      "confirmDelete": "Eliminar",
+      "cancel": "Cancelar",
+      "expiresAt": "Expira el {date}",
+      "expired": "Expirada"
     }
   },
   "FinanceInvestments": {
-    "configTitle": "Configuración de Asignación",
-    "allocationLabel": "Proporción de Asignación",
-    "saveConfig": "Guardar Configuración",
-    "emergencyLabel": "Fondo de Emergencia",
-    "fixedIncomeLabel": "Renta Fija",
-    "variableIncomeLabel": "Renta Variable",
-    "allocationSumError": "Las proporciones de asignación deben sumar 100%",
-    "configSaved": "Configuración guardada exitosamente",
-    "suggestedLabel": "Sugerido",
-    "investedLabel": "Invertido",
     "panelTitle": "Inversiones",
-    "totalInvested": "Total Invertido",
-    "monthlyHistory": "Historial Mensual",
-    "noInvestments": "No hay inversiones registradas",
-    "suggestedAllocation": "Asignación Sugerida",
-    "last12Months": "Últimos 12 meses"
+    "totalBalance": "Saldo Total",
+    "noBuckets": "Ningún fondo creado aún.",
+    "noBucketsHint": "Crea tu primer fondo para empezar a organizar tus inversiones.",
+    "createBucket": "Nuevo fondo",
+    "editBucket": "Editar fondo",
+    "deleteBucket": "Eliminar fondo",
+    "confirmDeleteBucket": "¿Estás seguro de que deseas eliminar este fondo?",
+    "bucketNameLabel": "Nombre del fondo",
+    "bucketNamePlaceholder": "Ej: Fondo de emergencia",
+    "currentBalanceLabel": "Saldo actual",
+    "autoAllocationTitle": "Asignación automática",
+    "autoAllocationHint": "Configura para asignar automáticamente parte de un ingreso a este fondo.",
+    "allocationTypeLabel": "Tipo de asignación",
+    "allocationPercentage": "Porcentaje",
+    "allocationFixed": "Valor fijo",
+    "allocationNone": "Ninguna",
+    "allocationValueLabel": "Valor de asignación",
+    "allocationPercentHint": "% sobre el valor del ingreso seleccionado",
+    "allocationFixedHint": "Valor fijo a asignar",
+    "linkedIncomeLabel": "Ingreso vinculado",
+    "linkedIncomePlaceholder": "Selecciona un ingreso...",
+    "noIncomesAvailable": "No hay ingresos disponibles para vincular.",
+    "saveBucket": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "balanceLabel": "Saldo",
+    "allocationLabel": "Asignación",
+    "ofIncome": "de {title}",
+    "perMonth": "/mes",
+    "updateBalanceLabel": "Actualizar saldo",
+    "newBalancePlaceholder": "Nuevo saldo",
+    "confirmUpdateBalance": "Actualizar",
+    "bucketSaved": "Fondo guardado exitosamente!",
+    "bucketDeleted": "Fondo eliminado.",
+    "balanceUpdated": "Saldo actualizado.",
+    "errors": {
+      "emptyName": "El nombre no puede estar vacío.",
+      "invalidBalance": "Saldo inválido.",
+      "invalidAllocationValue": "Valor de asignación inválido.",
+      "needLinkedIncome": "Selecciona un ingreso para vincular la asignación.",
+      "bucketNotFound": "Fondo no encontrado.",
+      "saveFailed": "Error al guardar. Inténtalo de nuevo.",
+      "deleteFailed": "Error al eliminar. Inténtalo de nuevo."
+    }
   },
   "FinanceCharts": {
     "title": "Gráficos Financieros",
@@ -531,8 +637,38 @@
     "categoryDistributionTitle": "Distribución por Categoría",
     "evolutionTitle": "Evolución Financiera"
   },
+  "Admin": {
+    "title": "Panel Administrativo",
+    "description": "Gestiona usuarios, planes y permisos de la plataforma.",
+    "searchPlaceholder": "Buscar por nombre o email...",
+    "statsTotal": "Total de usuarios",
+    "statsFree": "Plan Free",
+    "statsPro": "Plan Pro",
+    "statsTeam": "Plan Team",
+    "editUser": "Editar usuario",
+    "editUserTitle": "Editar Usuario",
+    "planLabel": "Plan",
+    "roleLabel": "Rol",
+    "expiresLabel": "Expiración del plan",
+    "expiresAt": "Expira el",
+    "roleAdmin": "Admin",
+    "roleUser": "Usuario",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "userUpdated": "Usuario actualizado con éxito.",
+    "noUsers": "No se encontraron usuarios.",
+    "errors": {
+      "unauthorized": "No autorizado.",
+      "notAdmin": "Acceso restringido a administradores.",
+      "invalidData": "Datos inválidos."
+    }
+  },
   "Common": {
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "errorTitle": "Algo salió mal",
+    "errorDescription": "Ocurrió un error inesperado. Intenta de nuevo o vuelve a la página de inicio.",
+    "errorRetry": "Intentar de nuevo",
+    "errorGoHome": "Volver al inicio"
   },
   "Resume": {
     "labels": {

@@ -46,7 +46,7 @@ export default async function CategoryPage({
         </Link>
       </div>
 
-      <h1 className="text-xl font-bold text-gray-800">
+      <h1 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
         {decodedCategory} –{" "}
         {format(new Date(`${currentMonth}-01`), "MMMM yyyy", {
           locale: ptBR,
@@ -54,7 +54,7 @@ export default async function CategoryPage({
       </h1>
 
       {categoryItems.length === 0 ? (
-        <p className="text-gray-400 text-sm">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {t("noCategoryThisMonth")}
         </p>
       ) : (

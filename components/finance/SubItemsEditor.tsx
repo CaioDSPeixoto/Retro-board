@@ -108,7 +108,8 @@ export default function SubItemsEditor({
     const timer = setTimeout(() => {
       setItems((prev) => {
         const next = prev.filter((e) => e.id !== id);
-        notifyParent(next);
+        // Defer parent notification to avoid setState-during-render
+        setTimeout(() => notifyParent(next), 0);
         return next;
       });
       removingTimers.current.delete(id);
