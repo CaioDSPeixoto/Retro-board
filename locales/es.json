@@ -689,7 +689,7 @@
     "planConfigCancel": "Cancelar",
     "planConfigSave": "Guardar",
     "planConfigSaving": "Guardando...",
-    "planConfigSaved": "Guardado con éxito"
+    "planConfigSaved": "Guardado con éxito",
     "errors": {
       "unauthorized": "No autorizado.",
       "notAdmin": "Acceso restringido a administradores.",

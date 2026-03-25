@@ -720,7 +720,7 @@
     "planConfigCancel": "Cancelar",
     "planConfigSave": "Salvar",
     "planConfigSaving": "Salvando...",
-    "planConfigSaved": "Salvo com sucesso"
+    "planConfigSaved": "Salvo com sucesso",
     "errors": {
       "unauthorized": "Não autorizado.",
       "notAdmin": "Acesso restrito a administradores.",
