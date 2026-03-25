@@ -84,8 +84,7 @@ export async function deleteCategory(category: string, locale: string, boardId?:
         revalidatePath(`/${locale}/tools/finance/categories`);
 
         return { success: true };
-    } catch (error) {
-        console.error("Error deleting category:", error);
+    } catch {
         return { error: t("errors.deleteFailed") };
     }
 }
@@ -181,8 +180,7 @@ export async function updateCategory(
 
         return { success: true };
 
-    } catch (error) {
-        console.error("Error updating category:", error);
+    } catch {
         return { error: t("errors.updateFailed") };
     }
 }

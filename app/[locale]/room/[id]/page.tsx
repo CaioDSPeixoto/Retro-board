@@ -1,5 +1,6 @@
 import RoomClient from "@/components/RoomClient";
 import { canExport, getCurrentUserPlan } from "@/lib/auth/plan-check";
+import { getTranslations } from "next-intl/server";
 
 type RoomPageProps = {
   params: Promise<{
@@ -14,7 +15,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
   const roomId = Array.isArray(id) ? id[0] : id;
 
   if (!roomId) {
-    return <p>Room's ID not found.</p>;
+    const t = await getTranslations({ locale, namespace: "Room" });
+    return <p>{t("roomNotFound")}</p>;
   }
 
   const exportEnabled = await canExport();

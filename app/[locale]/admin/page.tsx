@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getTranslations } from "next-intl/server";
 import { listAllUsers } from "@/lib/auth/user-profile";
+import { getStoredPlanLimits } from "@/lib/plan-config";
 import AdminClient from "@/components/admin/AdminClient";
 
 export default async function AdminPage({
@@ -12,6 +13,7 @@ export default async function AdminPage({
   const { locale } = await params;
   const t = await getTranslations("Admin");
   const users = await listAllUsers();
+  const planLimits = await getStoredPlanLimits();
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -21,7 +23,7 @@ export default async function AdminPage({
       <p className="mb-8" style={{ color: "var(--color-text-secondary)" }}>
         {t("description")}
       </p>
-      <AdminClient initialUsers={users} locale={locale} />
+      <AdminClient initialUsers={users} locale={locale} initialPlanLimits={planLimits} />
     </div>
   );
 }

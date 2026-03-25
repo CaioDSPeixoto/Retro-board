@@ -86,15 +86,8 @@ export default function FinanceChartsPanel({
 
   return (
     <div className="space-y-6">
-      {/* Header + Segmented Buttons */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3
-          className="text-base font-bold"
-          style={{ color: "var(--color-text-primary)" }}
-        >
-          {t("title")}
-        </h3>
-
+      {/* Segmented Buttons */}
+      <div className="flex items-center justify-start">
         <div
           className="inline-flex rounded-xl p-1 text-xs font-semibold"
           style={{

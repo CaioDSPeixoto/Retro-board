@@ -1,4 +1,5 @@
 import { FiTrash2 } from "react-icons/fi";
+import { useTranslations } from "next-intl";
 
 type TodoItemProps = {
     task: { text: string; done: boolean; time?: string };
@@ -7,6 +8,7 @@ type TodoItemProps = {
 };
 
 export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
+    const t = useTranslations("TodoList");
     return (
         <div
             className="flex items-center gap-3 py-3 border-b last:border-0 group"
@@ -54,7 +56,8 @@ export default function TodoItem({ task, onToggle, onRemove }: TodoItemProps) {
                 onClick={onRemove}
                 className="hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-2"
                 style={{ color: "var(--color-text-muted)" }}
-                title="Remover item"
+                title={t("removeItem")}
+                aria-label={t("removeItem")}
             >
                 <FiTrash2 size={18} />
             </button>

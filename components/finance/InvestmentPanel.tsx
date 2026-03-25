@@ -144,18 +144,11 @@ export default function InvestmentPanel({ items, buckets, boardId, locale }: Pro
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2
-          className="text-lg font-bold"
-          style={{ color: "var(--color-text-primary)" }}
-        >
-          {t("panelTitle")}
-        </h2>
+      <div className="flex items-center justify-start">
         <button
           type="button"
           onClick={handleCreate}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm text-white transition-all active:scale-[0.98]"
-          style={{ background: "var(--color-accent-primary)" }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
         >
           <FiPlus size={14} />
           {t("createBucket")}

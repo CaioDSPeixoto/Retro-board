@@ -24,23 +24,23 @@ export default async function Navbar({ locale }: { locale: string }) {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-1 sm:gap-2">
-          <NavLink href={`/${locale}`} exact locale={locale}>
+          <NavLink href={`/${locale}`} exact locale={locale} aria-label={t("home")}>
             <FiHome size={18} />
             <span className="hidden sm:inline">{t("home")}</span>
           </NavLink>
 
-          <NavLink href={`/${locale}/tools`} locale={locale}>
+          <NavLink href={`/${locale}/tools`} locale={locale} aria-label={t("tools")}>
             <FiTool size={18} />
             <span className="hidden sm:inline">{t("tools")}</span>
           </NavLink>
 
-          <NavLink href={`/${locale}/cv`} locale={locale}>
+          <NavLink href={`/${locale}/cv`} locale={locale} aria-label={t("resume")}>
             <FiFileText size={18} />
             <span className="hidden sm:inline">{t("resume")}</span>
           </NavLink>
 
           {isAdminUser && (
-            <NavLink href={`/${locale}/admin`} locale={locale}>
+            <NavLink href={`/${locale}/admin`} locale={locale} aria-label={t("admin")}>
               <FiShield size={18} />
               <span className="hidden sm:inline">{t("admin")}</span>
             </NavLink>

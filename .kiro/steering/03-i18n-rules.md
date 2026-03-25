@@ -2,111 +2,42 @@
 inclusion: always
 ---
 
-# Internacionalização (i18n) — Regras Obrigatórias
+# Internacionalização (i18n)
 
 ## Regra Principal
 
-**NUNCA escrever texto visível ao usuário diretamente no código.** Todo texto exibido na UI deve vir dos arquivos de tradução (`locales/pt.json`, `locales/en.json`, `locales/es.json`).
+**NUNCA escrever texto visível ao usuário diretamente no código.** Todo texto da UI vem dos arquivos de tradução.
 
-## Locales Suportados
-- `pt` (Português — padrão/default)
-- `en` (English)
-- `es` (Español)
+## Locales: `pt` (default), `en`, `es`
 
-## Estrutura de Roteamento
-- Todas as rotas seguem o padrão `/[locale]/...`
-- O middleware (`middleware.ts`) detecta e redireciona automaticamente
-- O locale default é `pt`
+## Uso
 
-## Como Usar Traduções
-
-### Em Server Components
 ```tsx
+// Server Component
 import { getTranslations } from "next-intl/server";
+const t = await getTranslations("Namespace");
 
-export default async function Page() {
-  const t = await getTranslations("NomeDoNamespace");
-  return <h1>{t("chave")}</h1>;
-}
-```
-
-### Em Client Components
-```tsx
-"use client";
+// Client Component
 import { useTranslations } from "next-intl";
+const t = useTranslations("Namespace");
 
-export default function Component() {
-  const t = useTranslations("NomeDoNamespace");
-  return <p>{t("chave")}</p>;
-}
-```
-
-### Interpolação de Variáveis
-```tsx
-// No JSON: "launchedBy": "Lançado por {name}"
-t("launchedBy", { name: "João" })
-```
-
-### Pluralização (ICU)
-```tsx
-// No JSON: "membersLabel": "{count, plural, one {# membro} other {# membros}}"
-t("membersLabel", { count: 3 })
+// Interpolação: t("key", { name: "João" })
+// Pluralização ICU: t("members", { count: 3 })
 ```
 
 ## Regras dos Arquivos de Tradução
 
-1. **Manter os 3 arquivos sincronizados** — toda chave adicionada em `pt.json` deve existir em `en.json` e `es.json`
-2. **Usar namespaces** para organizar (ex: `Finance`, `FinancePage`, `FinanceForm`, `TimeTracker`, `TodoList`, `Room`, `Home`, `Tools`)
-3. **Chaves em camelCase** — ex: `noExpensesThisMonth`, `confirmDelete`
-4. **Erros ficam em sub-objeto `errors`** — ex: `Finance.errors.unauthorized`
-5. **Nunca duplicar chaves** entre namespaces diferentes
-6. **Textos de aria-label e title** também devem ser traduzidos
-
-## O Que NÃO Fazer
-
-```tsx
-// ❌ PROIBIDO — texto hardcoded
-<button>Salvar</button>
-<p>Nenhum dado encontrado</p>
-<span>Carregando...</span>
-
-// ✅ CORRETO — usar tradução
-<button>{t("saveButton")}</button>
-<p>{t("noData")}</p>
-<span>{t("loading")}</span>
-```
-
-```tsx
-// ❌ PROIBIDO — mensagem de erro hardcoded
-return { error: "Não autorizado" };
-
-// ✅ CORRETO — usar tradução no server
-const t = await getTranslations({ locale, namespace: "Finance" });
-return { error: t("errors.unauthorized") };
-```
+1. Manter `pt.json`, `en.json`, `es.json` sincronizados — toda chave nos 3
+2. Organizar por namespaces: `Finance`, `FinancePage`, `FinanceForm`, `TimeTracker`, `TodoList`, `Room`, `Home`, `Tools`
+3. Chaves em camelCase: `noExpensesThisMonth`, `confirmDelete`
+4. Erros em sub-objeto: `Finance.errors.unauthorized`
+5. Textos de `aria-label` e `title` também traduzidos
 
 ## Exceções Permitidas
-- Nomes próprios (ex: "Nubank", "Santander")
-- Valores numéricos e datas formatadas
-- URLs e identificadores técnicos
-- Conteúdo dinâmico vindo do banco de dados
+- Nomes próprios, valores numéricos/datas formatadas, URLs, conteúdo do banco
 
 ## Configuração
-
-### i18n/routing.ts
-```typescript
-export const routing = defineRouting({
-  locales: ["pt", "en", "es"],
-  defaultLocale: "pt",
-});
-```
-
-### i18n/request.ts
-- Carrega mensagens dinamicamente: `import(`../locales/${locale}.json`)`
-
-### i18n/navigation.ts
-- Exporta `Link`, `redirect`, `usePathname`, `useRouter`, `getPathname` com suporte a locale
-
-### Middleware
-- Detecta locale na URL e redireciona se necessário
-- Matcher: `["/", "/(pt|en|es|)/:path*"]`
+- `i18n/routing.ts` — define locales e default
+- `i18n/request.ts` — carrega mensagens dinamicamente
+- `i18n/navigation.ts` — exporta `Link`, `redirect`, `usePathname`, `useRouter` com locale
+- `middleware.ts` — detecta locale e redireciona. Matcher: `["/", "/(pt|en|es|)/:path*"]`

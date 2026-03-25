@@ -6,7 +6,9 @@
   "CardItem": {
     "author": "Autor",
     "deleteCard": "Eliminar tarjeta",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar esta tarjeta?"
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta tarjeta?",
+    "likesAria": "Me gusta",
+    "dislikesAria": "No me gusta"
   },
   "CreateCard": {
     "author": "Tu nombre..."
@@ -29,14 +31,21 @@
     "resume": "Currículum",
     "admin": "Admin"
   },
+  "Theme": {
+    "switchToLight": "Activar modo claro",
+    "switchToDark": "Activar modo oscuro"
+  },
   "Room": {
+    "roomNotFound": "Sala no encontrada.",
     "defaults": {
       "roomName": "Retrospectiva",
       "anonymous": "Anónimo"
     },
     "share": {
       "copied": "¡Enlace copiado al portapapeles!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Entra a la sala: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Entra a la sala: {url}",
+      "whatsapp": "Compartir por WhatsApp",
+      "copy": "Copiar enlace de la sala"
     },
     "categories": {
       "bom": "Bueno",
@@ -166,6 +175,7 @@
     "paymentModalTotal": "Valor total",
     "paymentModalPartial": "Valor parcial",
     "paymentModalPartialHint": "El valor informado se considerará pagado ahora y el resto se registrará automáticamente el próximo mes.",
+    "partialPlaceholder": "Ej: 500,00",
     "confirmAction": "Confirmar",
     "cancel": "Cancelar",
     "delete": "Eliminar",
@@ -331,7 +341,9 @@
       "todoLimitReached": "Has alcanzado el límite de tareas por lista de tu plan.",
       "notFound": "Ítem no encontrado.",
       "empty": "La tarea no puede estar vacía."
-    }
+    },
+    "removeItem": "Eliminar tarea",
+    "backAria": "Volver"
   },
   "FinanceLogin": {
     "title": "Mis Finanzas",
@@ -657,10 +669,32 @@
     "cancel": "Cancelar",
     "userUpdated": "Usuario actualizado con éxito.",
     "noUsers": "No se encontraron usuarios.",
+    "viewUsage": "Ver consumo",
+    "usageBoards": "Tableros",
+    "usageCategories": "Categorías",
+    "usageTodoLists": "Listas",
+    "usageTodos": "Tareas/lista",
+    "usageTimeTracker": "Días registro",
+    "planConfigTitle": "Configuración de Planes",
+    "planConfigResource": "Recurso",
+    "planConfigMembers": "Miembros/tablero",
+    "planConfigRetroCards": "Tarjetas retro/columna",
+    "planConfigCloudSync": "Sync nube",
+    "planConfigExport": "Exportar PDF",
+    "planConfigAds": "Anuncios",
+    "planConfigPermanentRooms": "Salas permanentes",
+    "planConfigReports": "Informes avanzados",
+    "planConfigHint": "Valores con -1 significan ilimitado. Los cambios se aplican inmediatamente.",
+    "planConfigEdit": "Editar",
+    "planConfigCancel": "Cancelar",
+    "planConfigSave": "Guardar",
+    "planConfigSaving": "Guardando...",
+    "planConfigSaved": "Guardado con éxito"
     "errors": {
       "unauthorized": "No autorizado.",
       "notAdmin": "Acceso restringido a administradores.",
-      "invalidData": "Datos inválidos."
+      "invalidData": "Datos inválidos.",
+      "tooManyRequests": "Demasiadas solicitudes. Inténtelo de nuevo en un momento."
     }
   },
   "Common": {
@@ -784,5 +818,49 @@
       "Licencia de conducir: AB"
     ],
     "download": "Descargar PDF"
+  },
+  "Plans": {
+    "usage": "{current}/{max}",
+    "usageLabel": "{current} de {max}",
+    "limitReached": "Límite alcanzado",
+    "upgradeToCreate": "Actualiza tu plan para crear más.",
+    "viewPlans": "Ver planes",
+    "planFree": "Gratuito",
+    "planPro": "Pro",
+    "planTeam": "Team"
+  },
+  "Pricing": {
+    "title": "Planes y Precios",
+    "subtitle": "Elige el plan ideal para ti o tu equipo.",
+    "recommended": "Recomendado",
+    "selectPlan": "Seleccionar plan",
+    "disclaimer": "Pago procesado de forma segura. Cancela en cualquier momento.",
+    "freeName": "Free",
+    "freePrice": "$0",
+    "freeBoards": "1 tablero financiero",
+    "freeTodos": "2 listas con hasta 10 tareas",
+    "freeTimeTracker": "Historial de 7 días",
+    "freeRetro": "5 tarjetas por columna",
+    "freeExport": "Exportar PDF",
+    "freeCloudSync": "Sincronización en la nube",
+    "freeReports": "Informes avanzados",
+    "proName": "Pro",
+    "proPrice": "$4,90/mes",
+    "proBoards": "10 tableros financieros",
+    "proTodos": "20 listas con hasta 100 tareas",
+    "proTimeTracker": "Historial de 90 días",
+    "proRetro": "30 tarjetas por columna + salas permanentes",
+    "proExport": "Exportar PDF y CSV",
+    "proCloudSync": "Sincronización en la nube",
+    "proReports": "Informes avanzados",
+    "teamName": "Team",
+    "teamPrice": "$9,90/mes",
+    "teamBoards": "Tableros ilimitados",
+    "teamTodos": "Listas y tareas ilimitadas",
+    "teamTimeTracker": "Historial ilimitado",
+    "teamRetro": "Tarjetas ilimitadas + salas permanentes",
+    "teamExport": "Exportar PDF y CSV",
+    "teamCloudSync": "Sincronización en la nube",
+    "teamReports": "Informes avanzados"
   }
 }

@@ -122,7 +122,7 @@ def scan_files(root_dirs, locale_data):
 
 
 def main():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     locales_dir = os.path.join(base_dir, "locales")
 
     locale_files = ["pt.json", "en.json", "es.json"]

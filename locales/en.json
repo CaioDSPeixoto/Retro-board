@@ -6,7 +6,9 @@
   "CardItem": {
     "author": "Author",
     "deleteCard": "Delete card",
-    "confirmDelete": "Are you sure you want to delete this card?"
+    "confirmDelete": "Are you sure you want to delete this card?",
+    "likesAria": "Like",
+    "dislikesAria": "Dislike"
   },
   "CreateCard": {
     "author": "Your name..."
@@ -29,14 +31,21 @@
     "resume": "Resume",
     "admin": "Admin"
   },
+  "Theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
   "Room": {
+    "roomNotFound": "Room not found.",
     "defaults": {
       "roomName": "Retrospective",
       "anonymous": "Anonymous"
     },
     "share": {
       "copied": "Link copied to clipboard!",
-      "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Join the room: {url}",
+      "whatsapp": "Share via WhatsApp",
+      "copy": "Copy room link"
     },
     "categories": {
       "bom": "Good",
@@ -166,6 +175,7 @@
     "paymentModalTotal": "Total amount",
     "paymentModalPartial": "Partial amount",
     "paymentModalPartialHint": "The amount entered will be marked as paid now; the remainder will be moved to next month automatically.",
+    "partialPlaceholder": "e.g.: 500.00",
     "confirmAction": "Confirm",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -331,7 +341,9 @@
       "todoLimitReached": "You have reached the task limit per list for your plan.",
       "notFound": "Item not found.",
       "empty": "Task cannot be empty."
-    }
+    },
+    "removeItem": "Remove task",
+    "backAria": "Back"
   },
   "FinanceLogin": {
     "title": "My Finances",
@@ -657,10 +669,32 @@
     "cancel": "Cancel",
     "userUpdated": "User updated successfully.",
     "noUsers": "No users found.",
+    "viewUsage": "View usage",
+    "usageBoards": "Boards",
+    "usageCategories": "Categories",
+    "usageTodoLists": "Lists",
+    "usageTodos": "Tasks/list",
+    "usageTimeTracker": "Tracker days",
+    "planConfigTitle": "Plan Configuration",
+    "planConfigResource": "Resource",
+    "planConfigMembers": "Members/board",
+    "planConfigRetroCards": "Retro cards/column",
+    "planConfigCloudSync": "Cloud sync",
+    "planConfigExport": "PDF Export",
+    "planConfigAds": "Ads",
+    "planConfigPermanentRooms": "Permanent rooms",
+    "planConfigReports": "Advanced reports",
+    "planConfigHint": "Values of -1 mean unlimited. Changes are applied immediately.",
+    "planConfigEdit": "Edit",
+    "planConfigCancel": "Cancel",
+    "planConfigSave": "Save",
+    "planConfigSaving": "Saving...",
+    "planConfigSaved": "Saved successfully",
     "errors": {
       "unauthorized": "Unauthorized.",
       "notAdmin": "Admin access only.",
-      "invalidData": "Invalid data."
+      "invalidData": "Invalid data.",
+      "tooManyRequests": "Too many requests. Please try again shortly."
     }
   },
   "Common": {
@@ -784,5 +818,49 @@
       "Driver's License: Category A/B"
     ],
     "download": "Download PDF"
+  },
+  "Plans": {
+    "usage": "{current}/{max}",
+    "usageLabel": "{current} of {max}",
+    "limitReached": "Limit reached",
+    "upgradeToCreate": "Upgrade to create more.",
+    "viewPlans": "View plans",
+    "planFree": "Free",
+    "planPro": "Pro",
+    "planTeam": "Team"
+  },
+  "Pricing": {
+    "title": "Plans & Pricing",
+    "subtitle": "Choose the right plan for you or your team.",
+    "recommended": "Recommended",
+    "selectPlan": "Select plan",
+    "disclaimer": "Payment processed securely. Cancel anytime.",
+    "freeName": "Free",
+    "freePrice": "$0",
+    "freeBoards": "1 financial board",
+    "freeTodos": "2 lists with up to 10 tasks",
+    "freeTimeTracker": "7-day history",
+    "freeRetro": "5 cards per column",
+    "freeExport": "PDF Export",
+    "freeCloudSync": "Cloud sync",
+    "freeReports": "Advanced reports",
+    "proName": "Pro",
+    "proPrice": "$4.90/mo",
+    "proBoards": "10 financial boards",
+    "proTodos": "20 lists with up to 100 tasks",
+    "proTimeTracker": "90-day history",
+    "proRetro": "30 cards per column + permanent rooms",
+    "proExport": "PDF & CSV Export",
+    "proCloudSync": "Cloud sync",
+    "proReports": "Advanced reports",
+    "teamName": "Team",
+    "teamPrice": "$9.90/mo",
+    "teamBoards": "Unlimited boards",
+    "teamTodos": "Unlimited lists & tasks",
+    "teamTimeTracker": "Unlimited history",
+    "teamRetro": "Unlimited cards + permanent rooms",
+    "teamExport": "PDF & CSV Export",
+    "teamCloudSync": "Cloud sync",
+    "teamReports": "Advanced reports"
   }
 }

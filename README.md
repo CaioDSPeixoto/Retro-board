@@ -1,109 +1,171 @@
 # Retro-board
 
-![Banner](public/assets/banner.png)
+Plataforma multi-ferramenta para gestão pessoal e colaboração em times. Construída com Next.js 15, React 19, Firebase, Tailwind CSS 4 e next-intl.
 
-**Retro-board** é uma plataforma colaborativa moderna construída com **Next.js 15**, **Firebase** e **Tailwind CSS**. O projeto reúne diversas ferramentas essenciais para times ágeis e gestão pessoal em um único lugar, com suporte a múltiplos idiomas (Português, Inglês e Espanhol).
+## Stack
 
-## 🚀 Funcionalidades
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Next.js 15.5 (App Router, Turbopack) |
+| UI | React 19.1 |
+| Linguagem | TypeScript 5 (strict) |
+| Estilo | Tailwind CSS 4 + CSS custom properties |
+| Auth & DB | Firebase Auth + Firestore |
+| i18n | next-intl (pt, en, es) |
+| Gráficos | Recharts |
+| Validação | Zod |
+| Testes | Vitest + fast-check |
+| PDF/Export | jsPDF, file-saver |
 
-### 1. Retrospectiva
-Crie salas de retrospectiva em tempo real para seu time.
-*   **Colaboração Real-time**: Veja os cards e votos aparecendo instantaneamente (Firestore).
-*   **Fases**: Well, Not So Well, New Ideas.
-*   **Votação**: Sistema de votos para priorizar discussões.
+## Ferramentas
 
-### 2. Planning Poker
-Ferramenta para estimativa de tarefas ágeis.
-*   **Salas Compartilhadas**: Convide o time via link.
-*   **Cartas**: Sistema de pontuação padrão (Fibonacci).
-*   **Revelação**: Mostra as cartas apenas quando todos votaram.
+### Finance
 
-### 3. Lista de Tarefas (Todo)
-Uma lista de tarefas pessoal simples e elegante.
-*   **Design Limpo**: Interface moderna estilo "shopping list".
-*   **Persistência**: Seus dados ficam salvos no navegador (LocalStorage).
-*   **Funcionalidades**: Adicionar, marcar como feito, excluir e "Limpar Tudo".
+Gestão financeira pessoal e compartilhada com boards multi-usuário.
 
-![Todo Mockup](public/assets/todo_mockup.png)
+- Receitas e despesas com status (pendente, pago, parcial, movido)
+- Parcelamento com juros (percentual, fixo ou ambos)
+- Contas fixas recorrentes com templates automáticos
+- Pagamento parcial com carry-forward para o mês seguinte
+- Categorias customizadas e built-in
+- Sub-itens por lançamento
+- Investimentos (caixinhas) com saldo e alocação
+- Gráficos de evolução e distribuição por categoria
+- Métricas com totais, médias e itens em atraso
+- Boards compartilhados com convites por email e código
+- Real-time via Firestore listeners
 
-### 4. Gestão Financeira
-Controle suas receitas e despesas com simplicidade.
-*   **Autenticação**: Login seguro (Híbrido: Admin Mock + Firebase Auth).
-*   **Dashboard**: Resumo mensal de saldo.
-*   **Lançamentos**: Adicione receitas e despesas com data e status (pago/pendente).
+### Retroboard
 
-![Finance Login](public/assets/finance_login.png)
+Retrospectivas ágeis em tempo real.
 
----
+- 3 colunas com votação e drag-and-drop
+- Salas com expiração configurável
+- Participação anônima ou com nome
+- Histórico de salas visitadas
 
-## 🛠️ Tecnologias
+### Todo
 
-*   **Frontend**: Next.js 15 (App Router), React, Tailwind CSS.
-*   **Backend / DB**: Firebase (Firestore, Auth).
-*   **Internacionalização**: `next-intl` (PT-BR, EN, ES).
-*   **Ícones**: `react-icons`.
+Lista de tarefas com alarme sonoro.
 
----
+- Listas nomeadas com criação/renomeação/exclusão
+- Tarefas com alarme por horário
+- Persistência dual: localStorage (visitante) / Firebase (logado)
 
-## 🏃‍♂️ Como Rodar o Projeto
+### Time Tracker
 
-### Pré-requisitos
-*   Node.js instalado (v18+ recomendado).
-*   Conta no Firebase e projeto configurado.
+Controle de ponto com banco de horas.
 
-### Passo a Passo
+- Batidas de entrada/saída com cálculo automático
+- Jornada configurável (6h, 8h, 8h48)
+- Banco de horas positivo/negativo
+- Calendário com histórico de dias
+- Persistência dual: localStorage (visitante) / Firebase (logado)
 
-1.  **Clone o repositório**:
-    ```bash
-    git clone https://github.com/seu-usuario/Retro-board.git
-    cd Retro-board
-    ```
+### Portfolio/CV
 
-2.  **Instale as dependências**:
-    ```bash
-    npm install
-    ```
+Currículo profissional com dados dos arquivos de tradução.
 
-3.  **Configure as variáveis de ambiente**:
-    Crie um arquivo `.env.local` na raiz e adicione suas chaves do Firebase:
-    ```env
-    NEXT_PUBLIC_FIREBASE_API_KEY=seu_api_key
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=seu_project.firebaseapp.com
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID=seu_project_id
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=seu_project.appspot.com
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
-    NEXT_PUBLIC_FIREBASE_APP_ID=seu_app_id
-    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=seu_measurement_id
-    ```
+## Sistema de Planos
 
-4.  **Rode o servidor de desenvolvimento**:
-    ```bash
-    npm run dev
-    ```
-    Acesse `http://localhost:3000` no seu navegador.
+| Recurso | Free | Pro | Team |
+|---------|------|-----|------|
+| Boards financeiros | 1 | 10 | ilimitado |
+| Membros/board | 2 | 5 | ilimitado |
+| Listas todo | 2 | 20 | ilimitado |
+| Tarefas/lista | 10 | 100 | ilimitado |
+| Dias time tracker | 7 | 90 | ilimitado |
+| Cards retro/coluna | 5 | 30 | ilimitado |
+| Categorias custom | 5 | 50 | ilimitado |
+| Cloud sync | - | sim | sim |
+| Export PDF | - | sim | sim |
+| Relatórios avançados | - | sim | sim |
 
----
+- Limites configuráveis pelo admin via painel (salvo no Firestore)
+- Visitante sem login usa plano Free com dados em localStorage
+- Contadores de consumo visíveis na UI
+- Prompt de upgrade quando limite é atingido
+- Página de pricing com comparativo dos planos
 
-## 📍 Rotas e Acesso
+## Painel Admin
 
-O projeto utiliza rotas internacionalizadas `/[locale]/...`.
+- Listagem de usuários com busca
+- Edição de plano, role e expiração por usuário
+- Visualização de consumo por usuário (boards, categorias, listas, tarefas, dias)
+- Configuração dos limites de plano editável via tabela interativa
+- Alterações salvas no Firestore e aplicadas imediatamente
+- Rate limiting em operações admin
 
-*   **Home**: `/` (Redireciona para o idioma padrão, ex: `/pt`)
-*   **Ferramentas**: `/pt/tools` (Menu principal)
-*   **Retrospectiva**: `/pt/tools/retro`
-*   **Planning Poker**: `/pt/tools/poker`
-*   **Todo List**: `/pt/tools/todo`
-*   **Financeiro (Login)**: `/pt/tools/finance/login`
-*   **Financeiro (Dashboard)**: `/pt/tools/finance` (Requer login)
+## Segurança e LGPD
 
----
+- Isolamento total de dados por usuário
+- Verificação de sessão obrigatória em todas as Server Actions
+- Validação de input com Zod
+- Rate limiting em Server Actions
+- Cookie de sessão httpOnly, secure, sameSite lax
+- Verificação de ownership/membership em boards compartilhados
 
-## 👤 Login Admin (Demo)
+## Internacionalização
 
-Para testar o módulo financeiro rapidamente:
-*   **Usuário**: `admin@gmail.com`
-*   **Senha**: `admin`
+- 3 idiomas: Português (padrão), English, Español
+- Roteamento via /[locale]/... com middleware de detecção
+- Todos os textos da UI via arquivos de tradução
+- Script de validação: `npm run check-locales`
 
----
+## Testes
 
-Desenvolvido com 💙 de forma Colaborativa.
+50 testes automatizados com Vitest + fast-check (property-based testing). Todos focam na lógica financeira pura, validando invariantes matemáticas com inputs aleatórios (100 runs cada).
+
+| Arquivo | Testes | O que valida |
+|---------|--------|-------------|
+| interest-calculation | 8 | Juros por parcela (percentual sobre saldo devedor, fixo, ambos). Soma das bases em centavos = total original. Round-trip de InterestConfig. |
+| installment-redistribution | 9 | Diferença de redistribuição em tempo real. Editabilidade por status. Preservação do total original (tolerância 1 centavo). Metadados intactos após redistribuição. |
+| sub-items | 7 | Round-trip de SubItem. Editabilidade depende do status do pai. Soma em centavos. Validação soma vs valor do pai. Exclusão em cascata. |
+| investments | 10 | Investimentos como despesa com subcategoria. Agregação por categoria excluindo "moved". Round-trip de templates. Geração automática. Alocação proporcional. |
+| chart-aggregation | 7 | Agregação por período (semana/mês/ano). Itens "moved" excluídos. Filtro por boardId. Distribuição por categoria. |
+
+## Comandos
+
+```bash
+npm run dev            # Desenvolvimento (Turbopack)
+npm run build          # Build de produção
+npm start              # Servidor de produção
+npm test               # Testes (vitest --run)
+npm run type-check     # Verificação de tipos
+npm run lint           # Linting
+npm run check-locales  # Validação de chaves i18n
+```
+
+## Setup
+
+1. Clone o repositório
+2. `npm install`
+3. Crie `.env.local` com as variáveis do Firebase:
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+FIREBASE_SERVICE_ACCOUNT_KEY_BASE64=
+```
+
+4. `npm run dev` e acesse http://localhost:3000
+
+## Rotas
+
+| Rota | Descrição |
+|------|-----------|
+| /[locale] | Home |
+| /[locale]/tools | Menu de ferramentas |
+| /[locale]/tools/finance | Boards financeiros |
+| /[locale]/tools/todo | Lista de tarefas |
+| /[locale]/tools/time-tracker | Controle de ponto |
+| /[locale]/tools/retroboard | Criar/entrar em sala |
+| /[locale]/room/[id] | Sala de retrospectiva |
+| /[locale]/tools/pricing | Planos e preços |
+| /[locale]/cv | Currículo |
+| /[locale]/releases | Notas de versão |
+| /[locale]/admin | Painel admin |

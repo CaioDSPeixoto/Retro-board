@@ -626,7 +626,7 @@ export default function FinanceItemCard({
                       step="0.01"
                       value={partialValue}
                       onChange={(e) => setPartialValue(e.target.value)}
-                      placeholder="Ex: 500,00"
+                      placeholder={t("partialPlaceholder")}
                       className="w-full p-2.5 bg-[var(--color-surface-raised)] rounded-xl border border-[var(--color-border)] focus:border-blue-500 outline-none text-sm text-[var(--color-text-primary)]"
                     />
                     <p className="text-[11px] text-[var(--color-text-muted)]">

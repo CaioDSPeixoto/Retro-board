@@ -7,24 +7,12 @@ fileMatchPattern: "**/{firebase,firebase-admin,actions,data,invite-actions}*.{ts
 
 ## Duas Instâncias
 
-### Client SDK (`lib/firebase.ts`)
-- Usado em Client Components para real-time listeners e autenticação
-- Exporta: `db` (Firestore), `auth` (Firebase Auth)
-- Configurado com variáveis `NEXT_PUBLIC_FIREBASE_*`
+| SDK | Arquivo | Uso | Exporta |
+|-----|---------|-----|---------|
+| Client | `lib/firebase.ts` | Client Components, real-time listeners | `db`, `auth` |
+| Admin | `lib/firebase-admin.ts` | Server Components, Server Actions | `adminDb`, `adminAuth` |
 
-### Admin SDK (`lib/firebase-admin.ts`)
-- Usado APENAS em Server Components e Server Actions
-- Importa `"server-only"` para garantir que nunca vai pro client bundle
-- Exporta: `adminDb` (Firestore), `adminAuth` (Firebase Auth Admin)
-- Configurado com `FIREBASE_SERVICE_ACCOUNT_KEY_BASE64` ou `FIREBASE_SERVICE_ACCOUNT_KEY`
-
-## Regras de Uso
-
-1. **Server Actions** → usar `adminDb` e `adminAuth`
-2. **Data fetching em Server Components** → usar `adminDb`
-3. **Real-time listeners em Client Components** → usar `db` (client SDK)
-4. **Autenticação client-side** → usar `auth` (client SDK)
-5. **Verificação de token** → usar `adminAuth.verifyIdToken()`
+Admin SDK importa `"server-only"` — nunca vai pro client bundle.
 
 ## Coleções Firestore
 
@@ -36,71 +24,46 @@ fileMatchPattern: "**/{firebase,firebase-admin,actions,data,invite-actions}*.{ts
 | `finance_board_invites` | Convites e solicitações |
 | `finance_fixed_templates` | Templates de contas fixas |
 | `rooms` | Salas de retrospectiva |
-| `rooms/{id}/cards` | Cartões de retrospectiva (subcollection) |
+| `rooms/{id}/cards` | Cartões (subcollection) |
 
-## Padrão de Query
+## Padrões de Query
 
-### Server-side (Admin SDK)
 ```typescript
-const snap = await adminDb
-  .collection("finance_items")
+// Server-side (Admin SDK)
+const snap = await adminDb.collection("finance_items")
   .where("date", ">=", start)
   .where("date", "<=", end)
   .where("userId", "==", sessionUser)
   .get();
+const items = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as FinanceItem));
 
-const items = snap.docs.map(doc => ({
-  id: doc.id,
-  ...(doc.data() as any),
-}));
-```
-
-### Client-side (Real-time)
-```typescript
-const q = query(
-  collection(db, "finance_items"),
-  where("date", ">=", start),
-  where("date", "<=", end),
-);
-
+// Client-side (Real-time)
 const unsub = onSnapshot(q, (snapshot) => {
-  const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-  setItems(docs);
+  setItems(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
 });
-
 return () => unsub(); // cleanup
 ```
 
-## Padrão de Escrita
+## Escrita
 
-### Criar documento
 ```typescript
+// Criar — ID gerado automaticamente
 const ref = await adminDb.collection("finance_items").add(newItem);
-// ref.id contém o ID gerado
-```
 
-### Atualizar documento
-```typescript
+// Atualizar
 await adminDb.collection("finance_items").doc(id).update({ status: "paid" });
-```
 
-### Deletar documento
-```typescript
+// Deletar
 await adminDb.collection("finance_items").doc(id).delete();
-```
 
-### Batch operations
-```typescript
+// Batch — operações atômicas
 const batch = adminDb.batch();
 itemsSnap.docs.forEach(d => batch.delete(d.ref));
-batch.delete(boardRef);
 await batch.commit();
 ```
 
-## Regras de Segurança
-
-1. **Sempre validar sessão** antes de qualquer operação de escrita
-2. **Verificar permissões** — `isMember(board, userId)` para operações em boards
-3. **Verificar ownership** — `board.ownerId === sessionUser` para operações administrativas
-4. **Nunca confiar em dados do client** — sempre re-validar no server
-5. **Não expor IDs internos** desnecessariamente ao client
+## Segurança
+1. Sempre validar sessão antes de escrita
+2. Verificar `isMember(board, userId)` para operações em boards
+3. Verificar `board.ownerId === sessionUser` para operações admin
+4. Nunca confiar em dados do client — re-validar no server

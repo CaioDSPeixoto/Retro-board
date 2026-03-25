@@ -400,7 +400,7 @@ export default function TodoList({
             <button
               onClick={() => setActiveListId(null)}
               className="p-1.5 rounded-lg hover:bg-blue-700 transition"
-              aria-label="Back"
+              aria-label={t("backAria")}
             >
               <FiChevronLeft size={22} />
             </button>

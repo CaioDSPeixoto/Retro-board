@@ -74,14 +74,14 @@ export default function CardItem({ card, vote, currentUserId, onDelete }: Props)
               onClick={() => vote(card.id, "likes")}
               className="flex items-center gap-1 text-green-500 font-bold hover:text-green-600 transition-colors"
             >
-              <span role="img" aria-label="likes">👍</span>
+              <span role="img" aria-label={t("likesAria")}>👍</span>
               {card.likes}
             </button>
             <button
               onClick={() => vote(card.id, "dislikes")}
               className="flex items-center gap-1 text-red-500 font-bold hover:text-red-600 transition-colors"
             >
-              <span role="img" aria-label="dislikes">👎</span>
+              <span role="img" aria-label={t("dislikesAria")}>👎</span>
               {card.dislikes}
             </button>
           </div>

@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { getUserProfile } from "@/lib/auth/user-profile";
 import { PLAN_LIMITS } from "@/types/user";
 import type { PlanLimits, SubscriptionPlan } from "@/types/user";
+import { getStoredPlanLimits } from "@/lib/plan-config";
 
 export async function getCurrentUserPlan(): Promise<SubscriptionPlan> {
   const userId = await getSession();
@@ -25,7 +26,8 @@ export async function getCurrentUserPlan(): Promise<SubscriptionPlan> {
 
 export async function getPlanLimits(): Promise<PlanLimits> {
   const plan = await getCurrentUserPlan();
-  return PLAN_LIMITS[plan];
+  const allLimits = await getStoredPlanLimits();
+  return allLimits[plan];
 }
 
 export async function canCreateBoard(currentBoardCount: number): Promise<boolean> {

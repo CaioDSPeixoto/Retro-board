@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { FinanceBoard, FinanceBoardInvite } from "@/types/finance";
+import type { PlanLimits } from "@/types/user";
+import UsageCounter from "@/components/ui/UsageCounter";
+import UpgradePrompt from "@/components/ui/UpgradePrompt";
 import {
   createFinanceBoard,
   renameFinanceBoard,
@@ -29,6 +32,7 @@ type Props = {
   currentMonth: string;
   initialBoards: FinanceBoard[];
   sessionUserId: string;
+  planLimits?: PlanLimits;
 };
 
 export default function FinanceBoardsClient({
@@ -36,11 +40,13 @@ export default function FinanceBoardsClient({
   currentMonth,
   initialBoards,
   sessionUserId,
+  planLimits,
 }: Props) {
   const tBoards = useTranslations("FinanceBoards");
   const router = useRouter();
 
   const boards = initialBoards;
+  const boardLimitReached = planLimits && planLimits.maxBoards !== -1 && boards.length >= planLimits.maxBoards;
 
   const [newBoardName, setNewBoardName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -232,6 +238,9 @@ export default function FinanceBoardsClient({
           </span>
         </h1>
         <p className="text-[var(--color-text-secondary)]">{tBoards("description")}</p>
+        {planLimits && (
+          <UsageCounter current={boards.length} max={planLimits.maxBoards} />
+        )}
       </div>
 
       {/* ERROR GLOBAL */}
@@ -270,6 +279,9 @@ export default function FinanceBoardsClient({
         {/* CONTEÚDO DAS ABAS */}
         <div className="p-4">
           {activeTab === "create" ? (
+            boardLimitReached ? (
+              <UpgradePrompt locale={locale} />
+            ) : (
             <form onSubmit={handleCreate} className="flex flex-col gap-3 md:flex-row">
               <div className="flex-1">
                 <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
@@ -295,6 +307,7 @@ export default function FinanceBoardsClient({
                 </button>
               </div>
             </form>
+            )
           ) : (
             <div className="animate-in fade-in duration-300">
               <FinanceJoinByCode locale={locale} />

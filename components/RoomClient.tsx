@@ -177,6 +177,7 @@ export default function RoomClient({ roomId, locale, exportEnabled = true, userP
       <button
         onClick={shareRoom}
         className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg text-white bg-green-500 hover:bg-green-600 transition z-40"
+        aria-label={isMobile ? t("share.whatsapp") : t("share.copy")}
       >
         {isMobile ? (
           <FaWhatsapp className="text-2xl" />

@@ -599,161 +599,156 @@ export default function FinanceFormModal({
             {/* Toggle Opções Avançadas */}
             {!isEditMode && (
               <>
-                {/* Sub-items editor (create mode, non-installment only) */}
-                {!useInstallments && (
-                  <div
-                    className="mt-1 rounded-xl border p-3"
-                    style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
-                  >
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "var(--color-text-muted)" }}>
-                      {tFinance("subItemsLabel")}
-                    </label>
-                    <SubItemsEditor
-                      parentAmount={formAmount}
-                      parentStatus="pending"
-                      onSubItemsChange={setSubItems}
-                      initialSubItems={subItems}
-                    />
-                  </div>
-                )}
-
                 <div className="mt-1 px-1">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced((prev) => !prev)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500"
-              >
-                <FiChevronDown
-                  className={`transition-transform ${showAdvanced ? "rotate-180" : ""
-                    }`}
-                  size={14}
-                />
-                {t("advancedOptionsToggle")}
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvanced((prev) => !prev)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500"
+                  >
+                    <FiChevronDown
+                      className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                      size={14}
+                    />
+                    {t("advancedOptionsToggle")}
+                  </button>
+                </div>
 
-            {showAdvanced && (
-              <>
-                {/* Parcelamento (somente na criação, discreto) */}
-                {!isEditMode && (
-                  <div className="mt-1 space-y-2">
-                    <div className="flex items-center gap-3 p-1">
-                      <input
-                        type="checkbox"
-                        id="useInstallments"
-                        checked={useInstallments}
-                        onChange={(e) => {
-                          setUseInstallments(e.target.checked);
-                          if (!e.target.checked) {
-                            setInterestType("");
-                            setInterestRate("");
-                            setInterestFixed("");
-                          }
-                        }}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                      <label
-                        htmlFor="useInstallments"
-                        className="text-sm font-medium cursor-pointer select-none"
-                        style={{ color: "var(--color-text-secondary)" }}
+                {showAdvanced && (
+                  <>
+                    {/* Sub-items editor (create mode, non-installment only) */}
+                    {!useInstallments && (
+                      <div
+                        className="rounded-xl border p-3"
+                        style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
                       >
-                        {t("useInstallmentsLabel")}
-                      </label>
-                    </div>
-
-                    {useInstallments && (
-                      <div className="pl-1">
-                        <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
-                          {t("installmentsLabel")}
+                        <label className="block text-xs font-bold uppercase tracking-wider mb-2 px-1" style={{ color: "var(--color-text-muted)" }}>
+                          {tFinance("subItemsLabel")}
                         </label>
-                        <input
-                          name="installments"
-                          type="number"
-                          min={1}
-                          max={60}
-                          defaultValue={1}
-                          className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
-                          style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                        <SubItemsEditor
+                          parentAmount={formAmount}
+                          parentStatus="pending"
+                          onSubItemsChange={setSubItems}
+                          initialSubItems={subItems}
                         />
-                        <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
-                          {t("installmentsHint")}
-                        </p>
-
-                        <div className="mt-3">
-                          <InterestFieldsConfig
-                            interestType={interestType}
-                            interestRate={interestRate}
-                            interestFixed={interestFixed}
-                            onInterestTypeChange={setInterestType}
-                            onInterestRateChange={setInterestRate}
-                            onInterestFixedChange={setInterestFixed}
-                          />
-                        </div>
                       </div>
                     )}
-                  </div>
-                )}
 
-                {/* Pago/Recebido */}
-                {!isEditMode && (
-                  <div className="flex flex-col gap-1 p-1 mt-1">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        name="status"
-                        value="paid"
-                        id="paid"
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                      <label
-                        htmlFor="paid"
-                        className="text-sm font-medium cursor-pointer select-none"
-                        style={{ color: "var(--color-text-primary)" }}
-                      >
-                        {t("alreadyPaidLabel")}
-                      </label>
-                    </div>
-                    <p className="text-[11px] px-1" style={{ color: "var(--color-text-secondary)" }}>
-                      {t("partialPaymentHint")}
-                    </p>
-                  </div>
-                )}
+                    {/* Parcelamento (somente na criação) */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 p-1">
+                        <input
+                          type="checkbox"
+                          id="useInstallments"
+                          checked={useInstallments}
+                          onChange={(e) => {
+                            setUseInstallments(e.target.checked);
+                            if (!e.target.checked) {
+                              setInterestType("");
+                              setInterestRate("");
+                              setInterestFixed("");
+                            }
+                          }}
+                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="useInstallments"
+                          className="text-sm font-medium cursor-pointer select-none"
+                          style={{ color: "var(--color-text-secondary)" }}
+                        >
+                          {t("useInstallmentsLabel")}
+                        </label>
+                      </div>
 
-                {/* Fixa */}
-                {showFixedBase && (
-                  <div className="flex flex-col gap-1 p-1 mt-1">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        name="isFixed"
-                        value="true"
-                        id="isFixed"
-                        defaultChecked={false}
-                        disabled={!canUseFixed}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                      <label
-                        htmlFor="isFixed"
-                        className="text-sm font-medium cursor-pointer select-none"
-                        style={{ color: canUseFixed ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}
-                      >
-                        {t("fixedCheckboxLabel")}
-                      </label>
+                      {useInstallments && (
+                        <div className="pl-1">
+                          <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                            {t("installmentsLabel")}
+                          </label>
+                          <input
+                            name="installments"
+                            type="number"
+                            min={1}
+                            max={60}
+                            defaultValue={1}
+                            className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
+                            style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                          />
+                          <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                            {t("installmentsHint")}
+                          </p>
+
+                          <div className="mt-3">
+                            <InterestFieldsConfig
+                              interestType={interestType}
+                              interestRate={interestRate}
+                              interestFixed={interestFixed}
+                              onInterestTypeChange={setInterestType}
+                              onInterestRateChange={setInterestRate}
+                              onInterestFixedChange={setInterestFixed}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {disableFixedForInstallments && (
-                      <p className="text-[11px] pl-1" style={{ color: "var(--color-text-muted)" }}>
-                        {t("fixedNotAllowedWithInstallments")}
+
+                    {/* Pago/Recebido */}
+                    <div className="flex flex-col gap-1 p-1">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          name="status"
+                          value="paid"
+                          id="paid"
+                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="paid"
+                          className="text-sm font-medium cursor-pointer select-none"
+                          style={{ color: "var(--color-text-primary)" }}
+                        >
+                          {t("alreadyPaidLabel")}
+                        </label>
+                      </div>
+                      <p className="text-[11px] px-1" style={{ color: "var(--color-text-secondary)" }}>
+                        {t("partialPaymentHint")}
                       </p>
+                    </div>
+
+                    {/* Fixa */}
+                    {showFixedBase && (
+                      <div className="flex flex-col gap-1 p-1">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            name="isFixed"
+                            value="true"
+                            id="isFixed"
+                            defaultChecked={false}
+                            disabled={!canUseFixed}
+                            className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                          />
+                          <label
+                            htmlFor="isFixed"
+                            className="text-sm font-medium cursor-pointer select-none"
+                            style={{ color: canUseFixed ? "var(--color-text-secondary)" : "var(--color-text-muted)" }}
+                          >
+                            {t("fixedCheckboxLabel")}
+                          </label>
+                        </div>
+                        {disableFixedForInstallments && (
+                          <p className="text-[11px] pl-1" style={{ color: "var(--color-text-muted)" }}>
+                            {t("fixedNotAllowedWithInstallments")}
+                          </p>
+                        )}
+                        {canUseFixed && (
+                          <p className="text-[11px] pl-1 text-amber-600">
+                            {t("fixedYearEndWarning", { year: new Date().getFullYear() })}
+                          </p>
+                        )}
+                      </div>
                     )}
-                    {canUseFixed && (
-                      <p className="text-[11px] pl-1 text-amber-600">
-                        {t("fixedYearEndWarning", { year: new Date().getFullYear() })}
-                      </p>
-                    )}
-                  </div>
+                  </>
                 )}
-              </>
-            )}
               </>
             )}
 

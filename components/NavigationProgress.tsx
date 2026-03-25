@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
 
@@ -8,9 +8,11 @@ export default function NavigationProgress({ label }: { label?: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const currentUrl = useRef("");
 
+  // Atualiza a URL de referência e esconde o overlay quando a navegação conclui
   useEffect(() => {
-    // navegação concluída — esconde o overlay
+    currentUrl.current = pathname + (searchParams?.toString() || "");
     setLoading(false);
   }, [pathname, searchParams]);
 
@@ -22,7 +24,7 @@ export default function NavigationProgress({ label }: { label?: string }) {
       const href = target.getAttribute("href");
       if (!href) return;
 
-      // ignora links externos, âncoras, downloads e target=_blank
+      // Ignora links externos, âncoras, downloads e target=_blank
       if (
         href.startsWith("http") ||
         href.startsWith("mailto") ||
@@ -31,6 +33,15 @@ export default function NavigationProgress({ label }: { label?: string }) {
         target.getAttribute("target") === "_blank" ||
         target.hasAttribute("download")
       ) return;
+
+      // Se o link aponta para a mesma URL atual, não mostra spinner
+      try {
+        const linkUrl = new URL(href, window.location.origin);
+        const linkPath = linkUrl.pathname + linkUrl.search;
+        if (linkPath === currentUrl.current) return;
+      } catch {
+        // Se não conseguir parsear, deixa seguir normalmente
+      }
 
       setLoading(true);
     };

@@ -611,49 +611,20 @@ export default function FinanceClientPage({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
+          <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
+            {(["list", "metrics", "charts", "investments"] as const).map((tab) => (
               <button
+                key={tab}
                 type="button"
-                onClick={() => setActiveTab("list")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "list"
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === tab
                   ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
                   }`}
               >
-                {t("tabListLabel")}
+                {t(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Label`)}
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("metrics")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "metrics"
-                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                  }`}
-              >
-                {t("tabMetricsLabel")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("charts")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "charts"
-                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                  }`}
-              >
-                {t("tabChartsLabel")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("investments")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${activeTab === "investments"
-                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                  }`}
-              >
-                {t("tabInvestmentsLabel")}
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>

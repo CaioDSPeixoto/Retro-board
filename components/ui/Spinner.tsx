@@ -2,6 +2,7 @@ type SpinnerProps = {
   size?: "sm" | "md" | "lg";
   color?: "blue" | "white" | "gray";
   className?: string;
+  label?: string;
 };
 
 const sizeMap = {
@@ -16,12 +17,12 @@ const colorMap = {
   gray: "border-gray-300 border-t-gray-600",
 };
 
-export default function Spinner({ size = "md", color = "blue", className = "" }: SpinnerProps) {
+export default function Spinner({ size = "md", color = "blue", className = "", label }: SpinnerProps) {
   return (
     <div
       className={`rounded-full animate-spin ${sizeMap[size]} ${colorMap[color]} ${className}`}
       role="status"
-      aria-label="Carregando"
+      aria-label={label || "Loading"}
     />
   );
 }

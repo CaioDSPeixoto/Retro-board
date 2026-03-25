@@ -3,17 +3,20 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { FiEdit2, FiShield, FiUser, FiSearch } from "react-icons/fi";
-import type { UserProfile, SubscriptionPlan, UserRole } from "@/types/user";
-import { adminUpdateUser } from "@/app/[locale]/admin/actions";
+import { FiEdit2, FiShield, FiUser, FiSearch, FiBarChart2 } from "react-icons/fi";
+import type { UserProfile, SubscriptionPlan, UserRole, PlanLimits } from "@/types/user";
+import { PLAN_LIMITS } from "@/types/user";
+import { adminUpdateUser, getUserUsage, saveAdminPlanConfig } from "@/app/[locale]/admin/actions";
 import Spinner from "@/components/ui/Spinner";
+import UsageCounter from "@/components/ui/UsageCounter";
 
 type Props = {
   initialUsers: UserProfile[];
   locale: string;
+  initialPlanLimits?: Record<SubscriptionPlan, PlanLimits>;
 };
 
-export default function AdminClient({ initialUsers, locale }: Props) {
+export default function AdminClient({ initialUsers, locale, initialPlanLimits }: Props) {
   const t = useTranslations("Admin");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -25,6 +28,16 @@ export default function AdminClient({ initialUsers, locale }: Props) {
   const [editExpires, setEditExpires] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [usageUserId, setUsageUserId] = useState<string | null>(null);
+  const [usageData, setUsageData] = useState<Record<string, number> | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+  const [showPlanConfig, setShowPlanConfig] = useState(false);
+  const [editingPlanLimits, setEditingPlanLimits] = useState<Record<SubscriptionPlan, PlanLimits>>(
+    initialPlanLimits ?? { ...PLAN_LIMITS }
+  );
+  const [planSaving, setPlanSaving] = useState(false);
+  const [planSaved, setPlanSaved] = useState(false);
+  const [planEditMode, setPlanEditMode] = useState(false);
 
   const filtered = users.filter(
     (u) =>
@@ -50,6 +63,21 @@ export default function AdminClient({ initialUsers, locale }: Props) {
     setEditExpires(user.subscriptionExpiresAt || "");
     setError("");
     setSuccess("");
+  }
+
+  async function toggleUsage(userId: string) {
+    if (usageUserId === userId) {
+      setUsageUserId(null);
+      setUsageData(null);
+      return;
+    }
+    setUsageUserId(userId);
+    setUsageLoading(true);
+    const res = await getUserUsage(userId, locale);
+    if (res && "usage" in res) {
+      setUsageData(res.usage as Record<string, number>);
+    }
+    setUsageLoading(false);
   }
 
   async function handleSave() {
@@ -118,6 +146,151 @@ export default function AdminClient({ initialUsers, locale }: Props) {
         ))}
       </div>
 
+      {/* Plan Config */}
+      <div
+        className="rounded-xl border overflow-hidden"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <button
+          type="button"
+          onClick={() => setShowPlanConfig((p) => !p)}
+          className="w-full flex items-center justify-between p-4 text-sm font-semibold transition-colors hover:bg-[var(--color-surface-raised)]"
+          style={{ color: "var(--color-text-primary)" }}
+        >
+          {t("planConfigTitle")}
+          <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            {showPlanConfig ? "▲" : "▼"}
+          </span>
+        </button>
+        {showPlanConfig && (
+          <div className="px-4 pb-4 overflow-x-auto">
+            <div className="flex items-center justify-between mb-3">
+              <button
+                type="button"
+                onClick={() => { setPlanEditMode((p) => !p); setPlanSaved(false); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                  planEditMode
+                    ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border-[var(--color-accent-primary)]"
+                    : "bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
+                }`}
+              >
+                {planEditMode ? t("planConfigCancel") : t("planConfigEdit")}
+              </button>
+              {planEditMode && (
+                <button
+                  type="button"
+                  disabled={planSaving}
+                  onClick={async () => {
+                    setPlanSaving(true);
+                    setPlanSaved(false);
+                    const res = await saveAdminPlanConfig(editingPlanLimits as any, locale);
+                    setPlanSaving(false);
+                    if (res && "success" in res) {
+                      setPlanSaved(true);
+                      setPlanEditMode(false);
+                      startTransition(() => router.refresh());
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition"
+                >
+                  {planSaving ? t("planConfigSaving") : t("planConfigSave")}
+                </button>
+              )}
+              {planSaved && !planEditMode && (
+                <span className="text-xs text-green-600 font-semibold">{t("planConfigSaved")}</span>
+              )}
+            </div>
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ color: "var(--color-text-muted)" }}>
+                  <th className="text-left py-2 font-bold uppercase tracking-wider">{t("planConfigResource")}</th>
+                  <th className="text-center py-2 font-bold uppercase tracking-wider">Free</th>
+                  <th className="text-center py-2 font-bold uppercase tracking-wider">Pro</th>
+                  <th className="text-center py-2 font-bold uppercase tracking-wider">Team</th>
+                </tr>
+              </thead>
+              <tbody style={{ color: "var(--color-text-secondary)" }}>
+                {([
+                  { key: "maxBoards" as const, label: t("usageBoards") },
+                  { key: "maxMembersPerBoard" as const, label: t("planConfigMembers") },
+                  { key: "maxTodoLists" as const, label: t("usageTodoLists") },
+                  { key: "maxTodosPerList" as const, label: t("usageTodos") },
+                  { key: "maxTimeTrackerDays" as const, label: t("usageTimeTracker") },
+                  { key: "maxRetroCardsPerColumn" as const, label: t("planConfigRetroCards") },
+                  { key: "maxCustomCategories" as const, label: t("usageCategories") },
+                ]).map((row) => (
+                  <tr key={row.key} className="border-t" style={{ borderColor: "var(--color-border-subtle)" }}>
+                    <td className="py-2 font-medium">{row.label}</td>
+                    {(["free", "pro", "team"] as SubscriptionPlan[]).map((plan) => {
+                      const val = editingPlanLimits[plan][row.key] as number;
+                      return (
+                        <td key={plan} className="py-2 text-center">
+                          {planEditMode ? (
+                            <input
+                              type="number"
+                              min={-1}
+                              value={val}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                if (isNaN(v)) return;
+                                setEditingPlanLimits((prev) => ({
+                                  ...prev,
+                                  [plan]: { ...prev[plan], [row.key]: v },
+                                }));
+                              }}
+                              className="w-16 p-1 text-center rounded border text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
+                            />
+                          ) : (
+                            <span className="font-semibold">{val === -1 ? "∞" : val}</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+                {([
+                  { key: "cloudSync" as const, label: t("planConfigCloudSync") },
+                  { key: "exportEnabled" as const, label: t("planConfigExport") },
+                  { key: "adsEnabled" as const, label: t("planConfigAds") },
+                  { key: "retroPermanentRooms" as const, label: t("planConfigPermanentRooms") },
+                  { key: "advancedReports" as const, label: t("planConfigReports") },
+                ]).map((row) => (
+                  <tr key={row.key} className="border-t" style={{ borderColor: "var(--color-border-subtle)" }}>
+                    <td className="py-2 font-medium">{row.label}</td>
+                    {(["free", "pro", "team"] as SubscriptionPlan[]).map((plan) => {
+                      const val = editingPlanLimits[plan][row.key] as boolean;
+                      return (
+                        <td key={plan} className="py-2 text-center">
+                          {planEditMode ? (
+                            <input
+                              type="checkbox"
+                              checked={val}
+                              onChange={(e) => {
+                                setEditingPlanLimits((prev) => ({
+                                  ...prev,
+                                  [plan]: { ...prev[plan], [row.key]: e.target.checked },
+                                }));
+                              }}
+                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            />
+                          ) : (
+                            <span className={val ? "text-green-500" : "text-red-400"}>{val ? "✓" : "✗"}</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[10px] mt-3" style={{ color: "var(--color-text-muted)" }}>
+              {t("planConfigHint")}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Search */}
       <div className="relative">
         <FiSearch
@@ -143,12 +316,13 @@ export default function AdminClient({ initialUsers, locale }: Props) {
         {filtered.map((user) => (
           <div
             key={user.id}
-            className="rounded-xl border p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all duration-300 hover:shadow-md"
+            className="rounded-xl border p-4 transition-all duration-300 hover:shadow-md"
             style={{
               background: "var(--color-surface)",
               borderColor: "var(--color-border)",
             }}
           >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p
@@ -191,14 +365,54 @@ export default function AdminClient({ initialUsers, locale }: Props) {
                 </p>
               )}
             </div>
-            <button
-              onClick={() => openEdit(user)}
-              className="shrink-0 p-2 rounded-lg hover:bg-blue-500/10 transition-colors"
-              style={{ color: "var(--color-accent-text)" }}
-              title={t("editUser")}
-            >
-              <FiEdit2 size={18} />
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => toggleUsage(user.id)}
+                className={`p-2 rounded-lg transition-colors ${usageUserId === user.id ? "bg-blue-500/10" : "hover:bg-blue-500/10"}`}
+                style={{ color: "var(--color-accent-text)" }}
+                title={t("viewUsage")}
+                aria-label={t("viewUsage")}
+              >
+                <FiBarChart2 size={18} />
+              </button>
+              <button
+                onClick={() => openEdit(user)}
+                className="p-2 rounded-lg hover:bg-blue-500/10 transition-colors"
+                style={{ color: "var(--color-accent-text)" }}
+                title={t("editUser")}
+                aria-label={t("editUser")}
+              >
+                <FiEdit2 size={18} />
+              </button>
+            </div>
+            </div>
+
+            {/* Usage panel */}
+            {usageUserId === user.id && (
+              <div className="w-full mt-2 pt-2 border-t" style={{ borderColor: "var(--color-border-subtle)" }}>
+                {usageLoading ? (
+                  <div className="flex justify-center py-2"><Spinner size="sm" color="blue" /></div>
+                ) : usageData ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {(() => {
+                      const limits = PLAN_LIMITS[user.plan];
+                      return [
+                        { label: t("usageBoards"), current: usageData.boards, max: limits.maxBoards },
+                        { label: t("usageCategories"), current: usageData.categories, max: limits.maxCustomCategories },
+                        { label: t("usageTodoLists"), current: usageData.todoLists, max: limits.maxTodoLists },
+                        { label: t("usageTodos"), current: usageData.maxTodosInList, max: limits.maxTodosPerList },
+                        { label: t("usageTimeTracker"), current: usageData.timeTrackerDays, max: limits.maxTimeTrackerDays },
+                      ].map((item) => (
+                        <div key={item.label} className="text-center p-2 rounded-lg" style={{ background: "var(--color-surface-raised)" }}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>{item.label}</p>
+                          <UsageCounter current={item.current} max={item.max} className="text-sm" />
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         ))}
 

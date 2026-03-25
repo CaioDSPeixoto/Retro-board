@@ -13,6 +13,7 @@ import {
 import type { FinanceBoard, FinanceItem, InvestmentBucket } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
+import { getPlanLimits } from "@/lib/auth/plan-check";
 
 type SearchParams = {
   month?: string;
@@ -81,6 +82,7 @@ export default async function FinancePage({
 
   // LISTAGEM DE QUADROS (sem boardId)
   if (!boardId) {
+    const planLimits = await getPlanLimits();
     return (
       <div className="max-w-4xl mx-auto px-6 pb-10">
         <FinanceBoardsClient
@@ -88,6 +90,7 @@ export default async function FinancePage({
           currentMonth={currentMonth}
           initialBoards={boards}
           sessionUserId={safeSessionUserId}
+          planLimits={planLimits}
         />
       </div>
     );

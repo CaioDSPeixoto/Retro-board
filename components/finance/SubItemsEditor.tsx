@@ -174,20 +174,20 @@ export default function SubItemsEditor({
           }}
         >
           {editingId === entry.id ? (
-            <>
-              <div className="flex flex-col sm:flex-row gap-2 flex-1">
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  placeholder={t("subItemTitlePlaceholder")}
-                  className="flex-1 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text-primary)",
-                  }}
-                />
+            <div className="w-full space-y-2">
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder={t("subItemTitlePlaceholder")}
+                className="w-full p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text-primary)",
+                }}
+              />
+              <div className="flex gap-2">
                 <input
                   type="number"
                   min={0}
@@ -195,19 +195,17 @@ export default function SubItemsEditor({
                   value={editAmount}
                   onChange={(e) => setEditAmount(e.target.value)}
                   placeholder={t("subItemAmountPlaceholder")}
-                  className="w-full sm:w-28 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
                     borderColor: "var(--color-border)",
                     background: "var(--color-surface)",
                     color: "var(--color-text-primary)",
                   }}
                 />
-              </div>
-              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={handleSaveEdit}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-green-600 hover:text-green-700 transition"
+                  className="px-3 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition text-sm font-semibold"
                   aria-label={t("editSubItem")}
                 >
                   <FiCheck size={16} />
@@ -215,14 +213,14 @@ export default function SubItemsEditor({
                 <button
                   type="button"
                   onClick={handleCancelEdit}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-red-500 transition"
-                  style={{ color: "var(--color-text-muted)" }}
+                  className="px-3 py-2 rounded-lg border hover:text-red-500 transition text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
                   aria-label={t("cancel")}
                 >
                   <FiX size={16} />
                 </button>
               </div>
-            </>
+            </div>
           ) : (
             <>
               <div className="flex-1 min-w-0">
@@ -233,7 +231,7 @@ export default function SubItemsEditor({
                   {entry.title}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <span
                   className="text-sm font-semibold whitespace-nowrap"
                   style={{ color: "var(--color-text-primary)" }}
@@ -245,7 +243,7 @@ export default function SubItemsEditor({
                     <button
                       type="button"
                       onClick={() => handleStartEdit(entry)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-[var(--color-accent-primary)] transition"
+                      className="p-2 rounded-lg hover:text-[var(--color-accent-primary)] transition"
                       style={{ color: "var(--color-text-muted)" }}
                       aria-label={t("editSubItem")}
                     >
@@ -254,7 +252,7 @@ export default function SubItemsEditor({
                     <button
                       type="button"
                       onClick={() => handleRemove(entry.id)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-red-500 transition"
+                      className="p-2 rounded-lg hover:text-red-500 transition"
                       style={{ color: "var(--color-text-muted)" }}
                       aria-label={t("removeSubItem")}
                     >
@@ -293,25 +291,25 @@ export default function SubItemsEditor({
         <div className="mt-1">
           {adding ? (
             <div
-              className="flex flex-col sm:flex-row gap-2 p-2 rounded-lg border"
+              className="space-y-2 p-2 rounded-lg border"
               style={{
                 background: "var(--color-surface-raised)",
                 borderColor: "var(--color-border-subtle)",
               }}
             >
-              <div className="flex flex-col sm:flex-row gap-2 flex-1">
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder={t("subItemTitlePlaceholder")}
-                  className="flex-1 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text-primary)",
-                  }}
-                />
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder={t("subItemTitlePlaceholder")}
+                className="w-full p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text-primary)",
+                }}
+              />
+              <div className="flex gap-2">
                 <input
                   type="number"
                   min={0}
@@ -319,19 +317,17 @@ export default function SubItemsEditor({
                   value={newAmount}
                   onChange={(e) => setNewAmount(e.target.value)}
                   placeholder={t("subItemAmountPlaceholder")}
-                  className="w-full sm:w-28 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 p-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
                     borderColor: "var(--color-border)",
                     background: "var(--color-surface)",
                     color: "var(--color-text-primary)",
                   }}
                 />
-              </div>
-              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={handleAdd}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-green-600 hover:text-green-700 transition"
+                  className="px-3 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition text-sm font-semibold"
                   aria-label={t("addSubItem")}
                 >
                   <FiCheck size={16} />
@@ -343,8 +339,8 @@ export default function SubItemsEditor({
                     setNewTitle("");
                     setNewAmount("");
                   }}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-red-500 transition"
-                  style={{ color: "var(--color-text-muted)" }}
+                  className="px-3 py-2 rounded-lg border hover:text-red-500 transition text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
                   aria-label={t("cancel")}
                 >
                   <FiX size={16} />
