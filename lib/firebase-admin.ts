@@ -19,7 +19,6 @@ function parseServiceAccount() {
     );
   }
 
-  // remove aspas externas se existirem
   const cleaned =
     raw.startsWith("'") && raw.endsWith("'")
       ? raw.slice(1, -1)
@@ -27,9 +26,7 @@ function parseServiceAccount() {
         ? raw.slice(1, -1)
         : raw;
 
-  // garante \n correto caso venha com \n "cru"
   const normalized = cleaned.replace(/\\n/g, "\n");
-
   return JSON.parse(normalized);
 }
 
@@ -44,3 +41,38 @@ const app =
 
 export const adminAuth = getAuth(app);
 export const adminDb = getFirestore(app);
+
+/**
+ * Cache de verificação de revogação de tokens.
+ * checkRevoked faz round-trip ao Google (~200-500ms).
+ * Cacheamos o resultado por 5 minutos por uid — seguro porque:
+ * - Tokens Firebase expiram em 1h de qualquer forma
+ * - Em caso de revogação urgente, o cache expira em no máximo 5min
+ */
+const revocationCache = new Map<string, { valid: boolean; expiresAt: number }>();
+const REVOCATION_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+export async function verifyIdTokenCached(idToken: string): Promise<import("firebase-admin/auth").DecodedIdToken> {
+  // Decodifica sem checkRevoked primeiro (operação local, sem round-trip)
+  const decoded = await adminAuth.verifyIdToken(idToken, false);
+  const uid = decoded.uid;
+  const now = Date.now();
+
+  const cached = revocationCache.get(uid);
+  if (cached && cached.expiresAt > now) {
+    // Cache hit — pular round-trip ao Google
+    if (!cached.valid) throw new Error("auth/id-token-revoked");
+    return decoded;
+  }
+
+  // Cache miss ou expirado — verificar revogação com round-trip
+  await adminAuth.verifyIdToken(idToken, true);
+  revocationCache.set(uid, { valid: true, expiresAt: now + REVOCATION_CACHE_TTL });
+
+  return decoded;
+}
+
+/** Invalida o cache de revogação ao fazer logout */
+export function invalidateRevocationCache(uid: string): void {
+  revocationCache.delete(uid);
+}

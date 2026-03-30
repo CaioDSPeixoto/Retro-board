@@ -32,7 +32,8 @@ export default function LoginForm({ locale }: Props) {
     let idToken = "";
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      idToken = await userCredential.user.getIdToken(true);
+      // Sem force refresh — token recém-criado já é válido
+      idToken = await userCredential.user.getIdToken();
     } catch (firebaseError: any) {
       const code = firebaseError?.code;
       if (

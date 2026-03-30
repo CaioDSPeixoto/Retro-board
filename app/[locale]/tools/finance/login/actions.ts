@@ -2,7 +2,7 @@
 
 import { createMockSession } from "@/lib/auth/login";
 import { destroySession } from "@/lib/auth/logout";
-import { adminAuth } from "@/lib/firebase-admin";
+import { verifyIdTokenCached, invalidateRevocationCache } from "@/lib/firebase-admin";
 import { ensureUserProfile } from "@/lib/auth/user-profile";
 import { redirect } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -19,21 +19,27 @@ export async function loginAction(idToken: string, locale: string) {
 
   const safeLocale = sanitizeLocale(locale);
 
-  // checkRevoked: true rejeita tokens de contas com senha alterada ou deletadas
-  const decoded = await adminAuth.verifyIdToken(idToken, true);
+  // Verifica token com cache de revogação — evita round-trip ao Google em logins repetidos
+  const decoded = await verifyIdTokenCached(idToken);
 
-  await ensureUserProfile(
-    decoded.uid,
-    decoded.email || "",
-    decoded.name || decoded.email?.split("@")[0],
-  );
+  // Paralelizar: verificar/criar perfil e assinar cookie ao mesmo tempo
+  await Promise.all([
+    ensureUserProfile(
+      decoded.uid,
+      decoded.email || "",
+      decoded.name || decoded.email?.split("@")[0],
+    ),
+    createMockSession(decoded.uid),
+  ]);
 
-  await createMockSession(decoded.uid);
   redirect(`/${safeLocale}/tools/finance`);
 }
 
 export async function logoutFinance(formData: FormData) {
   const safeLocale = sanitizeLocale(formData.get("locale"));
+  const { getSession } = await import("@/lib/auth/session");
+  const uid = await getSession();
+  if (uid) invalidateRevocationCache(uid);
   await destroySession();
   redirect(`/${safeLocale}/tools/finance/login`);
 }
