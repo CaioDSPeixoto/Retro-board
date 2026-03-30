@@ -162,14 +162,19 @@ service cloud.firestore {
         allow create: if isSignedIn()
           && request.resource.data.keys().hasOnly(["title", "amount", "createdAt"])
           && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200
           && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 999999999
           && request.resource.data.createdAt is string;
 
         allow update: if isSignedIn()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(["title", "amount"]);
 
-        allow delete: if isSignedIn();
+        // Deletar sub-item: apenas o dono do item pai
+        allow delete: if isSignedIn()
+          && get(/databases/$(database)/documents/finance_items/$(itemId)).data.userId == request.auth.uid;
       }
     }
 
@@ -317,7 +322,11 @@ service cloud.firestore {
           .hasOnly(["status", "respondedAt", "userId"])
         && request.resource.data.status in ["accepted", "rejected", "cancelled"];
 
-      allow delete: if false;
+      // Permitir deleção pelo owner ou pelo criador (limpeza de convites antigos)
+      allow delete: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid
+      );
     }
 
     // =============================================
@@ -398,19 +407,44 @@ service cloud.firestore {
     // =============================================
 
     match /rooms/{roomId} {
+      // Qualquer um pode ler e criar salas (retroboard é público por design)
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if request.resource.data.keys().hasOnly([
+          "roomName", "requireName", "createdAt", "locale"
+        ])
+        && request.resource.data.roomName is string
+        && request.resource.data.roomName.size() <= 100
+        && request.resource.data.createdAt is string;
+
+      // Apenas atualizar campos permitidos (sem sobrescrever tudo)
+      allow update: if request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(["roomName", "requireName"]);
+
       allow delete: if false;
 
       match /cards/{cardId} {
         allow read: if true;
-        allow create: if true;
-        allow update: if true;
-        // Qualquer um pode deletar (o controle de authorId é feito no client/server)
-        // mas se quiser restringir: resource.data.authorId == ???
-        // Como o retroboard usa IDs anônimos (não Firebase Auth), mantemos aberto
-        allow delete: if true;
+
+        // Criar card: validar campos e tamanho do texto
+        allow create: if request.resource.data.keys().hasOnly([
+            "category", "text", "likes", "dislikes", "author", "authorId", "createdAt"
+          ])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.author is string
+          && request.resource.data.author.size() <= 100
+          && request.resource.data.authorId is string
+          && request.resource.data.likes == 0
+          && request.resource.data.dislikes == 0;
+
+        // Atualizar: apenas votos ou mover categoria
+        allow update: if request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(["likes", "dislikes", "category"]);
+
+        // Deletar: apenas o autor do card (via authorId)
+        allow delete: if request.resource == null
+          || resource.data.authorId == request.resource.data.authorId;
       }
     }
 

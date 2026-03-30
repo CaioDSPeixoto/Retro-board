@@ -13,6 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { format, parseISO, startOfMonth, endOfMonth, subMonths, getISOWeek } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { isRateLimited } from "@/lib/rate-limit";
+import { addFinanceItemSchema, updateFinanceItemSchema, createCategorySchema, createBoardSchema } from "@/lib/validations/finance";
 
 /* ================= helpers ================= */
 
@@ -255,51 +256,47 @@ export async function addFinanceItem(formData: FormData) {
     return { error: t("errors.rateLimited") };
   }
 
-  const titleRaw = String(formData.get("title") || "");
-  const amountStr = String(formData.get("amount") || "");
-  const date = String(formData.get("date") || "");
-  const type = formData.get("type") as "income" | "expense" | null;
-  const categoryRaw = String(formData.get("category") || "");
+  // ========== VALIDAÇÃO ZOD ==========
+  const rawInput = {
+    title: String(formData.get("title") || ""),
+    amount: parseFloat(String(formData.get("amount") || "")),
+    date: String(formData.get("date") || ""),
+    type: formData.get("type"),
+    category: String(formData.get("category") || ""),
+    status: formData.get("status") || undefined,
+    isFixed: formData.get("isFixed") === "true",
+    boardId: String(formData.get("boardId") || "") || undefined,
+    installments: parseInt(String(formData.get("installments") || "1"), 10) || 1,
+    cardName: String(formData.get("cardName") || "") || undefined,
+    cardMode: String(formData.get("cardMode") || "") || undefined,
+    interestType: String(formData.get("interestType") || "") || undefined,
+    interestRate: formData.get("interestRate") ? parseFloat(String(formData.get("interestRate"))) : undefined,
+    interestFixed: formData.get("interestFixed") ? parseFloat(String(formData.get("interestFixed"))) : undefined,
+    investmentCategory: formData.get("investmentCategory") || undefined,
+  };
 
-  const statusField = formData.get("status") as FinanceStatus | null;
-  const isFixedFlag = formData.get("isFixed") === "true";
+  const parsed = addFinanceItemSchema.safeParse(rawInput);
+  if (!parsed.success) return { error: t("errors.invalidData") };
 
-  const boardIdRaw = String(formData.get("boardId") || "");
-  const createdByNameFromForm = String(formData.get("createdByName") || "");
+  const {
+    title, amount, date, type, category,
+    status: statusField, isFixed: isFixedFlag,
+    boardId: boardIdRaw, installments: installmentsRaw,
+    cardName, cardMode,
+    interestType: interestTypeRaw, interestRate, interestFixed: interestFixedVal,
+    investmentCategory: investmentCategoryRaw,
+  } = parsed.data;
 
-  const installmentsStr = String(formData.get("installments") || "1");
-  let installments = parseInt(installmentsStr, 10);
-  if (Number.isNaN(installments) || installments < 1) installments = 1;
+  let installments = installmentsRaw ?? 1;
   if (installments > 60) installments = 60;
 
-  const cardNameRaw = String(formData.get("cardName") || "");
-  const cardModeRaw = String(formData.get("cardMode") || "");
-  const cardName = cardNameRaw.trim();
-  const cardMode =
-    cardModeRaw === "credit" || cardModeRaw === "debit"
-      ? (cardModeRaw as "credit" | "debit")
-      : undefined;
-
-  // ========== JUROS ==========
-  const interestTypeRaw = String(formData.get("interestType") || "");
-  const interestRateStr = String(formData.get("interestRate") || "");
-  const interestFixedStr = String(formData.get("interestFixed") || "");
-
-  // ========== INVESTIMENTO ==========
-  const investmentCategoryRaw = formData.get("investmentCategory") as string | null;
   const validInvestmentCategory =
     investmentCategoryRaw && INVESTMENT_CATEGORIES.includes(investmentCategoryRaw as any)
       ? (investmentCategoryRaw as InvestmentCategory)
       : undefined;
 
-  const amount = parseFloat(amountStr);
-  const title = titleRaw.trim();
-  const category = categoryRaw.trim();
-
-  if (!title || Number.isNaN(amount) || !date || !type) {
-    return { error: t("errors.incompleteData") };
-  }
-  if (!category) return { error: t("errors.categoryRequired") };
+  const interestRateStr = String(interestRate ?? "");
+  const interestFixedStr = String(interestFixedVal ?? "");
 
   // valida board se veio
   let boardId: string | undefined;
@@ -311,6 +308,7 @@ export async function addFinanceItem(formData: FormData) {
     boardId = boardIdRaw;
   }
 
+  const createdByNameFromForm = String(formData.get("createdByName") || "");
   const baseStatus: FinanceStatus = statusField || "pending";
   const nowIso = new Date().toISOString();
 
@@ -466,35 +464,24 @@ export async function updateFinanceItem(formData: FormData) {
     return { error: t("errors.rateLimited") };
   }
 
-  const id = String(formData.get("id") || "");
-  const title = String(formData.get("title") || "");
-  const amountStr = String(formData.get("amount") || "");
-  const date = String(formData.get("date") || "");
-  const category = String(formData.get("category") || "");
-  const type = formData.get("type") as "income" | "expense" | null;
-  const paidAmountStr = String(formData.get("paidAmount") || "");
+  // ========== VALIDAÇÃO ZOD ==========
+  const rawInput = {
+    id: String(formData.get("id") || ""),
+    title: String(formData.get("title") || ""),
+    amount: parseFloat(String(formData.get("amount") || "")),
+    date: String(formData.get("date") || ""),
+    type: formData.get("type"),
+    category: String(formData.get("category") || ""),
+    paidAmount: formData.get("paidAmount") ? parseFloat(String(formData.get("paidAmount"))) : undefined,
+    cardName: String(formData.get("cardName") || "") || undefined,
+    cardMode: String(formData.get("cardMode") || "") || undefined,
+  };
 
-  const cardNameRaw = String(formData.get("cardName") || "");
-  const cardModeRaw = String(formData.get("cardMode") || "");
-  const cardName = cardNameRaw.trim();
-  const cardMode =
-    cardModeRaw === "credit" || cardModeRaw === "debit"
-      ? (cardModeRaw as "credit" | "debit")
-      : undefined;
+  const parsed = updateFinanceItemSchema.safeParse(rawInput);
+  if (!parsed.success) return { error: t("errors.invalidData") };
 
-  const amount = parseFloat(amountStr);
-  const paidAmountRaw = paidAmountStr ? parseFloat(paidAmountStr) : 0;
-
-  if (
-    !id ||
-    !title.trim() ||
-    Number.isNaN(amount) ||
-    !date ||
-    !category.trim() ||
-    !type
-  ) {
-    return { error: t("errors.incompleteData") };
-  }
+  const { id, title, amount, date, category, type, paidAmount: paidAmountParsed, cardName, cardMode } = parsed.data;
+  const paidAmountRaw = paidAmountParsed ?? 0;
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();

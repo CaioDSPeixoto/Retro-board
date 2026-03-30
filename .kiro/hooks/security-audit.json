@@ -1,0 +1,12 @@
+{
+  "name": "Security Audit",
+  "version": "1.0.0",
+  "description": "Após cada task completada, ativa o especialista em segurança para varrer vulnerabilidades, tentar explorar e corrigir o que encontrar.",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Ative a skill `security-expert` e execute o ciclo completo de segurança:\n\n1. VARREDURA: Analise os arquivos modificados/criados nesta task em busca de vulnerabilidades (XSS, IDOR, broken access control, injection, SSRF, exposed secrets, insecure cookies, missing auth checks, open Firestore rules, missing HTTP security headers, DoS vectors).\n\n2. PENTEST: Para cada vulnerabilidade encontrada, tente explorá-la concretamente — simule o ataque com código ou descreva o vetor exato de exploração.\n\n3. CORREÇÃO: Corrija todas as vulnerabilidades confirmadas diretamente nos arquivos.\n\n4. RE-TESTE: Execute a varredura novamente nos arquivos corrigidos. Repita o ciclo até não encontrar mais vulnerabilidades.\n\n5. RELATÓRIO: Produza o relatório final no formato definido na skill, listando o que foi encontrado, explorado, corrigido e o status final.\n\nFoco especial neste projeto:\n- Cookie `finance_session` sem assinatura HMAC\n- `rooms` Firestore aberto sem autenticação\n- `verifyIdToken` sem `checkRevoked: true`\n- Inputs sem validação Zod (amount negativo/Infinity, title sem max length)\n- Headers de segurança HTTP no next.config.ts\n- `locale` em redirects sem whitelist\n- `sub_items` delete sem ownership check"
+  }
+}

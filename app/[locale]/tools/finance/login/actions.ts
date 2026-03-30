@@ -5,13 +5,23 @@ import { destroySession } from "@/lib/auth/logout";
 import { adminAuth } from "@/lib/firebase-admin";
 import { ensureUserProfile } from "@/lib/auth/user-profile";
 import { redirect } from "next/navigation";
+import { routing } from "@/i18n/routing";
+
+const VALID_LOCALES = new Set(routing.locales);
+
+function sanitizeLocale(locale: unknown): string {
+  const l = String(locale || "pt").toLowerCase();
+  return VALID_LOCALES.has(l as any) ? l : "pt";
+}
 
 export async function loginAction(idToken: string, locale: string) {
-  if (!idToken) return;
+  if (!idToken || typeof idToken !== "string") return;
 
-  const decoded = await adminAuth.verifyIdToken(idToken);
+  const safeLocale = sanitizeLocale(locale);
 
-  // Garante que o perfil do usuário existe no Firestore
+  // checkRevoked: true rejeita tokens de contas com senha alterada ou deletadas
+  const decoded = await adminAuth.verifyIdToken(idToken, true);
+
   await ensureUserProfile(
     decoded.uid,
     decoded.email || "",
@@ -19,11 +29,11 @@ export async function loginAction(idToken: string, locale: string) {
   );
 
   await createMockSession(decoded.uid);
-  redirect(`/${locale}/tools/finance`);
+  redirect(`/${safeLocale}/tools/finance`);
 }
 
 export async function logoutFinance(formData: FormData) {
-  const locale = formData.get("locale")?.toString() || "pt";
+  const safeLocale = sanitizeLocale(formData.get("locale"));
   await destroySession();
-  redirect(`/${locale}/tools/finance/login`);
+  redirect(`/${safeLocale}/tools/finance/login`);
 }

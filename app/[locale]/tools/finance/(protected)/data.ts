@@ -81,6 +81,30 @@ export async function getInvestmentBuckets(
 /* ================= sub-itens ================= */
 
 export async function getSubItems(itemId: string): Promise<SubItem[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return [];
+
+  // Verificar se o usuário tem acesso ao item pai antes de retornar sub-items
+  const parentSnap = await adminDb.collection("finance_items").doc(itemId).get();
+  if (!parentSnap.exists) return [];
+
+  const parentData = parentSnap.data() as any;
+
+  // Acesso direto por userId
+  if (parentData.userId === sessionUserId) {
+    // ok
+  } else if (parentData.boardId) {
+    // Verificar membership no board
+    const boardSnap = await adminDb.collection("finance_boards").doc(parentData.boardId).get();
+    if (!boardSnap.exists) return [];
+    const board = boardSnap.data() as any;
+    const members: string[] = Array.isArray(board.memberIds) ? board.memberIds : [];
+    const isMember = board.ownerId === sessionUserId || members.includes(sessionUserId);
+    if (!isMember) return [];
+  } else {
+    return [];
+  }
+
   const snap = await adminDb
     .collection("finance_items")
     .doc(itemId)
