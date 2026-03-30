@@ -4,6 +4,18 @@ import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
 
 const releases = [
+  { version: "1.1.0", date: "29/03/2026", changes: [
+    "SEC: cookie de sessão agora assinado com HMAC-SHA256 — previne forjamento de identidade",
+    "SEC: verifyIdToken com checkRevoked:true — tokens revogados rejeitados imediatamente",
+    "SEC: locale em loginAction e logoutFinance validado contra whitelist — corrige open redirect",
+    "SEC: headers de segurança HTTP adicionados (CSP, HSTS, X-Frame-Options, etc.)",
+    "SEC: getSubItems agora verifica ownership do item pai antes de retornar dados",
+    "SEC: addFinanceItem e updateFinanceItem passam a usar validação Zod",
+    "SEC: regras Firestore de rooms restritas — criação e update com validação de campos e tamanho",
+    "SEC: sub_items delete restrito ao dono do item pai",
+    "SEC: finance_board_invites agora permite deleção pelo owner/criador",
+    "SEC: skill security-expert e hook postTaskExecution adicionados ao projeto",
+  ] },
   { version: "1.0.0", date: "23/03/2026", changes: [
     "FEAT: sistema de planos (free/pro/team) com limites por funcionalidade",
     "FEAT: painel admin para gerenciamento manual de assinaturas",
