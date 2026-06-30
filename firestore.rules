@@ -9,7 +9,10 @@ service cloud.firestore {
     function isBoardMember(boardId) {
       return signedIn()
         && exists(/databases/$(database)/documents/finance_boards/$(boardId))
-        && request.auth.uid in get(/databases/$(database)/documents/finance_boards/$(boardId)).data.memberIds;
+        && (
+          get(/databases/$(database)/documents/finance_boards/$(boardId)).data.ownerId == request.auth.uid
+          || request.auth.uid in get(/databases/$(database)/documents/finance_boards/$(boardId)).data.memberIds
+        );
     }
 
     function canReadFinanceResource(data) {
@@ -22,32 +25,27 @@ service cloud.firestore {
 
     match /finance_boards/{boardId} {
       allow read: if isBoardMember(boardId);
-      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create, update, delete: if false;
     }
 
     match /finance_items/{itemId} {
       allow read: if canReadFinanceResource(resource.data);
-      allow create: if canReadFinanceResource(request.resource.data);
-      allow update, delete: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /finance_categories/{categoryId} {
       allow read: if canReadFinanceResource(resource.data);
-      allow create: if canReadFinanceResource(request.resource.data);
-      allow update, delete: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /finance_cards/{cardId} {
       allow read: if canReadFinanceResource(resource.data);
-      allow create: if canReadFinanceResource(request.resource.data);
-      allow update, delete: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /finance_fixed_templates/{templateId} {
       allow read: if canReadFinanceResource(resource.data);
-      allow create: if canReadFinanceResource(request.resource.data);
-      allow update, delete: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /finance_board_invites/{inviteId} {

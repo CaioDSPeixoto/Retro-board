@@ -39,14 +39,14 @@ export default async function CategoryPage({
       <div className="mb-2">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+          className="inline-flex items-center gap-2 text-sm text-[var(--color-accent-text)] hover:text-[var(--color-accent-primary)]"
         >
           <span className="text-lg leading-none">←</span>
           <span>{t("backToBoard")}</span>
         </Link>
       </div>
 
-      <h1 className="text-xl font-bold text-gray-800">
+      <h1 className="text-xl font-bold text-[var(--color-text-primary)]">
         {decodedCategory} –{" "}
         {format(new Date(`${currentMonth}-01`), "MMMM yyyy", {
           locale: ptBR,
@@ -54,7 +54,7 @@ export default async function CategoryPage({
       </h1>
 
       {categoryItems.length === 0 ? (
-        <p className="text-gray-400 text-sm">
+        <p className="text-[var(--color-text-muted)] text-sm">
           {t("noCategoryThisMonth")}
         </p>
       ) : (

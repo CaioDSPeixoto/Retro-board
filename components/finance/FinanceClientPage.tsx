@@ -28,7 +28,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
 import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
-import { getFinanceTotals } from "@/lib/finance/calculations";
+import { getFinanceTotals, getOpenAmount } from "@/lib/finance/calculations";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
@@ -68,9 +68,6 @@ export default function FinanceClientPage({
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | FinanceStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [personFilter, setPersonFilter] = useState("all");
-  const [cardFilter, setCardFilter] = useState("all");
   const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "open" | "settled">("all");
 
   const [inviteEmail, setInviteEmail] = useState("");
@@ -84,6 +81,7 @@ export default function FinanceClientPage({
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<"pay" | "move" | "delete" | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
@@ -261,29 +259,6 @@ export default function FinanceClientPage({
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  const filterOptions = useMemo(() => {
-    const categories = new Set<string>();
-    const people = new Map<string, string>();
-    const cardOptions = new Map<string, string>();
-
-    for (const item of items) {
-      if (item.category) categories.add(item.category);
-      if (item.createdBy || item.createdByName) {
-        people.set(item.createdBy || item.createdByName || "", item.createdByName || item.createdBy || "");
-      }
-      const cardKey = item.cardId || item.cardName;
-      if (cardKey) {
-        cardOptions.set(cardKey, item.cardName || cardKey);
-      }
-    }
-
-    return {
-      categories: Array.from(categories).sort((a, b) => a.localeCompare(b)),
-      people: Array.from(people.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-      cards: Array.from(cardOptions.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-    };
-  }, [items]);
-
   const visibleItems = useMemo(() => {
     const query = normalizeForSearch(nameFilter);
 
@@ -293,21 +268,24 @@ export default function FinanceClientPage({
       const matchesStatus =
         statusFilter === "all" || item.status === statusFilter;
       const matchesType = typeFilter === "all" || item.type === typeFilter;
-      const matchesCategory =
-        categoryFilter === "all" || item.category === categoryFilter;
-      const matchesPerson =
-        personFilter === "all" || item.createdBy === personFilter || item.createdByName === personFilter;
-      const itemCard = item.cardId || item.cardName || "";
-      const matchesCard = cardFilter === "all" || itemCard === cardFilter;
       const matchesDue =
         dueFilter === "all" ||
         (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
         (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
         (dueFilter === "settled" && item.status === "paid");
 
-      return matchesName && matchesStatus && matchesType && matchesCategory && matchesPerson && matchesCard && matchesDue;
+      return matchesName && matchesStatus && matchesType && matchesDue;
     });
-  }, [items, nameFilter, statusFilter, typeFilter, categoryFilter, personFilter, cardFilter, dueFilter, todayStr]);
+  }, [items, nameFilter, statusFilter, typeFilter, dueFilter, todayStr]);
+
+  const activeFilterCount = useMemo(() => {
+    return [
+      nameFilter.trim(),
+      statusFilter !== "all",
+      typeFilter !== "all",
+      dueFilter !== "all",
+    ].filter(Boolean).length;
+  }, [dueFilter, nameFilter, statusFilter, typeFilter]);
 
   const overdueItems = useMemo(
     () =>
@@ -324,11 +302,17 @@ export default function FinanceClientPage({
   const overdueTotal = useMemo(
     () =>
       overdueItems.reduce((sum, item) => {
-        const openAmount = item.amount - (item.paidAmount || 0);
-        return sum + Math.max(openAmount, 0);
+        return sum + getOpenAmount(item);
       }, 0),
     [overdueItems],
   );
+
+  const clearFilters = () => {
+    setNameFilter("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setDueFilter("all");
+  };
 
   useEffect(() => {
     if (activeView !== "list") {
@@ -343,9 +327,17 @@ export default function FinanceClientPage({
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
   }, [overdueItems.length]);
 
+  useEffect(() => {
+    if (!bulkMessage) return;
+    const timeout = window.setTimeout(() => setBulkMessage(null), 4500);
+    return () => window.clearTimeout(timeout);
+  }, [bulkMessage]);
+
   const toggleSelectionMode = () => {
     setSelectionMode((prev) => !prev);
     setSelectedItems(new Set());
+    setBulkError(null);
+    setBulkMessage(null);
   };
 
   const handleToggleItemSelection = (itemId: string) => {
@@ -353,6 +345,8 @@ export default function FinanceClientPage({
     if (next.has(itemId)) next.delete(itemId);
     else next.add(itemId);
     setSelectedItems(next);
+    setBulkError(null);
+    setBulkMessage(null);
   };
 
   const selectedTotal = useMemo(() => {
@@ -376,6 +370,7 @@ export default function FinanceClientPage({
 
     setBulkLoading(action);
     setBulkError(null);
+    setBulkMessage(null);
 
     const res = await bulkFinanceItemsAction(Array.from(selectedItems), action, locale);
     if (res && "error" in res && res.error) {
@@ -384,9 +379,12 @@ export default function FinanceClientPage({
       return;
     }
 
+    const changed = res && "changed" in res ? Number(res.changed || 0) : 0;
+    const skipped = res && "skipped" in res ? Number(res.skipped || 0) : 0;
     setSelectedItems(new Set());
     setSelectionMode(false);
     setBulkLoading(null);
+    setBulkMessage(t("bulkResultMessage", { changed, skipped }));
     router.refresh();
   };
 
@@ -488,7 +486,7 @@ export default function FinanceClientPage({
       )}
 
       {/* HEADER */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 pt-6 pb-12 px-6 rounded-3xl text-white shadow-lg relative overflow-hidden">
+      <div className="finance-hero pt-6 pb-12 px-6 rounded-3xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
 
         <span className="sr-only">
@@ -718,7 +716,7 @@ export default function FinanceClientPage({
                 <button
                   type="button"
                   onClick={() => setOverdueInfoOpen((prev) => !prev)}
-                  className="relative p-2 rounded-xl text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-100 transition"
+                  className="relative p-2 rounded-xl finance-warning-soft border transition"
                   aria-label={t("overdueTitle")}
                   title={t("overdueTitle")}
                 >
@@ -729,7 +727,7 @@ export default function FinanceClientPage({
                 </button>
 
                 {overdueInfoOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-xl p-3 z-50">
+                  <div className="absolute right-0 mt-2 w-72 finance-surface border shadow-lg rounded-xl p-3 z-50">
                     <p className="text-xs font-semibold text-[var(--color-text-primary)]">
                       {t("overdueSubtitle", { count: overdueItems.length })}
                     </p>
@@ -748,7 +746,7 @@ export default function FinanceClientPage({
               <button
                 type="button"
                 onClick={() => setShareOpen((prev) => !prev)}
-                className="p-2 rounded-xl bg-white/80 hover:bg-white border border-gray-200 text-gray-700 shadow-sm transition"
+                className="p-2 rounded-xl finance-surface border shadow-sm transition hover:border-[var(--color-accent-primary)]"
                 aria-label={t("shareTitle")}
                 title={t("shareTitle")}
               >
@@ -781,40 +779,7 @@ export default function FinanceClientPage({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="all">{t("filterCategoryAll")}</option>
-              {filterOptions.categories.map((category) => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-
-            <select
-              value={personFilter}
-              onChange={(e) => setPersonFilter(e.target.value)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="all">{t("filterPersonAll")}</option>
-              {filterOptions.people.map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
-              ))}
-            </select>
-
-            <select
-              value={cardFilter}
-              onChange={(e) => setCardFilter(e.target.value)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="all">{t("filterCardAll")}</option>
-              {filterOptions.cards.map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
-              ))}
-            </select>
-
+          <div className="grid grid-cols-1 gap-2 mt-2">
             <select
               value={dueFilter}
               onChange={(e) => setDueFilter(e.target.value as typeof dueFilter)}
@@ -828,9 +793,20 @@ export default function FinanceClientPage({
           </div>
 
           <div className="flex justify-end mt-1">
-            <span className="text-[11px] text-[var(--color-text-secondary)] font-medium">
-              {t("transactionsCount", { count: visibleItems.length })}
-            </span>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)]"
+                >
+                  {t("clearFiltersButton", { count: activeFilterCount })}
+                </button>
+              )}
+              <span className="text-[11px] text-[var(--color-text-secondary)] font-medium">
+                {t("transactionsCount", { count: visibleItems.length })}
+              </span>
+            </div>
           </div>
 
           {shareOpen && currentBoard && isOwner && (
@@ -871,7 +847,7 @@ export default function FinanceClientPage({
                   <button
                     type="submit"
                     disabled={inviteLoading || !inviteEmail.trim()}
-                    className="w-full md:w-auto px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0 flex items-center justify-center gap-2"
+                    className="w-full md:w-auto px-5 py-2.5 bg-[var(--color-accent-primary)] text-white text-sm font-bold rounded-xl hover:bg-[var(--color-accent-hover)] active:scale-95 transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed mt-1 md:mt-0 flex items-center justify-center gap-2"
                   >
                     {inviteLoading && <Spinner size="sm" color="white" />}
                     {inviteLoading ? t("sending") : t("shareEmailButton")}
@@ -880,10 +856,10 @@ export default function FinanceClientPage({
               </form>
 
               {inviteMessage && (
-                <p className="mt-2 text-xs text-green-600">{inviteMessage}</p>
+                <p className="mt-2 text-xs finance-success-text">{inviteMessage}</p>
               )}
               {inviteError && (
-                <p className="mt-2 text-xs text-red-600">{inviteError}</p>
+                <p className="mt-2 text-xs finance-danger-text">{inviteError}</p>
               )}
             </div>
           )}
@@ -953,13 +929,19 @@ export default function FinanceClientPage({
           rangeTo={rangeTo}
         />
       ) : showAccounts ? (
-        <FinanceAccountsPanel items={items} />
+        <FinanceAccountsPanel
+          items={items}
+          locale={locale}
+          onEdit={handleEditItem}
+        />
       ) : showCards ? (
         <FinanceCardsPanel
           cards={cards}
           items={items}
           boardId={currentBoardId ?? null}
           locale={locale}
+          currentMonth={currentMonth}
+          sessionUserId={sessionUserId}
         />
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
@@ -991,15 +973,15 @@ export default function FinanceClientPage({
 
       {
         activeView === "list" && selectionMode && selectedItems.size > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3 z-50 animate-in fade-in slide-in-from-bottom-4 max-w-[calc(100vw-2rem)]">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 finance-surface border shadow-xl rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3 z-50 animate-in fade-in slide-in-from-bottom-4 max-w-[calc(100vw-2rem)]">
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
-              <span className={`text-lg font-bold ${selectedTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
+              <span className={`text-lg font-bold ${selectedTotal >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
                 {currency(selectedTotal)}
               </span>
             </div>
-            <div className="h-8 w-px bg-gray-200 mx-1" />
-            <span className="text-xs text-gray-400 font-medium">
+            <div className="h-8 w-px bg-[var(--color-border)] mx-1" />
+            <span className="text-xs text-[var(--color-text-muted)] font-medium">
               {selectedItems.size} {selectedItems.size === 1 ? t("itemSingular") : t("itemPlural")}
             </span>
             <div className="flex items-center gap-2">
@@ -1007,7 +989,7 @@ export default function FinanceClientPage({
                 type="button"
                 onClick={() => handleBulkAction("pay")}
                 disabled={!!bulkLoading}
-                className="px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-bold disabled:opacity-60"
+                className="px-3 py-2 rounded-xl bg-[var(--color-success-strong)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "pay" ? t("bulkLoading") : t("bulkPay")}
               </button>
@@ -1015,7 +997,7 @@ export default function FinanceClientPage({
                 type="button"
                 onClick={() => handleBulkAction("move")}
                 disabled={!!bulkLoading}
-                className="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold disabled:opacity-60"
+                className="px-3 py-2 rounded-xl bg-[var(--color-accent-primary)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "move" ? t("bulkLoading") : t("bulkMove")}
               </button>
@@ -1023,24 +1005,38 @@ export default function FinanceClientPage({
                 type="button"
                 onClick={() => handleBulkAction("delete")}
                 disabled={!!bulkLoading}
-                className="px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-bold disabled:opacity-60"
+                className="px-3 py-2 rounded-xl bg-[var(--color-danger-strong)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "delete" ? t("bulkLoading") : t("bulkDelete")}
               </button>
             </div>
             {bulkError && (
-              <p className="basis-full text-xs text-red-500">{bulkError}</p>
+              <p className="basis-full text-xs finance-danger-text">{bulkError}</p>
             )}
           </div>
         )
       }
 
-      {/* BOTÃO FLOAT – só na LISTA e se NÃO estiver em seleção */}
+      {activeView === "list" && bulkMessage && !selectionMode && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-2xl border finance-success-soft px-4 py-3 text-xs font-semibold shadow-lg">
+          <span>{bulkMessage}</span>
+          <button
+            type="button"
+            onClick={() => setBulkMessage(null)}
+            className="rounded-lg px-1.5 py-0.5 hover:bg-black/5 dark:hover:bg-white/10"
+            aria-label={t("closeBulkMessage")}
+          >
+            x
+          </button>
+        </div>
+      )}
+
+      {/* Botão flutuante - só na lista e se não estiver em seleção */}
       {
         activeView === "list" && !selectionMode && (
           <button
             onClick={handleOpenCreateModal}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
+            className="fixed bottom-6 right-6 w-14 h-14 bg-[var(--color-accent-primary)] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
             aria-label={t("addNow")}
           >
             <FiPlus size={28} />

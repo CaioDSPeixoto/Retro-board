@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getTranslations } from "next-intl/server";
+import { FieldValue } from "firebase-admin/firestore";
 
 /* ================= helpers ================= */
 
@@ -59,68 +60,12 @@ async function deleteCarriedItems(itemId: string) {
   await batch.commit();
 }
 
-async function upsertCarriedRemainder(
-  existing: FinanceItem,
-  amount: number,
-  date: string,
-) {
-  const carriedDocs = await findCarriedItems(existing.id);
-  const nowIso = new Date().toISOString();
-
-  if (carriedDocs.length > 0) {
-    const [first, ...duplicated] = carriedDocs;
-    await first.ref.update({
-      amount,
-      date,
-      status: "pending" as FinanceStatus,
-      paidAmount: 0,
-      openAmount: amount,
-    });
-
-    if (duplicated.length > 0) {
-      const batch = adminDb.batch();
-      duplicated.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    }
-
-    return;
+async function deleteDocsInChunks(docs: any[]) {
+  for (let index = 0; index < docs.length; index += 450) {
+    const batch = adminDb.batch();
+    docs.slice(index, index + 450).forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
   }
-
-  const newItemData: any = {
-    userId: existing.userId,
-    title: existing.title,
-    amount,
-    date,
-    type: existing.type,
-    status: "pending" as FinanceStatus,
-    category: existing.category,
-    createdAt: nowIso,
-    isFixed: existing.isFixed ?? false,
-    isSynthetic: false,
-    paidAmount: 0,
-    openAmount: amount,
-    carriedFromMonth: (existing.date || "").slice(0, 7),
-    carriedFromItemId: existing.id,
-    originalAmount: existing.originalAmount ?? existing.amount,
-  };
-
-  if (existing.boardId) newItemData.boardId = existing.boardId;
-  if (existing.createdBy) newItemData.createdBy = existing.createdBy;
-  if (existing.createdByName) newItemData.createdByName = existing.createdByName;
-  if (existing.fixedTemplateId) newItemData.fixedTemplateId = existing.fixedTemplateId;
-  if (existing.installmentGroupId) newItemData.installmentGroupId = existing.installmentGroupId;
-  if (typeof existing.installmentIndex === "number") {
-    newItemData.installmentIndex = existing.installmentIndex;
-  }
-  if (typeof existing.installmentTotal === "number") {
-    newItemData.installmentTotal = existing.installmentTotal;
-  }
-  if (existing.cardId) newItemData.cardId = existing.cardId;
-  if (existing.cardName) newItemData.cardName = existing.cardName;
-  if (existing.cardMode) newItemData.cardMode = existing.cardMode;
-  if (existing.cardLastDigits) newItemData.cardLastDigits = existing.cardLastDigits;
-
-  await adminDb.collection("finance_items").add(newItemData);
 }
 
 /* ================= categorias ================= */
@@ -151,9 +96,9 @@ export async function createCategory(name: string, locale: string, boardId?: str
     query = query.where("boardId", "==", boardId);
   } else {
     query = query.where("userId", "==", sessionUser);
-    // Para "pessoal", idealmente checarÃ­amos onde boardId nÃ£o existe
-    // mas Firestore nÃ£o facilita query de "campo nÃ£o existe" ou "campo Ã© null" combinado com outros wheres facilmente sem index.
-    // Vamos checar na memÃ³ria se houver colisÃ£o.
+    // Para "pessoal", idealmente checaríamos onde boardId não existe,
+    // mas Firestore não facilita query de "campo não existe" ou "campo é null"
+    // combinado com outros wheres facilmente sem índice. Vamos checar em memória.
   }
 
   const snap = await query.get();
@@ -163,7 +108,7 @@ export async function createCategory(name: string, locale: string, boardId?: str
     if (boardId) {
       exists = true;
     } else {
-      // verifica se algum dos docs encontrados tbm nÃ£o tem boardId
+      // Verifica se algum dos docs encontrados também não tem boardId.
       exists = snap.docs.some(d => !d.data().boardId);
     }
   }
@@ -191,7 +136,7 @@ export async function createFinanceBoard(name: string, locale: string) {
   if (!sessionUser) return { error: "Unauthorized" };
 
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Nome invÃ¡lido" };
+  if (!trimmed) return { error: "Nome inválido" };
 
   const ref = await adminDb.collection("finance_boards").add({
     name: trimmed,
@@ -214,11 +159,11 @@ export async function renameFinanceBoard(
   if (!sessionUser) return { error: "Unauthorized" };
 
   const trimmed = newName.trim();
-  if (!trimmed) return { error: "Nome invÃ¡lido" };
+  if (!trimmed) return { error: "Nome inválido" };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
@@ -240,14 +185,14 @@ export async function deleteFinanceBoard(
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
     return { error: "Somente o dono pode excluir" };
 
   if (board.name.trim().toLowerCase() !== confirmName.trim().toLowerCase()) {
-    return { error: "Nome do quadro nÃ£o confere" };
+    return { error: "Nome do quadro não confere" };
   }
 
   // apaga items do quadro
@@ -272,15 +217,14 @@ export async function deleteFinanceBoard(
     .where("boardId", "==", boardId)
     .get();
 
-  const batch = adminDb.batch();
-  itemsSnap.docs.forEach((d) => batch.delete(d.ref));
-  categoriesSnap.docs.forEach((d) => batch.delete(d.ref));
-  cardsSnap.docs.forEach((d) => batch.delete(d.ref));
-  templatesSnap.docs.forEach((d) => batch.delete(d.ref));
-  invitesSnap.docs.forEach((d) => batch.delete(d.ref));
-  batch.delete(ref);
-
-  await batch.commit();
+  await deleteDocsInChunks([
+    ...itemsSnap.docs,
+    ...categoriesSnap.docs,
+    ...cardsSnap.docs,
+    ...templatesSnap.docs,
+    ...invitesSnap.docs,
+  ]);
+  await ref.delete();
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
@@ -296,7 +240,7 @@ export async function removeMemberFromBoard(
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Quadro não encontrado" };
 
   const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
   if (board.ownerId !== sessionUser)
@@ -328,6 +272,9 @@ export async function createFinanceCard(formData: FormData) {
   const boardIdRaw = String(formData.get("boardId") || "").trim();
 
   if (!name) return { error: "Nome do cartão é obrigatório" };
+  if (lastDigits && !/^\d{1,4}$/.test(lastDigits)) {
+    return { error: "Informe apenas números no final do cartão" };
+  }
   const mode = modeRaw === "debit" ? "debit" : "credit";
   const limit = limitRaw ? parseMoneyInput(limitRaw) : undefined;
   const closingDay = closingDayRaw ? Number(closingDayRaw) : undefined;
@@ -368,12 +315,97 @@ export async function createFinanceCard(formData: FormData) {
   return { success: true };
 }
 
+export async function updateFinanceCard(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+
+  const id = String(formData.get("id") || "").trim();
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const name = String(formData.get("name") || "").trim();
+  const modeRaw = String(formData.get("mode") || "credit");
+  const lastDigits = String(formData.get("lastDigits") || "").trim();
+  const limitRaw = String(formData.get("limit") || "").trim();
+  const closingDayRaw = String(formData.get("closingDay") || "").trim();
+  const dueDayRaw = String(formData.get("dueDay") || "").trim();
+
+  if (!id) return { error: "Cartão não encontrado" };
+  if (!name) return { error: "Nome do cartão é obrigatório" };
+  if (lastDigits && !/^\d{1,4}$/.test(lastDigits)) {
+    return { error: "Informe apenas números no final do cartão" };
+  }
+
+  const mode = modeRaw === "debit" ? "debit" : "credit";
+  const limit = limitRaw ? parseMoneyInput(limitRaw) : undefined;
+  const closingDay = closingDayRaw ? Number(closingDayRaw) : undefined;
+  const dueDay = dueDayRaw ? Number(dueDayRaw) : undefined;
+
+  if (limit !== undefined && (Number.isNaN(limit) || limit < 0)) {
+    return { error: "Limite inválido" };
+  }
+  if (closingDay !== undefined && (!Number.isInteger(closingDay) || closingDay < 1 || closingDay > 31)) {
+    return { error: "Dia de fechamento inválido" };
+  }
+  if (dueDay !== undefined && (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31)) {
+    return { error: "Dia de vencimento inválido" };
+  }
+
+  const ref = adminDb.collection("finance_cards").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Cartão não encontrado" };
+
+  const existing = snap.data() as any;
+  if (existing.boardId) {
+    const board = await getBoard(existing.boardId);
+    if (!board || !isMember(board, sessionUser)) return { error: "Sem permissão" };
+  } else if (existing.userId !== sessionUser) {
+    return { error: "Sem permissão" };
+  }
+
+  await ref.update({
+    name,
+    mode,
+    lastDigits: lastDigits || FieldValue.delete(),
+    limit: limit !== undefined ? limit : FieldValue.delete(),
+    closingDay: closingDay !== undefined ? closingDay : FieldValue.delete(),
+    dueDay: dueDay !== undefined ? dueDay : FieldValue.delete(),
+  });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function deleteFinanceCard(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+
+  const id = String(formData.get("id") || "").trim();
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  if (!id) return { error: "Cartão não encontrado" };
+
+  const ref = adminDb.collection("finance_cards").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Cartão não encontrado" };
+
+  const existing = snap.data() as any;
+  if (existing.boardId) {
+    const board = await getBoard(existing.boardId);
+    if (!board || !isMember(board, sessionUser)) return { error: "Sem permissão" };
+  } else if (existing.userId !== sessionUser) {
+    return { error: "Sem permissão" };
+  }
+
+  await ref.delete();
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
 /* ================= itens ================= */
 
 /**
- * Cria 1 ou vÃ¡rias transaÃ§Ãµes.
- * - Sem parcelamento (parcelas=1): mantÃ©m o comportamento atual.
- * - Com parcelamento (parcelas>1): cria N lanÃ§amentos, um em cada mÃªs,
+ * Cria 1 ou várias transações.
+ * - Sem parcelamento (parcelas=1): mantém o comportamento atual.
+ * - Com parcelamento (parcelas>1): cria N lançamentos, um em cada mês,
  *   com o VALOR DIVIDIDO entre as parcelas e metadados de grupo.
  */
 export async function addFinanceItem(formData: FormData) {
@@ -418,22 +450,22 @@ export async function addFinanceItem(formData: FormData) {
   if (!title || Number.isNaN(amount) || !date || !type) {
     return { error: t("errors.incompleteData") };
   }
-  if (!category) return { error: "Categoria Ã© obrigatÃ³ria" };
+  if (!category) return { error: "Categoria é obrigatória" };
 
   // valida board se veio
   let boardId: string | undefined;
   if (boardIdRaw) {
     const board = await getBoard(boardIdRaw);
-    if (!board) return { error: "Quadro nÃ£o encontrado" };
+    if (!board) return { error: "Quadro não encontrado" };
     if (!isMember(board, sessionUser))
-      return { error: "Sem permissÃ£o para lanÃ§ar neste quadro" };
+      return { error: "Sem permissão para lançar neste quadro" };
     boardId = boardIdRaw;
   }
 
   const baseStatus: FinanceStatus = statusField || "pending";
   const nowIso = new Date().toISOString();
 
-  // dados comuns a todas as parcelas / lanÃ§amentos
+  // Dados comuns a todas as parcelas / lançamentos.
   const baseCommon: Omit<FinanceItem, "id" | "amount" | "date" | "status"> = {
     userId: sessionUser,
     title,
@@ -457,7 +489,7 @@ export async function addFinanceItem(formData: FormData) {
 
     let fixedTemplateId: string | undefined;
 
-    // se for "Contas Fixas" com lanÃ§amento fixo, cria o template primeiro
+    // Se for "Contas Fixas" com lançamento fixo, cria o template primeiro.
     if (category === ACCOUNT_FIXED_CATEGORY && isFixedFlag) {
       const day = parseInt(date.split("-")[2] || "1", 10);
 
@@ -498,7 +530,7 @@ export async function addFinanceItem(formData: FormData) {
   const baseMonthIndex = Number(monthStr) - 1; // Date: 0-11
   const baseDay = Number(dayStr) || 1;
 
-  // distribui o valor entre as parcelas em centavos (para nÃ£o â€œperderâ€ 1 centavo)
+  // Distribui o valor entre as parcelas em centavos para não perder 1 centavo.
   const totalCents = Math.round(amount * 100);
   const baseCents = Math.floor(totalCents / installments);
   const remainder = totalCents - baseCents * installments;
@@ -513,7 +545,7 @@ export async function addFinanceItem(formData: FormData) {
     const day = String(d.getDate()).padStart(2, "0");
     const dateStr = `${y}-${m}-${day}`;
 
-    // parcela i recebe baseCents + 1 centavo enquanto tiver â€œrestoâ€
+    // A parcela recebe baseCents + 1 centavo enquanto tiver resto.
     const thisCents = baseCents + (i < remainder ? 1 : 0);
     const installmentAmount = thisCents / 100;
 
@@ -539,7 +571,7 @@ export async function addFinanceItem(formData: FormData) {
     await adminDb.collection("finance_items").add(item);
   }
 
-  // Para lanÃ§amentos parcelados, NÃƒO criamos template de "Contas Fixas"
+  // Para lançamentos parcelados, não criamos template de "Contas Fixas".
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
 }
@@ -586,7 +618,7 @@ export async function updateFinanceItem(formData: FormData) {
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Item não encontrado" };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
@@ -595,7 +627,7 @@ export async function updateFinanceItem(formData: FormData) {
   if (existing.status === "paid" || existing.status === "partial") {
     return {
       error:
-        "NÃƒÂ£o ÃƒÂ© possÃƒÂ­vel editar lanÃƒÂ§amentos pagos/recebidos. Reverter a quitaÃƒÂ§ÃƒÂ£o primeiro.",
+        "Não é possível editar lançamentos pagos/recebidos. Reverta a quitação primeiro.",
     };
   }
 
@@ -631,14 +663,14 @@ export async function deleteFinanceItem(id: string, locale: string) {
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Item não encontrado" };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
 
   if (existing.status === "paid" || existing.status === "partial") {
-    return { error: "NÃƒÂ£o ÃƒÂ© possÃƒÂ­vel excluir lanÃƒÂ§amentos pagos/recebidos." };
+    return { error: "Não é possível excluir lançamentos pagos/recebidos." };
   }
 
   await deleteCarriedItems(existing.id);
@@ -658,57 +690,91 @@ export async function bulkFinanceItemsAction(
   const uniqueIds = Array.from(new Set(ids.filter(Boolean))).slice(0, 100);
   if (uniqueIds.length === 0) return { error: "Nenhum lançamento selecionado" };
 
-  const batch = adminDb.batch();
+  let batch = adminDb.batch();
+  let batchWrites = 0;
   let changed = 0;
+  let skipped = 0;
   const nowIso = new Date().toISOString();
+
+  const commitIfNeeded = async (nextWrites: number) => {
+    if (batchWrites + nextWrites <= 450) return;
+    if (batchWrites > 0) await batch.commit();
+    batch = adminDb.batch();
+    batchWrites = 0;
+  };
+
+  const registerWrite = (count = 1) => {
+    batchWrites += count;
+  };
 
   for (const id of uniqueIds) {
     const ref = adminDb.collection("finance_items").doc(id);
     const snap = await ref.get();
-    if (!snap.exists) continue;
+    if (!snap.exists) {
+      skipped++;
+      continue;
+    }
 
     const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
     const allowed = await canEditItem(existing, sessionUser);
-    if (!allowed || existing.isSynthetic) continue;
+    if (!allowed || existing.isSynthetic) {
+      skipped++;
+      continue;
+    }
 
     if (action === "delete") {
-      if (existing.status === "paid" || existing.status === "partial") continue;
+      if (existing.status === "paid" || existing.status === "partial") {
+        skipped++;
+        continue;
+      }
       const carriedDocs = await findCarriedItems(existing.id);
+      await commitIfNeeded(carriedDocs.length + 1);
       carriedDocs.forEach((doc) => batch.delete(doc.ref));
       batch.delete(ref);
+      registerWrite(carriedDocs.length + 1);
       changed++;
       continue;
     }
 
     if (action === "pay") {
-      if (existing.status === "paid" || existing.status === "moved") continue;
+      if (existing.status === "paid" || existing.status === "moved") {
+        skipped++;
+        continue;
+      }
+      const carriedDocs = await findCarriedItems(existing.id);
+      await commitIfNeeded(carriedDocs.length + 1);
       batch.update(ref, {
         status: "paid" as FinanceStatus,
         paidAmount: existing.amount,
         openAmount: 0,
         originalAmount: existing.originalAmount ?? existing.amount,
       });
-      const carriedDocs = await findCarriedItems(existing.id);
       carriedDocs.forEach((doc) => batch.delete(doc.ref));
+      registerWrite(carriedDocs.length + 1);
       changed++;
       continue;
     }
 
     if (action === "move") {
-      if (existing.status === "paid" || existing.status === "moved") continue;
+      if (existing.status === "paid" || existing.status === "partial" || existing.status === "moved") {
+        skipped++;
+        continue;
+      }
       const [yStr, mStr, dStr] = (existing.date || "").split("-");
       const nextDate = new Date(Number(yStr), Number(mStr) - 1, Number(dStr) || 1);
       nextDate.setMonth(nextDate.getMonth() + 1);
       const newDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
       const newRef = adminDb.collection("finance_items").doc();
+      const { fixedTemplateId: _fixedTemplateId, ...carriedData } = snap.data() as any;
 
+      await commitIfNeeded(2);
       batch.update(ref, {
         status: "moved" as FinanceStatus,
         paidAmount: 0,
         originalAmount: existing.originalAmount ?? existing.amount,
       });
       batch.set(newRef, {
-        ...snap.data(),
+        ...carriedData,
         date: newDateStr,
         status: "pending" as FinanceStatus,
         paidAmount: 0,
@@ -718,14 +784,15 @@ export async function bulkFinanceItemsAction(
         carriedFromItemId: existing.id,
         isSynthetic: false,
       });
+      registerWrite(2);
       changed++;
     }
   }
 
   if (changed === 0) return { error: "Nenhum lançamento elegível para a ação" };
-  await batch.commit();
+  if (batchWrites > 0) await batch.commit();
   revalidatePath(`/${locale}/tools/finance`);
-  return { success: true, changed };
+  return { success: true, changed, skipped };
 }
 
 export async function toggleStatus(
@@ -738,7 +805,7 @@ export async function toggleStatus(
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Item não encontrado" };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
   const allowed = await canEditItem(existing, sessionUser);
@@ -769,7 +836,7 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
   if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status !== "paid") {
-    return { error: "LanÃƒÂ§amento nÃƒÂ£o estÃƒÂ¡ quitado totalmente." };
+    return { error: "Lançamento não está quitado totalmente." };
   }
 
   const paidAmount = Number(existing.paidAmount || 0);
@@ -802,22 +869,31 @@ export async function applyPaymentToFinanceItem(
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item nÃ£o encontrado" };
+  if (!snap.exists) return { error: "Item não encontrado" };
 
   const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
 
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
+  if (existing.isSynthetic) {
+    return { error: "Este lançamento não pode ser alterado." };
+  }
+  if (existing.status === "moved") {
+    return { error: "Lançamentos movidos não podem ser pagos." };
+  }
+  if (existing.status === "paid") {
+    return { error: "Lançamento já está quitado." };
+  }
 
   const totalAmount = existing.amount;
   if (typeof totalAmount !== "number" || Number.isNaN(totalAmount)) {
-    return { error: "Valor invÃ¡lido no lanÃ§amento" };
+    return { error: "Valor inválido no lançamento" };
   }
 
-  // helper pra calcular data do prÃ³ximo mÃªs
+  // Helper para calcular data do próximo mês.
   const [yStr, mStr, dStr] = (existing.date || "").split("-");
   const year = Number(yStr);
-  const month = Number(mStr) - 1; // 0â€“11
+  const month = Number(mStr) - 1; // 0-11
   const day = Number(dStr) || 1;
 
   const baseDate = new Date(year, month, day);
@@ -829,8 +905,12 @@ export async function applyPaymentToFinanceItem(
   const nd = String(nextDate.getDate()).padStart(2, "0");
   const newDateStr = `${ny}-${nm}-${nd}`;
 
-  // ðŸ”¹ Caso 0: mover para o prÃ³ximo mÃªs (sem pagamento)
+  // Caso 0: mover para o próximo mês sem pagamento.
   if (mode === "move") {
+    if (existing.status === "partial") {
+      return { error: "Este lançamento não pode ser movido." };
+    }
+
     const newItemData: any = {
       userId: existing.userId,
       title: existing.title,
@@ -851,9 +931,6 @@ export async function applyPaymentToFinanceItem(
     if (existing.boardId) newItemData.boardId = existing.boardId;
     if (existing.createdBy) newItemData.createdBy = existing.createdBy;
     if (existing.createdByName) newItemData.createdByName = existing.createdByName;
-    if (existing.fixedTemplateId) {
-      newItemData.fixedTemplateId = existing.fixedTemplateId;
-    }
     if (existing.installmentGroupId) {
       newItemData.installmentGroupId = existing.installmentGroupId;
     }
@@ -943,6 +1020,7 @@ export async function applyPaymentToFinanceItem(
       status: "pending" as FinanceStatus,
       paidAmount: 0,
       openAmount: remaining,
+      fixedTemplateId: FieldValue.delete(),
     });
     duplicated.forEach((doc) => batch.delete(doc.ref));
   } else {
@@ -967,7 +1045,6 @@ export async function applyPaymentToFinanceItem(
     if (existing.boardId) newItemData.boardId = existing.boardId;
     if (existing.createdBy) newItemData.createdBy = existing.createdBy;
     if (existing.createdByName) newItemData.createdByName = existing.createdByName;
-    if (existing.fixedTemplateId) newItemData.fixedTemplateId = existing.fixedTemplateId;
     if (existing.installmentGroupId) newItemData.installmentGroupId = existing.installmentGroupId;
     if (typeof existing.installmentIndex === "number") newItemData.installmentIndex = existing.installmentIndex;
     if (typeof existing.installmentTotal === "number") newItemData.installmentTotal = existing.installmentTotal;
@@ -1002,7 +1079,7 @@ export async function getInstallmentGroupItems(id: string, locale: string) {
     .where("installmentGroupId", "==", existing.installmentGroupId)
     .get();
 
-  const items = groupSnap.docs.map((doc) => {
+  const rawItems = groupSnap.docs.map((doc) => {
     const data = doc.data() as any;
     return {
       id: doc.id,
@@ -1033,6 +1110,11 @@ export async function getInstallmentGroupItems(id: string, locale: string) {
       cardMode: data.cardMode,
       cardLastDigits: data.cardLastDigits,
     } as FinanceItem;
+  });
+
+  const items = rawItems.filter((item) => {
+    if (existing.boardId) return item.boardId === existing.boardId;
+    return !item.boardId && item.userId === sessionUser;
   });
 
   items.sort((a, b) => {

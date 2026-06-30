@@ -2,7 +2,6 @@
 
 import { Card } from "@/types/card";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import { useTranslations } from "next-intl";
 
 type Props = {
@@ -68,27 +67,37 @@ export default function ExportButtons({ cards, title }: Props) {
     doc.save(`${sanitizeFileName(reportTitle)}.pdf`);
   };
 
-  // Exporta Excel
-  const exportExcel = () => {
+  const escapeCsvValue = (value: string | number) => {
+    const text = String(value);
+    if (!/[",\r\n]/.test(text)) return text;
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+
+  // Exporta CSV
+  const exportCsv = () => {
     const reportTitle = title || t("defaultTitle");
     const sortedCards = [...cards].sort(
       (a, b) => CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category]
     );
 
-    const worksheetData = sortedCards.map((card) => ({
-      [t("category")]: card.category,
-      [t("content")]: card.text,
-      [t("author")]: card.author || t("anonymous"),
-      [t("likes")]: card.likes,
-      [t("dislikes")]: card.dislikes,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-
-    const sheetName = sanitizeFileName(reportTitle);
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${sheetName}.xlsx`);
+    const headers = [t("category"), t("content"), t("author"), t("likes"), t("dislikes")];
+    const rows = sortedCards.map((card) => [
+      card.category,
+      card.text,
+      card.author || t("anonymous"),
+      card.likes,
+      card.dislikes,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCsvValue).join(","))
+      .join("\r\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${sanitizeFileName(reportTitle)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -100,10 +109,10 @@ export default function ExportButtons({ cards, title }: Props) {
         {t("exportPDF")}
       </button>
       <button
-        onClick={exportExcel}
+        onClick={exportCsv}
         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
       >
-        {t("exportExcel")}
+        {t("exportCsv")}
       </button>
     </div>
   );

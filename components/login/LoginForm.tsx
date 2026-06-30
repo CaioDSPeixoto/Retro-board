@@ -27,11 +27,11 @@ export default function LoginForm({ locale }: Props) {
 
     setLoading(true);
     setError("");
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // 1) Firebase login (aqui sim é onde pode ser "email/senha inválidos")
     let idToken = "";
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
       idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
       const code = firebaseError?.code;
@@ -62,7 +62,7 @@ export default function LoginForm({ locale }: Props) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && (
-        <div className="text-red-500 text-sm p-3 rounded-lg border border-red-300/40" style={{ background: "var(--color-surface-raised)" }}>
+        <div className="finance-danger-soft text-sm p-3 rounded-lg border">
           {error}
         </div>
       )}
@@ -72,11 +72,14 @@ export default function LoginForm({ locale }: Props) {
           {t("emailUserLabel")}
         </label>
         <input
-          type="text"
+          type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
+          onBlur={() => setEmail((value) => value.trim().toLowerCase())}
           placeholder={t("emailPlaceholder")}
           required
+          autoComplete="email"
+          inputMode="email"
           autoFocus
           className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           style={{
@@ -97,6 +100,7 @@ export default function LoginForm({ locale }: Props) {
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("passwordPlaceholder")}
           required
+          autoComplete="current-password"
           className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           style={{
             background: "var(--color-surface-raised)",
@@ -109,7 +113,7 @@ export default function LoginForm({ locale }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-4 bg-[var(--color-accent-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-accent-hover)] active:scale-95 transition shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading && <Spinner size="md" color="white" />}
         {loading ? t("loading") : t("submitButton")}
@@ -120,7 +124,7 @@ export default function LoginForm({ locale }: Props) {
           {t("noAccount")}{" "}
           <Link
             href={`/${locale}/tools/finance/register`}
-            className="text-blue-500 font-bold hover:underline"
+            className="text-[var(--color-accent-text)] font-bold hover:underline"
           >
             {t("registerLink")}
           </Link>

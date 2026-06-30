@@ -64,7 +64,7 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
                     value={name}
                     onChange={(e) => { setName(e.target.value); if (error) setError(null); }}
                     placeholder={t("customCategoryPlaceholder")}
-                    className="flex-1 px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="flex-1 px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-focus-ring)] transition-all"
                     disabled={isPending}
                     onKeyDown={(e) => {
                         if (e.key === "Escape") handleCancel();
@@ -73,7 +73,7 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
                 <button
                     type="submit"
                     disabled={isPending || !name.trim()}
-                    className="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                    className="h-10 px-4 bg-[var(--color-accent-primary)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-accent-hover)] disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
                     {isPending
                         ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -90,7 +90,7 @@ export function AddCategoryForm({ locale, boardId }: { locale: string; boardId?:
             </form>
 
             {error && (
-                <p className="text-xs text-red-500 px-1" role="status" aria-live="polite">{error}</p>
+                <p className="text-xs finance-danger-text px-1" role="status" aria-live="polite">{error}</p>
             )}
         </div>
     );

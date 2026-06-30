@@ -14,7 +14,7 @@ import { canAccessFinanceBoard, mapFinanceItem } from "@/lib/finance/server";
 export async function getInvitesData(userId: string): Promise<FinanceBoardInvite[]> {
   if (!userId) return [];
 
-  // Ajuste os filtros conforme estÃ¡ seu modelo de convites hoje.
+  // Ajuste os filtros conforme está seu modelo de convites hoje.
   const snap = await adminDb
     .collection("finance_board_invites")
     .where("status", "==", "pending")
@@ -47,15 +47,19 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
   const sessionUserId = await getSession();
   if (!sessionUserId) return [];
 
-  const snap = await adminDb
+  const memberSnap = await adminDb
     .collection("finance_boards")
     .where("memberIds", "array-contains", sessionUserId)
     .get();
+  const ownerSnap = await adminDb
+    .collection("finance_boards")
+    .where("ownerId", "==", sessionUserId)
+    .get();
 
-  const boards: FinanceBoard[] = [];
-  snap.forEach((doc: any) => {
+  const boardsById = new Map<string, FinanceBoard>();
+  const addBoard = (doc: any) => {
     const data = doc.data() as any;
-    boards.push({
+    boardsById.set(doc.id, {
       id: doc.id,
       name: data.name,
       ownerId: data.ownerId,
@@ -65,9 +69,12 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
       code: data.code,
       inviteCode: data.inviteCode,
     });
-  });
+  };
 
-  return boards.sort((a, b) => a.name.localeCompare(b.name));
+  memberSnap.forEach(addBoard);
+  ownerSnap.forEach(addBoard);
+
+  return Array.from(boardsById.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /* ================= categories ================= */
@@ -79,22 +86,14 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   let query: any = adminDb.collection("finance_categories");
 
   // Se tiver boardId, filtra por ele.
-  // Se NÃƒO tiver boardId, queremos as "pessoais" (sem boardId) ou todas?
-  // Por compatibilidade e lÃ³gica de "meus dados", se nÃ£o passar boardId,
-  // vamos trazer as que NÃƒO tÃªm boardId (pessoais) OU manter o comportamento antigo (todas)?
-  // O pedido Ã© "particular tendo cada quadro...".
-  // EntÃ£o, se estou num quadro, sÃ³ quero ver as do quadro.
+  // Se não tiver boardId, queremos apenas as categorias pessoais.
   if (boardId) {
     const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
     if (!allowed) return BUILTIN_CATEGORIES;
     query = query.where("boardId", "==", boardId);
   } else {
     query = query.where("userId", "==", sessionUserId);
-    // Se nÃ£o tem boardId, assumimos contexto pessoal ou "sem quadro".
-    // Para nÃ£o quebrar legados que nÃ£o tem boardId field, nÃ£o podemos filtrar por boardId == null facilmente no Firestore
-    // sem criar um Ã­ndice ou garantir que todos tenham null.
-    // Mas podemos filtrar no cliente (memÃ³ria) ou aceitar misturado por enquanto.
-    // Vamos tentar trazer tudo do usuÃ¡rio e filtrar em memÃ³ria para garantir.
+    // Para não quebrar legados sem boardId, trazemos tudo do usuário e filtramos em memória.
   }
 
   const snap = await query.get();
@@ -102,10 +101,10 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   const userCats = new Set<string>();
   snap.forEach((doc: any) => {
     const data = doc.data() as any;
-    // Se pedimos boardId, o filtro do banco jÃ¡ garantiu.
-    // Se NÃƒO pedimos boardId, sÃ³ queremos as que NÃƒO tem boardId (ou boardId null/undefined).
+    // Se pedimos boardId, o filtro do banco já garantiu.
+    // Se não pedimos boardId, só queremos as que não têm boardId.
     if (!boardId) {
-      if (data.boardId) return; // ignora categorias de boards especÃ­ficos se estamos no modo "sem board"
+      if (data.boardId) return;
     }
 
     if (typeof data.name === "string" && data.name.trim()) {
@@ -131,7 +130,7 @@ async function ensureFixedItemsForMonth(
     if (!allowed) return existingItems;
   }
 
-  // Busca todos os templates ativos do usuÃ¡rio
+  // Busca todos os templates ativos do usuário.
   let templatesQuery: any = adminDb
     .collection("finance_fixed_templates")
     .where("active", "==", true);
@@ -167,7 +166,7 @@ async function ensureFixedItemsForMonth(
     });
   });
 
-  // filtra templates do quadro ou pessoais
+  // Filtra templates do quadro ou pessoais.
   const templates = allTemplates.filter((tpl) =>
     boardId ? tpl.boardId === boardId : !tpl.boardId,
   );
@@ -177,13 +176,13 @@ async function ensureFixedItemsForMonth(
   const items = [...existingItems];
 
   for (const tpl of templates) {
-    // verifica se jÃ¡ existe item deste template neste mÃªs
+    // Verifica se já existe item deste template neste mês.
     const alreadyExists = items.some(
       (it) => it.fixedTemplateId === tpl.id && it.date.startsWith(month),
     );
     if (alreadyExists) continue;
 
-    // cria uma nova conta fixa para este mÃªs
+    // Cria uma nova conta fixa para este mês.
     const [yStr, mStr] = month.split("-");
     const year = parseInt(yStr, 10);
     const m = parseInt(mStr, 10);
@@ -209,7 +208,7 @@ async function ensureFixedItemsForMonth(
       paidAmount: 0,
     };
 
-    // sÃ³ adiciona boardId se existir (pra nÃ£o mandar undefined pro Firestore)
+    // Só adiciona boardId se existir para não mandar undefined para o Firestore.
     if (boardId) {
       (newItem as any).boardId = boardId;
     }
@@ -254,8 +253,8 @@ export async function getFinanceItemsData(
     items.push(mapFinanceItem(doc));
   });
 
-  // garante que as contas fixas deste mÃªs existam PARA ESSE USUÃRIO
-  // (mas a query jÃ¡ trouxe tudo do quadro, inclusive de outros membros)
+  // Garante que as contas fixas deste mês existam para esse usuário.
+  // A query já trouxe tudo do quadro, inclusive de outros membros.
   const withFixed = await ensureFixedItemsForMonth(
     sessionUserId,
     month,

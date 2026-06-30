@@ -236,12 +236,12 @@ export default function FinanceBoardsClient({
 
       {/* ERROR GLOBAL */}
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100">
+        <div className="finance-danger-soft text-sm p-3 rounded-lg border">
           {error}
         </div>
       )}
 
-      {/* SEÇÃO DE AÇÃO (CRIAR OU ENTRAR) */}
+      {/* Seção de ação: criar ou entrar */}
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {/* SELETOR DE ABAS */}
         <div className="flex border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]">
@@ -289,7 +289,7 @@ export default function FinanceBoardsClient({
                 <button
                   type="submit"
                   disabled={creating || !newBoardName.trim()}
-                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200/30 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
+                  className="w-full md:w-auto px-6 py-3 bg-[var(--color-accent-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-accent-hover)] active:scale-95 transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0"
                 >
                   {creating ? tBoards("createButtonLoading") : tBoards("createButton")}
                 </button>
@@ -367,7 +367,7 @@ export default function FinanceBoardsClient({
                     </button>
                     <button
                       type="button"
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-500/10 border-t border-[var(--color-border)] transition-colors"
+                      className="w-full flex items-center gap-2 px-4 py-2.5 finance-danger-text hover:bg-[var(--color-danger-bg)] border-t border-[var(--color-border)] transition-colors"
                       onClick={() => { setMenuBoardId(null); setDeleteBoardState(board); setDeleteNameConfirm(""); }}
                     >
                       <FiTrash2 size={14} />
@@ -430,7 +430,7 @@ export default function FinanceBoardsClient({
                 <button
                   type="submit"
                   disabled={renameLoading || !renameName.trim()}
-                  className="px-4 py-2 text-sm rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
+                  className="px-4 py-2 text-sm rounded-xl bg-[var(--color-accent-primary)] text-white font-semibold hover:bg-[var(--color-accent-hover)] disabled:opacity-60"
                 >
                   {renameLoading ? tBoards("renameModalSaving") : tBoards("renameModalSave")}
                 </button>
@@ -443,7 +443,7 @@ export default function FinanceBoardsClient({
       {deleteBoardState && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
           <div className="bg-[var(--color-surface-overlay)] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-[var(--color-border)]">
-            <h2 className="text-lg font-semibold text-red-500 mb-2">
+            <h2 className="text-lg font-semibold finance-danger-text mb-2">
               {tBoards("deleteModalTitle")}
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-3">
@@ -471,7 +471,7 @@ export default function FinanceBoardsClient({
                 <button
                   type="submit"
                   disabled={deleteLoading || !deleteNameConfirm.trim() || deleteNameConfirm.trim().toLowerCase() !== deleteBoardState.name.trim().toLowerCase()}
-                  className="px-4 py-2 text-sm rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
+                  className="px-4 py-2 text-sm rounded-xl bg-[var(--color-danger-strong)] text-white font-semibold hover:opacity-90 disabled:opacity-60"
                 >
                   {deleteLoading ? tBoards("deleteModalConfirming") : tBoards("deleteModalConfirm")}
                 </button>
@@ -492,7 +492,7 @@ export default function FinanceBoardsClient({
             </p>
 
             {membersError && (
-              <p className="text-xs text-red-500 mb-2">{membersError}</p>
+              <p className="text-xs finance-danger-text mb-2">{membersError}</p>
             )}
 
             <div className="max-h-56 overflow-y-auto space-y-2 mb-4">
@@ -514,7 +514,7 @@ export default function FinanceBoardsClient({
                       type="button"
                       disabled={membersLoading}
                       onClick={() => handleRemoveMember(membersBoard, memberId)}
-                      className="px-3 py-1 text-[11px] rounded-lg border border-red-400/40 text-red-500 hover:bg-red-500/10 disabled:opacity-60"
+                      className="px-3 py-1 text-[11px] rounded-lg border finance-danger-soft disabled:opacity-60"
                     >
                       {tBoards("membersModalRemove")}
                     </button>

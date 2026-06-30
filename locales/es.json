@@ -18,7 +18,8 @@
     "likes": "Me gusta",
     "dislikes": "No me gusta",
     "category": "Categoría",
-    "content": "Contenido"
+    "content": "Contenido",
+    "exportCsv": "Exportar CSV"
   },
   "Navbar": {
     "home": "Inicio",
@@ -73,30 +74,112 @@
     "historyTitle": "Trayectoria Profesional",
     "historyBody": "Un breve resumen:",
     "timeline": [
-      { "year": "2014", "text": "Inicié el Bachillerato Técnico en Informática" },
-      { "year": "2015", "text": "Prácticas de informática en el Centro Universitario São Camilo" },
-      { "year": "2017", "text": "Comencé a cursar Sistemas de Información en Multivix" },
-      { "year": "2017", "text": "Comencé como Programador Web en FK-Tech" },
-      { "year": "2019", "text": "Inicié como soporte técnico de software en Técnica Automação" },
-      { "year": "2020", "text": "Me gradué de la facultad y me casé" },
-      { "year": "2021", "text": "Me mudé a SC y comencé como Programador en Havan S.A." },
-      { "year": "2023", "text": "Comencé como Tech Leader en Questor Sistemas" },
-      { "year": "2024", "text": "Realicé mi posgrado en Ingeniería de Software en la Faculdade Metropolitana" },
-      { "year": "2025", "text": "Actualmente soy Programador Full Stack en Havan S.A. (El buen hijo vuelve a casa)" }
+      {
+        "year": "2014",
+        "text": "Inicié el Bachillerato Técnico en Informática"
+      },
+      {
+        "year": "2015",
+        "text": "Prácticas de informática en el Centro Universitario São Camilo"
+      },
+      {
+        "year": "2017",
+        "text": "Comencé a cursar Sistemas de Información en Multivix"
+      },
+      {
+        "year": "2017",
+        "text": "Comencé como Programador Web en FK-Tech"
+      },
+      {
+        "year": "2019",
+        "text": "Inicié como soporte técnico de software en Técnica Automação"
+      },
+      {
+        "year": "2020",
+        "text": "Me gradué de la facultad y me casé"
+      },
+      {
+        "year": "2021",
+        "text": "Me mudé a SC y comencé como Programador en Havan S.A."
+      },
+      {
+        "year": "2023",
+        "text": "Comencé como Tech Leader en Questor Sistemas"
+      },
+      {
+        "year": "2024",
+        "text": "Realicé mi posgrado en Ingeniería de Software en la Faculdade Metropolitana"
+      },
+      {
+        "year": "2025",
+        "text": "Actualmente soy Programador Full Stack en Havan S.A. (El buen hijo vuelve a casa)"
+      }
     ],
     "stacksTitle": "Stacks y Tecnologías",
     "stacks": [
-      "C#", ".NET", "PostgreSQL", "MongoDB", "Redis", "Docker", "RabbitMQ", "Next.js", "TypeScript", "PHP", "ReactJS", "AngularJS", "SQL Server", "Git", "Rancher", "Datadog", "Microservicios", "Clean Architecture", "Agile", "DDD", "REST", "Design Patterns", "SOLID", "Python", "Genexus", "IA Generativa", "LLMs", "MCP Server", "ChatGPT", "CI/CD", "Clean Code", "Refactorización"
+      "C#",
+      ".NET",
+      "PostgreSQL",
+      "MongoDB",
+      "Redis",
+      "Docker",
+      "RabbitMQ",
+      "Next.js",
+      "TypeScript",
+      "PHP",
+      "ReactJS",
+      "AngularJS",
+      "SQL Server",
+      "Git",
+      "Rancher",
+      "Datadog",
+      "Microservicios",
+      "Clean Architecture",
+      "Agile",
+      "DDD",
+      "REST",
+      "Design Patterns",
+      "SOLID",
+      "Python",
+      "Genexus",
+      "IA Generativa",
+      "LLMs",
+      "MCP Server",
+      "ChatGPT",
+      "CI/CD",
+      "Clean Code",
+      "Refactorización"
     ],
     "ctaResume": "Ver currículum",
     "funStatsTitle": "Estadísticas no oficiales",
     "lastProdBugAt": "abc",
     "lastWarRoomAt": "2025-12-10",
     "funStats": [
-      { "icon": "☕", "baseValue": 4826745, "baseDate": "2026-02-01", "dailyIncrement": 120, "label": "Tazas de café tomadas" },
-      { "icon": "🐞", "baseValue": 632, "baseDate": "2026-02-01", "dailyIncrement": 3, "prefix": "+", "label": "Bugs resueltos" },
-      { "icon": "🧯", "type": "daysSinceProdBug", "label": "Días sin bugs en producción" },
-      { "icon": "🚨", "type": "daysSinceWarRoom", "label": "Días sin war room" }
+      {
+        "icon": "☕",
+        "baseValue": 4826745,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 120,
+        "label": "Tazas de café tomadas"
+      },
+      {
+        "icon": "🐞",
+        "baseValue": 632,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 3,
+        "prefix": "+",
+        "label": "Bugs resueltos"
+      },
+      {
+        "icon": "🧯",
+        "type": "daysSinceProdBug",
+        "label": "Días sin bugs en producción"
+      },
+      {
+        "icon": "🚨",
+        "type": "daysSinceWarRoom",
+        "label": "Días sin war room"
+      }
     ]
   },
   "Tools": {
@@ -242,10 +325,10 @@
   "FinanceLogin": {
     "title": "Mis Finanzas",
     "description": "Inicia sesión para gestionar tus cuentas",
-    "emailUserLabel": "Email o Usuario",
+    "emailUserLabel": "Email",
     "emailPlaceholder": "ej: tu@email.com",
     "passwordLabel": "Contraseña",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "Tu contraseña",
     "submitButton": "Acceder",
     "loading": "Entrando...",
     "noAccount": "¿Aún no tienes cuenta?",
@@ -256,15 +339,15 @@
     }
   },
   "FinanceRegister": {
-    "title": "Nueva Cuenta",
+    "title": "Nueva cuenta",
     "description": "Crea tu cuenta para comenzar",
     "emailLabel": "Email",
     "emailPlaceholder": "tu@email.com",
     "passwordLabel": "Contraseña",
-    "passwordPlaceholder": "••••••••",
-    "confirmPasswordLabel": "Confirmar Contraseña",
-    "confirmPasswordPlaceholder": "••••••••",
-    "submitButton": "Crear Cuenta",
+    "passwordPlaceholder": "Mínimo de 6 caracteres",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Repite tu contraseña",
+    "submitButton": "Crear cuenta",
     "loading": "Creando cuenta...",
     "hasAccount": "¿Ya tienes cuenta?",
     "loginLink": "Entrar",
@@ -363,7 +446,7 @@
     "accountOverdueBadge": "vencido",
     "accountPartialBadge": "parcial",
     "accountPendingBadge": "pendiente",
-    "cardCreateTitle": "Cadastrar tarjeta",
+    "cardCreateTitle": "Registrar tarjeta",
     "cardNamePlaceholder": "Nombre de la tarjeta",
     "cardLastDigitsPlaceholder": "Final",
     "cardLimitPlaceholder": "Límite",
@@ -372,7 +455,7 @@
     "cardModeCredit": "Crédito",
     "cardModeDebit": "Débito",
     "cardCreateButton": "Guardar tarjeta",
-    "cardsEmpty": "No hay tarjetas cadastradas en este tablero.",
+    "cardsEmpty": "No hay tarjetas registradas en este tablero.",
     "cardLimitLabel": "Límite",
     "cardClosingDayLabel": "Cierra día",
     "cardDueDayLabel": "Vence día",
@@ -390,7 +473,30 @@
       "onlyInviteeCanAccept": "Solo el invitado puede aceptar.",
       "onlyOwnerCanApprove": "Solo el dueño puede aprobar.",
       "requestMissingUserId": "Pedido sin userId."
-    }
+    },
+    "clearFiltersButton": "Limpiar {count} filtro(s)",
+    "bulkResultMessage": "{changed} registro(s) actualizado(s). {skipped} omitido(s).",
+    "accountEditAction": "Editar",
+    "accountMoveAction": "Mover",
+    "accountPayAction": "Pagar",
+    "accountReceiveAction": "Recibir",
+    "cardMonthUsageLabel": "Registrado este mes",
+    "cardMonthUsageHint": "No usa el ciclo de cierre de la tarjeta.",
+    "accountFullPayment": "Liquidar valor abierto",
+    "accountPartialPayment": "Pagar valor parcial",
+    "accountCancelPayment": "Cancelar",
+    "accountConfirmPayment": "Confirmar",
+    "accountClosePayment": "Cerrar pago",
+    "closeBulkMessage": "Cerrar aviso",
+    "cardStatementCycleLabel": "Factura {start} a {end}",
+    "cardUpdateButton": "Guardar tarjeta",
+    "cardCancelEditButton": "Cancelar edici?n",
+    "cardEditButton": "Editar",
+    "cardDeleteButton": "Eliminar",
+    "accountsSearchPlaceholder": "Buscar cuenta o categor?a...",
+    "accountsFilterAll": "Todas abiertas",
+    "accountsFilterOverdue": "Vencidas",
+    "accountsFilterPartial": "Parciales"
   },
   "FinanceBoards": {
     "title": "Tableros de finanzas",

@@ -34,16 +34,16 @@ export default function FinanceInvitesPanel({
     <div className="space-y-6">
       {/* Aprovações pendentes */}
       {(loading || hasPending) && (
-        <div className="bg-amber-50 border border-amber-100 rounded-xl shadow-sm p-4">
+        <div className="finance-warning-soft border rounded-xl shadow-sm p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-amber-800">{t("pendingApprovalsTitle")}</p>
-              <p className="text-xs text-amber-700 mt-1">
+              <p className="text-sm font-semibold">{t("pendingApprovalsTitle")}</p>
+              <p className="text-xs mt-1">
                 {loading ? t("loadingInvites") : t("pendingApprovalsMessage", { count: pendingCount })}
               </p>
             </div>
             {!loading && hasPending && (
-              <span className="text-xs font-semibold px-2 py-1 rounded-lg bg-amber-100 text-amber-800">
+              <span className="text-xs font-semibold px-2 py-1 rounded-lg border finance-warning-soft">
                 {pendingCount}
               </span>
             )}
@@ -90,7 +90,7 @@ export default function FinanceInvitesPanel({
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border finance-danger-soft disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>
@@ -98,7 +98,7 @@ export default function FinanceInvitesPanel({
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "accept")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border finance-success-soft disabled:opacity-60"
                       >
                         {t("accept")}
                       </button>
@@ -132,7 +132,7 @@ export default function FinanceInvitesPanel({
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "reject")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border finance-danger-soft disabled:opacity-60"
                       >
                         {t("reject")}
                       </button>
@@ -140,7 +140,7 @@ export default function FinanceInvitesPanel({
                         type="button"
                         disabled={respondingId === invite.id}
                         onClick={() => onRespond(invite.id, "accept")}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-green-200 text-green-600 hover:bg-green-50 disabled:opacity-60"
+                        className="px-2 py-1 text-[11px] rounded-lg border finance-success-soft disabled:opacity-60"
                       >
                         {t("accept")}
                       </button>

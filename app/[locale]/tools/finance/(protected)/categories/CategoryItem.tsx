@@ -51,16 +51,16 @@ export function CategoryItem({ category, locale, boardId }: { category: string; 
                             if (e.key === "Escape") { setIsEditing(false); setEditName(category); }
                         }}
                     />
-                    <button onClick={handleSave} disabled={isPending} className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition disabled:opacity-50">
+                    <button onClick={handleSave} disabled={isPending} className="p-1.5 finance-success-text hover:bg-[var(--color-success-bg)] rounded-lg transition disabled:opacity-50">
                         {isPending
-                            ? <div className="w-4 h-4 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
+                            ? <div className="w-4 h-4 border-2 border-[var(--color-success-border)] border-t-[var(--color-success-strong)] rounded-full animate-spin" />
                             : <FiCheck size={16} />}
                     </button>
                     <button onClick={() => { setIsEditing(false); setEditName(category); }} disabled={isPending} className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)] rounded-lg transition">
                         <FiX size={16} />
                     </button>
                 </div>
-                {error && <p className="mt-2 text-xs text-red-500" role="status" aria-live="polite">{error}</p>}
+                {error && <p className="mt-2 text-xs finance-danger-text" role="status" aria-live="polite">{error}</p>}
             </li>
         );
     }
@@ -80,14 +80,14 @@ export function CategoryItem({ category, locale, boardId }: { category: string; 
                     <button
                         onClick={() => setConfirmDeleteOpen(true)}
                         disabled={isPending}
-                        className="p-1.5 text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                        className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)] hover:bg-[var(--color-danger-bg)] rounded-lg transition"
                     >
                         <FiTrash2 size={15} />
                     </button>
                 </div>
             </div>
 
-            {error && <p className="mt-2 text-xs text-red-500" role="status" aria-live="polite">{error}</p>}
+            {error && <p className="mt-2 text-xs finance-danger-text" role="status" aria-live="polite">{error}</p>}
 
             {confirmDeleteOpen && (
                 <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-4">
@@ -111,7 +111,7 @@ export function CategoryItem({ category, locale, boardId }: { category: string; 
                                 type="button"
                                 disabled={isPending}
                                 onClick={handleConfirmDelete}
-                                className="px-3 py-2 text-xs rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60 inline-flex items-center gap-2"
+                                className="px-3 py-2 text-xs rounded-xl bg-[var(--color-danger-strong)] text-white font-semibold hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
                             >
                                 {isPending && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                                 {t("delete")}

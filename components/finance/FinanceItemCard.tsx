@@ -103,8 +103,8 @@ export default function FinanceItemCard({
   const handleToggle = () => {
     if (isSynthetic || isMoved || toggling || deleting) return;
 
-    // Reverter quitaÃ§Ã£o somente quando for pagamento total
-    // (lanÃ§amentos "parcialmente pagos" podem estar com status="paid", mas com originalAmount > amount)
+    // Reverter quitação somente quando for pagamento total.
+    // Lançamentos parcialmente pagos podem estar com status="paid", mas com originalAmount > amount.
     if (isPaid && originalAmount <= item.amount && (item.paidAmount || 0) >= item.amount) {
       setActionError(null);
       setConfirmKind("revert");
@@ -252,22 +252,22 @@ export default function FinanceItemCard({
       {/* CARD */}
       <div
         className={`p-4 rounded-xl shadow-sm border flex items-center justify-between gap-3 mb-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
-          ? "bg-amber-50 border-amber-200"
+          ? "finance-warning-soft"
           : "bg-[var(--color-surface)] border-[var(--color-border)]"
-          } ${selected ? "ring-2 ring-blue-500 bg-[var(--color-accent-subtle)]" : ""}`}
+          } ${selected ? "ring-2 ring-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)]" : ""}`}
         onClick={() => selectionMode && onToggleSelection && onToggleSelection(item.id)}
       >
         {selectionMode ? (
           <div className="mr-1">
-          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-blue-600 border-blue-600" : "bg-[var(--color-surface)] border-[var(--color-border)]"}`}>
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)]" : "bg-[var(--color-surface)] border-[var(--color-border)]"}`}>
               {selected && <FiCheckCircle className="text-white" size={14} />}
             </div>
           </div>
         ) : (
           <div
             className={`p-3 rounded-full ${isIncome
-              ? "bg-green-100 text-green-600"
-              : "bg-red-100 text-red-600"
+              ? "finance-success-soft"
+              : "finance-danger-soft"
               }`}
           >
             {isIncome ? <FiArrowUp size={20} /> : <FiArrowDown size={20} />}
@@ -279,17 +279,17 @@ export default function FinanceItemCard({
             <h3 className="font-bold text-[var(--color-text-primary)] truncate">{item.title}</h3>
 
             {item.isFixed && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full finance-info-soft border">
                 {t("fixedLabel")}
               </span>
             )}
             {isRolled && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full finance-warning-soft border">
                 {t("rolledFromMonth", { month: item.carriedFromMonth || "" })}
               </span>
             )}
             {isMoved && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-[var(--color-accent-text)] border border-blue-500/20">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full finance-info-soft border">
                 {t("movedBadge")}
               </span>
             )}
@@ -319,7 +319,7 @@ export default function FinanceItemCard({
           )}
 
           {isPartial && (
-            <p className="text-[11px] text-blue-600 mt-1">
+            <p className="text-[11px] finance-info-text mt-1">
               {t("partialPaid", {
                 paid: formatCurrency(paidAmount),
                 total: formatCurrency(item.amount),
@@ -328,7 +328,7 @@ export default function FinanceItemCard({
           )}
 
           {openAmount > 0 && item.status !== "paid" && !isMoved && (
-            <p className="text-[11px] text-amber-700">
+            <p className="text-[11px] finance-warning-text">
               {t("openAmount", {
                 value: formatCurrency(openAmount),
               })}
@@ -338,7 +338,7 @@ export default function FinanceItemCard({
 
         <div className="text-right flex flex-col items-end gap-1">
           <span
-            className={`font-bold ${isIncome ? "text-green-600" : "text-red-600"
+            className={`font-bold ${isIncome ? "finance-success-text" : "finance-danger-text"
               }`}
           >
             {isIncome ? "+ " : "- "}
@@ -347,14 +347,14 @@ export default function FinanceItemCard({
 
           <div className="text-[11px] text-[var(--color-text-muted)]">
             {item.status === "paid" && (
-              <span className="text-green-500 font-semibold">
+              <span className="finance-success-text font-semibold">
                 {item.originalAmount && item.originalAmount > item.amount
                   ? t("statusPartial")
                   : isIncome ? t("statusReceived") : t("statusPaid")}
               </span>
             )}
             {item.status === "pending" && (
-              <span className="text-amber-500 font-semibold">{t("statusPending")}</span>
+              <span className="finance-warning-text font-semibold">{t("statusPending")}</span>
             )}
             {item.status === "partial" && (
               <span className="text-[var(--color-accent-text)] font-semibold">{t("statusPartial")}</span>
@@ -370,10 +370,10 @@ export default function FinanceItemCard({
                 <button
                   onClick={(e) => { e.stopPropagation(); handleToggle(); }}
                   disabled={toggling || deleting}
-                  className={`${isPaid ? "text-green-500" : "text-[var(--color-text-muted)]"} hover:text-green-500 transition disabled:opacity-60 disabled:cursor-wait`}
+                  className={`${isPaid ? "finance-success-text" : "text-[var(--color-text-muted)]"} hover:text-[var(--color-success-strong)] transition disabled:opacity-60 disabled:cursor-wait`}
                   aria-label={t("togglePaidAria")}
                 >
-                  {toggling ? <Spinner size="sm" color="gray" /> : isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
+                {toggling ? <Spinner size="sm" color="gray" /> : isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
                 </button>
               )}
               {isInstallment && (
@@ -400,7 +400,7 @@ export default function FinanceItemCard({
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteClick(); }}
                 disabled={toggling || deleting || !canDelete}
-                className="text-[var(--color-text-muted)] hover:text-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)] transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={t("deleteAria")}
               >
                 <FiTrash2 size={16} />
@@ -410,12 +410,12 @@ export default function FinanceItemCard({
         </div>
       </div>
 
-      {/* CONFIRMAÃ‡ÃƒO (reverter pagamento / excluir) */}
+      {/* Confirmação de reversão ou exclusão */}
       {confirmKind && (
         <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[var(--color-surface-overlay)] w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-[var(--color-border)]">
             <h3
-              className={`text-base font-semibold mb-1 ${confirmKind === "delete" ? "text-red-500" : "text-[var(--color-text-primary)]"}`}
+              className={`text-base font-semibold mb-1 ${confirmKind === "delete" ? "finance-danger-text" : "text-[var(--color-text-primary)]"}`}
             >
               {confirmKind === "delete" ? t("deleteAria") : t("togglePaidAria")}
             </h3>
@@ -427,7 +427,7 @@ export default function FinanceItemCard({
             </p>
 
             {actionError && (
-              <p className="text-xs text-red-500 mt-2">{actionError}</p>
+              <p className="text-xs finance-danger-text mt-2">{actionError}</p>
             )}
 
             <div className="flex justify-end gap-2 mt-4">
@@ -451,8 +451,8 @@ export default function FinanceItemCard({
                 }
                 disabled={toggling || deleting}
                 className={`px-4 py-2 text-sm font-bold rounded-xl text-white active:scale-95 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${confirmKind === "delete"
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  ? "bg-[var(--color-danger-strong)] hover:opacity-90"
+                  : "bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)]"
                   }`}
               >
                 {(toggling || deleting) && (
@@ -475,7 +475,7 @@ export default function FinanceItemCard({
 
             <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {item.title} —{" "}
-              <span className={isIncome ? "text-green-500" : "text-red-500"}>
+              <span className={isIncome ? "finance-success-text" : "finance-danger-text"}>
                 {formatCurrency(paymentTargetAmount)}
               </span>
             </p>
@@ -484,7 +484,7 @@ export default function FinanceItemCard({
               <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                 <input
                   type="radio"
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 accent-[var(--color-accent-primary)]"
                   checked={paymentMode === "full"}
                   onChange={() => setPaymentMode("full")}
                 />
@@ -500,7 +500,7 @@ export default function FinanceItemCard({
                 <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                   <input
                     type="radio"
-                    className="w-4 h-4 text-blue-600"
+                    className="w-4 h-4 accent-[var(--color-accent-primary)]"
                     checked={paymentMode === "partial"}
                     onChange={() => setPaymentMode("partial")}
                   />
@@ -516,7 +516,7 @@ export default function FinanceItemCard({
                       value={partialValue}
                       onChange={(e) => setPartialValue(e.target.value)}
                       placeholder="Ex: 500,00"
-                      className="w-full p-2.5 bg-[var(--color-surface-raised)] rounded-xl border border-[var(--color-border)] focus:border-blue-500 outline-none text-sm text-[var(--color-text-primary)]"
+                      className="w-full p-2.5 bg-[var(--color-surface-raised)] rounded-xl border border-[var(--color-border)] focus:border-[var(--color-accent-primary)] outline-none text-sm text-[var(--color-text-primary)]"
                     />
                     <p className="text-[11px] text-[var(--color-text-muted)]">
                       {t("paymentModalPartialHint")}
@@ -530,7 +530,7 @@ export default function FinanceItemCard({
                   <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
                     <input
                       type="radio"
-                      className="w-4 h-4 text-blue-600"
+                      className="w-4 h-4 accent-[var(--color-accent-primary)]"
                       checked={paymentMode === "move"}
                       onChange={() => setPaymentMode("move")}
                     />
@@ -541,7 +541,7 @@ export default function FinanceItemCard({
             </div>
 
             {actionError && (
-              <p className="text-xs text-red-500 mt-3">{actionError}</p>
+              <p className="text-xs finance-danger-text mt-3">{actionError}</p>
             )}
 
             <div className="flex justify-end gap-2">
@@ -556,7 +556,7 @@ export default function FinanceItemCard({
                 type="button"
                 onClick={handleConfirmPayment}
                 disabled={toggling}
-                className="px-4 py-2 text-sm font-bold rounded-xl bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-bold rounded-xl bg-[var(--color-accent-primary)] text-white hover:bg-[var(--color-accent-hover)] active:scale-95 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {toggling && (
                   <Spinner size="sm" color="white" />
@@ -591,7 +591,7 @@ export default function FinanceItemCard({
             </div>
 
             {actionError && (
-              <p className="text-xs text-red-500 mb-3">{actionError}</p>
+              <p className="text-xs finance-danger-text mb-3">{actionError}</p>
             )}
 
             <div className="space-y-2">
@@ -644,7 +644,7 @@ export default function FinanceItemCard({
                         type="button"
                         onClick={() => handleDeleteInstallment(installment.id)}
                         disabled={!installmentCanDelete || deleting}
-                        className="text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)] disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label={t("deleteAria")}
                       >
                         {deleting ? <Spinner size="sm" color="gray" /> : <FiTrash2 size={16} />}

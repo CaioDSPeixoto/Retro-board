@@ -20,11 +20,11 @@ export default function FinanceCategoriesLoading() {
               <SkeletonBlock className="h-4 w-40 rounded" />
               <SkeletonBlock className="h-5 w-10 rounded-full" />
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-3 border-b border-gray-50 bg-gray-50/50">
+            <div className="finance-surface rounded-2xl border shadow-sm overflow-hidden">
+              <div className="p-3 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]">
                 <SkeletonBlock className="h-10 rounded-xl" />
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-[var(--color-border-subtle)]">
                 {[0, 1, 2].map((j) => (
                   <SkeletonBlock key={j} className="h-12 rounded-none" />
                 ))}

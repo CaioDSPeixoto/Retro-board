@@ -18,7 +18,8 @@
     "likes": "Likes",
     "dislikes": "Dislikes",
     "category": "Category",
-    "content": "Content"
+    "content": "Content",
+    "exportCsv": "Export to CSV"
   },
   "Navbar": {
     "home": "Home",
@@ -73,30 +74,112 @@
     "historyTitle": "Professional Journey",
     "historyBody": "A brief summary:",
     "timeline": [
-      { "year": "2014", "text": "Started High School with an Integrated IT Technician course" },
-      { "year": "2015", "text": "IT Internship at São Camilo University Center" },
-      { "year": "2017", "text": "Started Information Systems degree at Multivix College" },
-      { "year": "2017", "text": "Started as a Web Programmer at FK-Tech" },
-      { "year": "2019", "text": "Started as Software Tech Support at Técnica Automação" },
-      { "year": "2020", "text": "Graduated college and got married" },
-      { "year": "2021", "text": "Moved to SC and started as a Programmer at Havan S.A." },
-      { "year": "2023", "text": "Started as Tech Leader at Questor Sistemas" },
-      { "year": "2024", "text": "Completed Postgraduate studies in Software Engineering at Faculdade Metropolitana" },
-      { "year": "2025", "text": "Currently a Full Stack Programmer at Havan S.A. (Back to my roots)" }
+      {
+        "year": "2014",
+        "text": "Started High School with an Integrated IT Technician course"
+      },
+      {
+        "year": "2015",
+        "text": "IT Internship at São Camilo University Center"
+      },
+      {
+        "year": "2017",
+        "text": "Started Information Systems degree at Multivix College"
+      },
+      {
+        "year": "2017",
+        "text": "Started as a Web Programmer at FK-Tech"
+      },
+      {
+        "year": "2019",
+        "text": "Started as Software Tech Support at Técnica Automação"
+      },
+      {
+        "year": "2020",
+        "text": "Graduated college and got married"
+      },
+      {
+        "year": "2021",
+        "text": "Moved to SC and started as a Programmer at Havan S.A."
+      },
+      {
+        "year": "2023",
+        "text": "Started as Tech Leader at Questor Sistemas"
+      },
+      {
+        "year": "2024",
+        "text": "Completed Postgraduate studies in Software Engineering at Faculdade Metropolitana"
+      },
+      {
+        "year": "2025",
+        "text": "Currently a Full Stack Programmer at Havan S.A. (Back to my roots)"
+      }
     ],
     "stacksTitle": "Stacks & Technologies",
     "stacks": [
-      "C#", ".NET", "PostgreSQL", "MongoDB", "Redis", "Docker", "RabbitMQ", "Next.js", "TypeScript", "PHP", "ReactJS", "AngularJS", "SQL Server", "Git", "Rancher", "Datadog", "Microservices", "Clean Architecture", "Agile", "DDD", "REST", "Design Patterns", "SOLID", "Python", "Genexus", "Generative AI", "LLMs", "MCP Server", "ChatGPT", "CI/CD", "Clean Code", "Refactoring"
+      "C#",
+      ".NET",
+      "PostgreSQL",
+      "MongoDB",
+      "Redis",
+      "Docker",
+      "RabbitMQ",
+      "Next.js",
+      "TypeScript",
+      "PHP",
+      "ReactJS",
+      "AngularJS",
+      "SQL Server",
+      "Git",
+      "Rancher",
+      "Datadog",
+      "Microservices",
+      "Clean Architecture",
+      "Agile",
+      "DDD",
+      "REST",
+      "Design Patterns",
+      "SOLID",
+      "Python",
+      "Genexus",
+      "Generative AI",
+      "LLMs",
+      "MCP Server",
+      "ChatGPT",
+      "CI/CD",
+      "Clean Code",
+      "Refactoring"
     ],
     "ctaResume": "View Resume",
     "funStatsTitle": "Unofficial Stats",
     "lastProdBugAt": "abc",
     "lastWarRoomAt": "2025-12-10",
     "funStats": [
-      { "icon": "☕", "baseValue": 4826745, "baseDate": "2026-02-01", "dailyIncrement": 120, "label": "Cups of coffee drank" },
-      { "icon": "🐞", "baseValue": 632, "baseDate": "2026-02-01", "dailyIncrement": 3, "prefix": "+", "label": "Bugs fixed" },
-      { "icon": "🧯", "type": "daysSinceProdBug", "label": "Days without production bugs" },
-      { "icon": "🚨", "type": "daysSinceWarRoom", "label": "Days since last war room" }
+      {
+        "icon": "☕",
+        "baseValue": 4826745,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 120,
+        "label": "Cups of coffee drank"
+      },
+      {
+        "icon": "🐞",
+        "baseValue": 632,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 3,
+        "prefix": "+",
+        "label": "Bugs fixed"
+      },
+      {
+        "icon": "🧯",
+        "type": "daysSinceProdBug",
+        "label": "Days without production bugs"
+      },
+      {
+        "icon": "🚨",
+        "type": "daysSinceWarRoom",
+        "label": "Days since last war room"
+      }
     ]
   },
   "Tools": {
@@ -242,10 +325,10 @@
   "FinanceLogin": {
     "title": "My Finances",
     "description": "Log in to manage your accounts",
-    "emailUserLabel": "Email or Username",
+    "emailUserLabel": "Email",
     "emailPlaceholder": "e.g., name@email.com",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "Your password",
     "submitButton": "Log In",
     "loading": "Signing in...",
     "noAccount": "Don't have an account?",
@@ -256,15 +339,15 @@
     }
   },
   "FinanceRegister": {
-    "title": "New Account",
+    "title": "New account",
     "description": "Create your account to get started",
     "emailLabel": "Email",
     "emailPlaceholder": "name@email.com",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "••••••••",
-    "confirmPasswordLabel": "Confirm Password",
-    "confirmPasswordPlaceholder": "••••••••",
-    "submitButton": "Create Account",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Repeat your password",
+    "submitButton": "Create account",
     "loading": "Creating account...",
     "hasAccount": "Already have an account?",
     "loginLink": "Log in",
@@ -390,7 +473,30 @@
       "onlyInviteeCanAccept": "Only the invitee can accept.",
       "onlyOwnerCanApprove": "Only the owner can approve.",
       "requestMissingUserId": "Request missing userId."
-    }
+    },
+    "clearFiltersButton": "Clear {count} filter(s)",
+    "bulkResultMessage": "{changed} item(s) updated. {skipped} skipped.",
+    "accountEditAction": "Edit",
+    "accountMoveAction": "Move",
+    "accountPayAction": "Pay",
+    "accountReceiveAction": "Receive",
+    "cardMonthUsageLabel": "Posted this month",
+    "cardMonthUsageHint": "Does not use the card statement closing cycle.",
+    "accountFullPayment": "Settle outstanding amount",
+    "accountPartialPayment": "Pay partial amount",
+    "accountCancelPayment": "Cancel",
+    "accountConfirmPayment": "Confirm",
+    "accountClosePayment": "Close payment",
+    "closeBulkMessage": "Close notice",
+    "cardStatementCycleLabel": "Statement {start} to {end}",
+    "cardUpdateButton": "Save card",
+    "cardCancelEditButton": "Cancel edit",
+    "cardEditButton": "Edit",
+    "cardDeleteButton": "Delete",
+    "accountsSearchPlaceholder": "Search account or category...",
+    "accountsFilterAll": "All open",
+    "accountsFilterOverdue": "Overdue",
+    "accountsFilterPartial": "Partial"
   },
   "FinanceBoards": {
     "title": "Finance Boards",

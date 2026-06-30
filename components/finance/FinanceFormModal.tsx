@@ -239,7 +239,7 @@ export default function FinanceFormModal({
         </div>
 
         {error && (
-          <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          <div className="mb-4 text-sm finance-danger-soft border rounded-lg p-3">
             {error}
           </div>
         )}
@@ -306,7 +306,7 @@ export default function FinanceFormModal({
               type="button"
               onClick={() => setType("income")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "income" ? "shadow-sm text-green-600" : ""
+                type === "income" ? "shadow-sm finance-success-text" : ""
               }`}
               style={
                 type === "income"
@@ -320,7 +320,7 @@ export default function FinanceFormModal({
               type="button"
               onClick={() => setType("expense")}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                type === "expense" ? "shadow-sm text-red-600" : ""
+                type === "expense" ? "shadow-sm finance-danger-text" : ""
               }`}
               style={
                 type === "expense"
@@ -346,7 +346,7 @@ export default function FinanceFormModal({
                   if (!showNewCategoryForm) setNewCategory("");
                 }}
                 className={`text-xs font-bold flex items-center gap-1 transition-colors ${
-                  showNewCategoryForm ? "text-red-500" : "text-blue-500 hover:text-blue-600"
+                  showNewCategoryForm ? "finance-danger-text" : "text-[var(--color-accent-text)] hover:text-[var(--color-accent-hover)]"
                 }`}
               >
                 {showNewCategoryForm ? (
@@ -412,7 +412,7 @@ export default function FinanceFormModal({
                   type="button"
                   onClick={handleAddCategory}
                   disabled={!newCategory.trim() || addingCategory}
-                  className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center"
+                  className="px-4 bg-[var(--color-accent-primary)] text-white rounded-xl hover:bg-[var(--color-accent-hover)] disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
                   {addingCategory ? (
                     <Spinner size="md" color="white" />
@@ -474,7 +474,7 @@ export default function FinanceFormModal({
                         type="button"
                         onClick={() => setCardMode("credit")}
                         className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
-                          cardMode === "credit" ? "border-blue-500 text-blue-500" : ""
+                          cardMode === "credit" ? "border-[var(--color-accent-primary)] text-[var(--color-accent-text)]" : ""
                         }`}
                         style={cardMode !== "credit" ? { background: "var(--color-surface)", borderColor: "var(--color-border)", color: "var(--color-text-secondary)" } : { background: "var(--color-accent-subtle)" }}
                       >
@@ -484,7 +484,7 @@ export default function FinanceFormModal({
                         type="button"
                         onClick={() => setCardMode("debit")}
                         className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${
-                          cardMode === "debit" ? "border-blue-500 text-blue-500" : ""
+                          cardMode === "debit" ? "border-[var(--color-accent-primary)] text-[var(--color-accent-text)]" : ""
                         }`}
                         style={cardMode !== "debit" ? { background: "var(--color-surface)", borderColor: "var(--color-border)", color: "var(--color-text-secondary)" } : { background: "var(--color-accent-subtle)" }}
                       >
@@ -505,7 +505,7 @@ export default function FinanceFormModal({
                     <button
                       type="button"
                       onClick={() => setEnableCustomDescription((prev) => !prev)}
-                      className="text-[11px] font-semibold text-blue-500"
+                      className="text-[11px] font-semibold text-[var(--color-accent-text)]"
                     >
                       {enableCustomDescription ? t("useAutoDescription") : t("editDescriptionButton")}
                     </button>
@@ -595,7 +595,7 @@ export default function FinanceFormModal({
               <button
                 type="button"
                 onClick={() => setShowAdvanced((prev) => !prev)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-accent-text)]"
               >
                 <FiChevronDown
                   className={`transition-transform ${showAdvanced ? "rotate-180" : ""
@@ -617,7 +617,7 @@ export default function FinanceFormModal({
                         id="useInstallments"
                         checked={useInstallments}
                         onChange={(e) => setUseInstallments(e.target.checked)}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
                       />
                       <label
                         htmlFor="useInstallments"
@@ -659,7 +659,7 @@ export default function FinanceFormModal({
                         name="status"
                         value="paid"
                         id="paid"
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
                       />
                       <label
                         htmlFor="paid"
@@ -686,7 +686,7 @@ export default function FinanceFormModal({
                         id="isFixed"
                         defaultChecked={false}
                         disabled={!canUseFixed}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       <label
                         htmlFor="isFixed"
@@ -712,8 +712,8 @@ export default function FinanceFormModal({
               type="submit"
               disabled={isPending}
               className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${type === "income"
-                  ? "bg-green-600 hover:bg-green-700 shadow-green-100"
-                  : "bg-red-600 hover:bg-red-700 shadow-red-100"
+                  ? "bg-[var(--color-success-strong)] hover:brightness-110 shadow-green-100/30"
+                  : "bg-[var(--color-danger-strong)] hover:brightness-110 shadow-red-100/30"
                 } disabled:opacity-70`}
             >
               {isPending ? (

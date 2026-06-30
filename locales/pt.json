@@ -18,7 +18,8 @@
     "likes": "Curtidas",
     "dislikes": "Descurtidas",
     "category": "Categoria",
-    "content": "Conteúdo"
+    "content": "Conteúdo",
+    "exportCsv": "Exportar CSV"
   },
   "Navbar": {
     "home": "Início",
@@ -73,16 +74,46 @@
     "historyTitle": "Minha trajetória profissional",
     "historyBody": "Uma breve resumida:",
     "timeline": [
-      { "year": "2014", "text": "Iniciei meu Ensino Médio Integrado ao Técnico de Informática" },
-      { "year": "2015", "text": "Fiz um estágio de informática no Centro Universitário São Camilo" },
-      { "year": "2017", "text": "Comecei a cursar Sistemas de Informação na Faculdade Multivix" },
-      { "year": "2017", "text": "Comecei a trabalhar como Programador Web na FK-Tech" },
-      { "year": "2019", "text": "Iniciei como suporte técnico de software na Técnica Automação" },
-      { "year": "2020", "text": "Me formei na faculdade e me casei" },
-      { "year": "2021", "text": "Me mudei para SC e comecei a trabalhar como Programador na Havan S.A." },
-      { "year": "2023", "text": "Comecei a trabalhar como Tech Leader na Questor Sistemas" },
-      { "year": "2024", "text": "Fiz minha pós-graduação em Engenharia de Software na Faculdade Metropolitana" },
-      { "year": "2025", "text": "Atualmente atuo como Programador Full Stack na Havan S.A. (um bom filho a casa torna)" }
+      {
+        "year": "2014",
+        "text": "Iniciei meu Ensino Médio Integrado ao Técnico de Informática"
+      },
+      {
+        "year": "2015",
+        "text": "Fiz um estágio de informática no Centro Universitário São Camilo"
+      },
+      {
+        "year": "2017",
+        "text": "Comecei a cursar Sistemas de Informação na Faculdade Multivix"
+      },
+      {
+        "year": "2017",
+        "text": "Comecei a trabalhar como Programador Web na FK-Tech"
+      },
+      {
+        "year": "2019",
+        "text": "Iniciei como suporte técnico de software na Técnica Automação"
+      },
+      {
+        "year": "2020",
+        "text": "Me formei na faculdade e me casei"
+      },
+      {
+        "year": "2021",
+        "text": "Me mudei para SC e comecei a trabalhar como Programador na Havan S.A."
+      },
+      {
+        "year": "2023",
+        "text": "Comecei a trabalhar como Tech Leader na Questor Sistemas"
+      },
+      {
+        "year": "2024",
+        "text": "Fiz minha pós-graduação em Engenharia de Software na Faculdade Metropolitana"
+      },
+      {
+        "year": "2025",
+        "text": "Atualmente atuo como Programador Full Stack na Havan S.A. (um bom filho a casa torna)"
+      }
     ],
     "stacksTitle": "Stacks e tecnologias",
     "stacks": [
@@ -124,10 +155,31 @@
     "lastProdBugAt": "abc",
     "lastWarRoomAt": "2025-12-10",
     "funStats": [
-      { "icon": "☕", "baseValue": 4826745, "baseDate": "2026-02-01", "dailyIncrement": 120, "label": "Copos de café tomados" },
-      { "icon": "🐞", "baseValue": 632, "baseDate": "2026-02-01", "dailyIncrement": 3, "prefix": "+", "label": "Bugs resolvidos" },
-      { "icon": "🧯", "type": "daysSinceProdBug", "label": "Dias sem bug em produção" },
-      { "icon": "🚨", "type": "daysSinceWarRoom", "label": "Dias sem war room" }
+      {
+        "icon": "☕",
+        "baseValue": 4826745,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 120,
+        "label": "Copos de café tomados"
+      },
+      {
+        "icon": "🐞",
+        "baseValue": 632,
+        "baseDate": "2026-02-01",
+        "dailyIncrement": 3,
+        "prefix": "+",
+        "label": "Bugs resolvidos"
+      },
+      {
+        "icon": "🧯",
+        "type": "daysSinceProdBug",
+        "label": "Dias sem bug em produção"
+      },
+      {
+        "icon": "🚨",
+        "type": "daysSinceWarRoom",
+        "label": "Dias sem war room"
+      }
     ]
   },
   "Tools": {
@@ -271,39 +323,39 @@
     "empty": "Nenhuma tarefa por enquanto..."
   },
   "FinanceLogin": {
-    "title": "Minhas Finanças",
-    "description": "Faça login para gerenciar suas contas",
-    "emailUserLabel": "Email ou Usuário",
-    "emailPlaceholder": "ex: seu@email.com",
+    "title": "Minhas Finan?as",
+    "description": "Fa?a login para gerenciar suas contas",
+    "emailUserLabel": "Email",
+    "emailPlaceholder": "seu@email.com",
     "passwordLabel": "Senha",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "Sua senha",
     "submitButton": "Acessar",
     "loading": "Entrando...",
-    "noAccount": "Ainda não tem conta",
+    "noAccount": "Ainda não tem conta?",
     "registerLink": "Cadastre-se",
     "errors": {
-      "invalid": "Email ou senha inválidos.",
+      "invalid": "Email ou senha inv?lidos.",
       "general": "Erro ao autenticar. Tente novamente."
     }
   },
   "FinanceRegister": {
-    "title": "Nova Conta",
-    "description": "Crie sua conta para começar",
+    "title": "Nova conta",
+    "description": "Crie sua conta para come?ar",
     "emailLabel": "Email",
     "emailPlaceholder": "seu@email.com",
     "passwordLabel": "Senha",
-    "passwordPlaceholder": "••••••••",
-    "confirmPasswordLabel": "Confirmar Senha",
-    "confirmPasswordPlaceholder": "••••••••",
-    "submitButton": "Criar Conta",
+    "passwordPlaceholder": "Mínimo de 6 caracteres",
+    "confirmPasswordLabel": "Confirmar senha",
+    "confirmPasswordPlaceholder": "Repita sua senha",
+    "submitButton": "Criar conta",
     "loading": "Criando conta...",
-    "hasAccount": "Já tem conta",
+    "hasAccount": "Já tem conta?",
     "loginLink": "Entrar",
     "errors": {
-      "match": "As senhas não coincidem.",
+      "match": "As senhas n?o coincidem.",
       "length": "A senha deve ter pelo menos 6 caracteres.",
-      "inUse": "Este email já está em uso.",
-      "invalid": "Email inválido.",
+      "inUse": "Este email j? est? em uso.",
+      "invalid": "Email inv?lido.",
       "general": "Erro ao criar conta. Tente novamente."
     }
   },
@@ -421,7 +473,30 @@
       "onlyInviteeCanAccept": "Somente o convidado pode aceitar.",
       "onlyOwnerCanApprove": "Somente o dono pode aprovar.",
       "requestMissingUserId": "Pedido sem userId."
-    }
+    },
+    "clearFiltersButton": "Limpar {count} filtro(s)",
+    "bulkResultMessage": "{changed} lançamento(s) alterado(s). {skipped} ignorado(s).",
+    "accountEditAction": "Editar",
+    "accountMoveAction": "Mover",
+    "accountPayAction": "Pagar",
+    "accountReceiveAction": "Receber",
+    "cardMonthUsageLabel": "Lançado no mês atual",
+    "cardMonthUsageHint": "Não usa ciclo de fechamento da fatura.",
+    "accountFullPayment": "Quitar valor em aberto",
+    "accountPartialPayment": "Pagar valor parcial",
+    "accountCancelPayment": "Cancelar",
+    "accountConfirmPayment": "Confirmar",
+    "accountClosePayment": "Fechar pagamento",
+    "closeBulkMessage": "Fechar aviso",
+    "cardStatementCycleLabel": "Fatura {start} a {end}",
+    "cardUpdateButton": "Salvar cart?o",
+    "cardCancelEditButton": "Cancelar edi??o",
+    "cardEditButton": "Editar",
+    "cardDeleteButton": "Excluir",
+    "accountsSearchPlaceholder": "Buscar conta ou categoria...",
+    "accountsFilterAll": "Todas em aberto",
+    "accountsFilterOverdue": "Vencidas",
+    "accountsFilterPartial": "Parciais"
   },
   "FinanceBoards": {
     "title": "Quadros de finanças",

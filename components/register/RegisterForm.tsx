@@ -24,6 +24,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
 
     setLoading(true);
     setError("");
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (password !== confirmPassword) {
       setError(t("errors.match"));
@@ -40,7 +41,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
     let idToken = "";
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
       idToken = await userCredential.user.getIdToken(true);
     } catch (firebaseError: any) {
       if (firebaseError.code === "auth/email-already-in-use") setError(t("errors.inUse"));
@@ -63,7 +64,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && (
-        <div className="text-red-500 text-sm p-3 rounded-lg border border-red-300/40" style={{ background: "var(--color-surface-raised)" }}>
+        <div className="finance-danger-soft text-sm p-3 rounded-lg border">
           {error}
         </div>
       )}
@@ -73,9 +74,12 @@ export default function RegisterForm({ locale }: { locale: string }) {
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value.toLowerCase())}
+          onBlur={() => setEmail((value) => value.trim().toLowerCase())}
           placeholder={t("emailPlaceholder")}
           required
+          autoComplete="email"
+          inputMode="email"
           className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
@@ -89,6 +93,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("passwordPlaceholder")}
           required
+          autoComplete="new-password"
           className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
@@ -104,6 +109,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder={t("confirmPasswordPlaceholder")}
           required
+          autoComplete="new-password"
           className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
         />
@@ -112,7 +118,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-4 bg-[var(--color-accent-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-accent-hover)] active:scale-95 transition shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading && <Spinner size="md" color="white" />}
         {loading ? t("loading") : t("submitButton")}
@@ -121,7 +127,7 @@ export default function RegisterForm({ locale }: { locale: string }) {
       <div className="text-center mt-4">
         <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {t("hasAccount")}{" "}
-          <Link href={`/${locale}/tools/finance/login`} className="text-blue-500 font-bold hover:underline">
+          <Link href={`/${locale}/tools/finance/login`} className="text-[var(--color-accent-text)] font-bold hover:underline">
             {t("loginLink")}
           </Link>
         </p>

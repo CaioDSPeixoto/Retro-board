@@ -62,7 +62,7 @@ export default function FinanceJoinByCode({ locale }: Props) {
           <button
             type="submit"
             disabled={loading || !code.trim()}
-            className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0 flex items-center justify-center gap-2"
+            className="w-full md:w-auto px-6 py-3 bg-[var(--color-accent-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-accent-hover)] active:scale-95 transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed mt-2 md:mt-0 flex items-center justify-center gap-2"
           >
             {loading && <Spinner size="sm" color="white" />}
             {loading ? t("sending") : t("joinByCodeButton")}
@@ -70,8 +70,8 @@ export default function FinanceJoinByCode({ locale }: Props) {
         </div>
       </form>
 
-      {feedback && <p className="mt-2 text-xs text-green-500">{feedback}</p>}
-      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+      {feedback && <p className="mt-2 text-xs finance-success-text">{feedback}</p>}
+      {error && <p className="mt-2 text-xs finance-danger-text">{error}</p>}
     </div>
   );
 }
