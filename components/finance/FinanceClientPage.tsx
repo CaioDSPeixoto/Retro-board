@@ -2,9 +2,10 @@
 
 import type { FinanceBoard, FinanceCard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
-import { format, addMonths, subMonths, parseISO } from "date-fns";
+import { format, addDays, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
+  FiBell,
   FiChevronLeft,
   FiChevronRight,
   FiPlus,
@@ -19,7 +20,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
-import FinanceAccountsPanel from "@/components/finance/FinanceAccountsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
 import {
   bulkFinanceItemsAction,
@@ -79,7 +79,7 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [activeView, setActiveView] = useState<"list" | "metrics" | "accounts" | "cards">("list");
+  const [activeView, setActiveView] = useState<"list" | "metrics" | "cards">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<"pay" | "move" | "delete" | null>(null);
@@ -89,8 +89,8 @@ export default function FinanceClientPage({
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
   const [realtimeError, setRealtimeError] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
   const showMetrics = activeView === "metrics";
-  const showAccounts = activeView === "accounts";
   const showCards = activeView === "cards";
 
   // range opcional (quando vier from/to na URL)
@@ -286,6 +286,7 @@ export default function FinanceClientPage({
   const accumulatedBalance = previousCashBalance + balance;
 
   const todayStr = new Date().toISOString().split("T")[0];
+  const dueSoonLimitStr = format(addDays(new Date(), 3), "yyyy-MM-dd");
 
   const visibleItems = useMemo(() => {
     const query = normalizeForSearch(nameFilter);
@@ -335,6 +336,32 @@ export default function FinanceClientPage({
     [overdueItems],
   );
 
+  const dueSoonItems = useMemo(
+    () =>
+      items.filter(
+        (item) =>
+          !item.isSynthetic &&
+          item.status !== "paid" &&
+          item.status !== "moved" &&
+          item.date >= todayStr &&
+          item.date <= dueSoonLimitStr,
+      ),
+    [dueSoonLimitStr, items, todayStr],
+  );
+
+  const partialItems = useMemo(
+    () =>
+      items.filter(
+        (item) =>
+          !item.isSynthetic &&
+          item.status === "partial",
+      ),
+    [items],
+  );
+
+  const notificationCount =
+    overdueItems.length + dueSoonItems.length + partialItems.length;
+
   const clearFilters = () => {
     setNameFilter("");
     setStatusFilter("all");
@@ -354,6 +381,10 @@ export default function FinanceClientPage({
   useEffect(() => {
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
   }, [overdueItems.length]);
+
+  useEffect(() => {
+    if (notificationCount === 0) setShowNotifications(false);
+  }, [notificationCount]);
 
   useEffect(() => {
     if (!bulkMessage) return;
@@ -449,6 +480,61 @@ export default function FinanceClientPage({
       style: "currency",
       currency: "BRL",
     }).format(value);
+
+  const visibleExpenses = visibleItems.filter((item) => item.type === "expense");
+  const visibleIncomes = visibleItems.filter((item) => item.type === "income");
+  const visibleExpensesTotal = visibleExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const visibleIncomesTotal = visibleIncomes.reduce((sum, item) => sum + item.amount, 0);
+
+  const renderListSection = (
+    sectionItems: FinanceItem[],
+    title: string,
+    emptyLabel: string,
+    total: number,
+    tone: "income" | "expense",
+  ) => (
+    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+            {title}
+          </h2>
+          <p className="text-[11px] text-[var(--color-text-muted)]">
+            {t("listSectionCount", { count: sectionItems.length })}
+          </p>
+        </div>
+        <span
+          className={`text-sm font-bold ${
+            tone === "income" ? "finance-success-text" : "finance-danger-text"
+          }`}
+        >
+          {tone === "income" ? "+ " : "- "}
+          {currency(total)}
+        </span>
+      </div>
+
+      {sectionItems.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
+          {emptyLabel}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-1">
+          {sectionItems.map((item) => (
+            <FinanceItemCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              onEdit={handleEditItem}
+              selectionMode={selectionMode}
+              selected={selectedItems.has(item.id)}
+              onToggleSelection={handleToggleItemSelection}
+              compact
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
 
   return (
     <div className="relative pb-24" aria-busy={isRoutePending}>
@@ -560,23 +646,30 @@ export default function FinanceClientPage({
           </div>
         </div>
 
-        <div className="text-center mb-4">
+        <div className="mb-4 flex flex-col items-center text-center">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
           <h2 className="text-4xl font-extrabold">{currency(balance)}</h2>
           <button
             type="button"
             onClick={() => setShowAccumulatedBalance((prev) => !prev)}
-            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-blue-50 transition"
+            className="mt-2 inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-blue-50 transition"
             aria-expanded={showAccumulatedBalance}
           >
             <FiEye size={13} />
             {t("accumulatedBalanceToggle")}
           </button>
           {showAccumulatedBalance && (
-            <div className="mt-2 inline-flex flex-col items-center rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
-              <span>{t("previousBalanceLabel")}: {currency(previousCashBalance)}</span>
-              <span className="font-bold">
-                {t("accumulatedBalanceLabel")}: {currency(accumulatedBalance)}
+            <div className="mt-2 flex w-full max-w-sm flex-col items-stretch rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-blue-100">{t("previousBalanceLabel")}</span>
+                <span className="font-semibold">{currency(previousCashBalance)}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
+                <span className="text-blue-100">{t("accumulatedBalanceLabel")}</span>
+                <span className="font-bold">{currency(accumulatedBalance)}</span>
+              </div>
+              <span className="mt-1 text-left text-[10px] text-blue-100">
+                {t("accumulatedBalanceHint")}
               </span>
             </div>
           )}
@@ -635,7 +728,6 @@ export default function FinanceClientPage({
               {[
                 ["list", t("tabListLabel")],
                 ["metrics", t("tabMetricsLabel")],
-                ["accounts", t("tabAccountsLabel")],
                 ["cards", t("tabCardsLabel")],
               ].map(([view, label]) => (
                 <button
@@ -702,6 +794,58 @@ export default function FinanceClientPage({
                 )}
               </div>
             )}
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowNotifications((prev) => !prev)}
+                className={`relative p-2 rounded-xl border shadow-sm transition ${
+                  notificationCount > 0
+                    ? "finance-info-soft"
+                    : "finance-surface"
+                }`}
+                aria-label={t("notificationsTitle")}
+                title={t("notificationsTitle")}
+              >
+                <FiBell size={18} />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] finance-surface border shadow-lg rounded-xl p-3 z-50">
+                  <p className="text-xs font-bold text-[var(--color-text-primary)]">
+                    {t("notificationsTitle")}
+                  </p>
+                  {notificationCount === 0 ? (
+                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                      {t("notificationsEmpty")}
+                    </p>
+                  ) : (
+                    <div className="mt-2 space-y-2 text-xs">
+                      {overdueItems.length > 0 && (
+                        <p className="finance-warning-text font-semibold">
+                          {t("notificationOverdue", { count: overdueItems.length })}
+                        </p>
+                      )}
+                      {dueSoonItems.length > 0 && (
+                        <p className="text-[var(--color-accent-text)] font-semibold">
+                          {t("notificationDueSoon", { count: dueSoonItems.length })}
+                        </p>
+                      )}
+                      {partialItems.length > 0 && (
+                        <p className="text-[var(--color-text-secondary)] font-semibold">
+                          {t("notificationPartial", { count: partialItems.length })}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {currentBoard && isOwner && (
               <button
@@ -834,12 +978,6 @@ export default function FinanceClientPage({
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
         />
-      ) : showAccounts ? (
-        <FinanceAccountsPanel
-          items={items}
-          locale={locale}
-          onEdit={handleEditItem}
-        />
       ) : showCards ? (
         <FinanceCardsPanel
           cards={cards}
@@ -862,18 +1000,21 @@ export default function FinanceClientPage({
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-1">
-          {visibleItems.map((item) => (
-            <FinanceItemCard
-              key={item.id}
-              item={item}
-              locale={locale}
-              onEdit={handleEditItem}
-              selectionMode={selectionMode}
-              selected={selectedItems.has(item.id)}
-              onToggleSelection={handleToggleItemSelection}
-            />
-          ))}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {renderListSection(
+            visibleExpenses,
+            t("listExpensesTitle"),
+            t("listExpensesEmpty"),
+            visibleExpensesTotal,
+            "expense",
+          )}
+          {renderListSection(
+            visibleIncomes,
+            t("listIncomesTitle"),
+            t("listIncomesEmpty"),
+            visibleIncomesTotal,
+            "income",
+          )}
         </div>
       )}
 

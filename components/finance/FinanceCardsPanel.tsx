@@ -141,6 +141,9 @@ export default function FinanceCardsPanel({
         <h2 className="text-sm font-bold text-[var(--color-text-primary)] mb-3">
           {t("cardCreateTitle")}
         </h2>
+        <p className="-mt-2 mb-3 text-xs text-[var(--color-text-muted)]">
+          {t("cardProfileScopeHint")}
+        </p>
 
         {error && (
           <p className="text-xs finance-danger-text mb-3">{error}</p>
@@ -151,7 +154,6 @@ export default function FinanceCardsPanel({
           action={async (fd) => {
             setError(null);
             fd.set("locale", locale);
-            if (boardId) fd.set("boardId", boardId);
 
             if (editingCard) fd.set("id", editingCard.id);
 

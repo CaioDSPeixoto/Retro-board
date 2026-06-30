@@ -194,22 +194,20 @@ export async function getFinanceCardsData(
   const sessionUserId = await getSession();
   if (!sessionUserId) return [];
 
-  let queryRef: any = adminDb.collection("finance_cards");
-
   if (boardId) {
     const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
     if (!allowed) return [];
-    queryRef = queryRef.where("boardId", "==", boardId);
-  } else {
-    queryRef = queryRef.where("userId", "==", sessionUserId);
   }
+
+  const queryRef = adminDb
+    .collection("finance_cards")
+    .where("userId", "==", sessionUserId);
 
   const snap = await queryRef.get();
   const cards: FinanceCard[] = [];
 
   snap.forEach((doc: any) => {
     const data = doc.data() as any;
-    if (!boardId && data.boardId) return;
     cards.push({
       id: doc.id,
       userId: data.userId,

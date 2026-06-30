@@ -32,6 +32,7 @@ type Props = {
   selectionMode?: boolean;
   selected?: boolean;
   onToggleSelection?: (itemId: string) => void;
+  compact?: boolean;
 };
 
 export default function FinanceItemCard({
@@ -41,6 +42,7 @@ export default function FinanceItemCard({
   selectionMode,
   selected,
   onToggleSelection,
+  compact = false,
 }: Props) {
   const router = useRouter();
   const t = useTranslations("Finance");
@@ -251,7 +253,7 @@ export default function FinanceItemCard({
     <>
       {/* CARD */}
       <div
-        className={`p-4 rounded-xl shadow-sm border flex items-center justify-between gap-3 mb-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
+        className={`${compact ? "p-3 mb-2" : "p-4 mb-3"} rounded-xl shadow-sm border flex items-center justify-between gap-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
           ? "finance-warning-soft"
           : "bg-[var(--color-surface)] border-[var(--color-border)]"
           } ${selected ? "ring-2 ring-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)]" : ""}`}
@@ -265,7 +267,7 @@ export default function FinanceItemCard({
           </div>
         ) : (
           <div
-            className={`p-3 rounded-full ${isIncome
+            className={`${compact ? "p-2" : "p-3"} rounded-full ${isIncome
               ? "finance-success-soft"
               : "finance-danger-soft"
               }`}
@@ -276,7 +278,7 @@ export default function FinanceItemCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-[var(--color-text-primary)] truncate">{item.title}</h3>
+            <h3 className={`${compact ? "text-sm" : ""} font-bold text-[var(--color-text-primary)] truncate`}>{item.title}</h3>
 
             {item.isFixed && (
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full finance-info-soft border">
@@ -338,7 +340,7 @@ export default function FinanceItemCard({
 
         <div className="text-right flex flex-col items-end gap-1">
           <span
-            className={`font-bold ${isIncome ? "finance-success-text" : "finance-danger-text"
+            className={`${compact ? "text-sm" : ""} font-bold ${isIncome ? "finance-success-text" : "finance-danger-text"
               }`}
           >
             {isIncome ? "+ " : "- "}

@@ -367,7 +367,6 @@ export async function createFinanceCard(formData: FormData) {
   const limitRaw = String(formData.get("limit") || "").trim();
   const closingDayRaw = String(formData.get("closingDay") || "").trim();
   const dueDayRaw = String(formData.get("dueDay") || "").trim();
-  const boardIdRaw = String(formData.get("boardId") || "").trim();
 
   if (!name) return { error: "Nome do cartão é obrigatório" };
   if (lastDigits && !/^\d{1,4}$/.test(lastDigits)) {
@@ -388,14 +387,6 @@ export async function createFinanceCard(formData: FormData) {
     return { error: "Dia de vencimento inválido" };
   }
 
-  let boardId: string | undefined;
-  if (boardIdRaw) {
-    const board = await getBoard(boardIdRaw);
-    if (!board) return { error: "Quadro não encontrado" };
-    if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
-    boardId = boardIdRaw;
-  }
-
   await adminDb.collection("finance_cards").add({
     userId: sessionUser,
     name,
@@ -406,7 +397,6 @@ export async function createFinanceCard(formData: FormData) {
     ...(limit !== undefined ? { limit } : {}),
     ...(closingDay !== undefined ? { closingDay } : {}),
     ...(dueDay !== undefined ? { dueDay } : {}),
-    ...(boardId ? { boardId } : {}),
   });
 
   revalidatePath(`/${locale}/tools/finance`);
@@ -452,10 +442,7 @@ export async function updateFinanceCard(formData: FormData) {
   if (!snap.exists) return { error: "Cartão não encontrado" };
 
   const existing = snap.data() as any;
-  if (existing.boardId) {
-    const board = await getBoard(existing.boardId);
-    if (!board || !isMember(board, sessionUser)) return { error: "Sem permissão" };
-  } else if (existing.userId !== sessionUser) {
+  if (existing.userId !== sessionUser) {
     return { error: "Sem permissão" };
   }
 
@@ -485,10 +472,7 @@ export async function deleteFinanceCard(formData: FormData) {
   if (!snap.exists) return { error: "Cartão não encontrado" };
 
   const existing = snap.data() as any;
-  if (existing.boardId) {
-    const board = await getBoard(existing.boardId);
-    if (!board || !isMember(board, sessionUser)) return { error: "Sem permissão" };
-  } else if (existing.userId !== sessionUser) {
+  if (existing.userId !== sessionUser) {
     return { error: "Sem permissão" };
   }
 
