@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { canAccessFinanceBoard } from "@/lib/finance/server";
+import { mapFinanceCategory, mapFinanceItem } from "@/lib/finance/schema";
 
 export async function deleteCategory(category: string, locale: string, boardId?: string) {
     const t = await getTranslations({ locale, namespace: "Finance" });
@@ -45,7 +46,7 @@ export async function deleteCategory(category: string, locale: string, boardId?:
             if (boardId) {
                 inUse = true;
             } else {
-                inUse = activeItemsSnap.docs.some(d => !d.data().boardId);
+                inUse = activeItemsSnap.docs.some((doc) => !mapFinanceItem(doc).boardId);
             }
         }
 
@@ -74,10 +75,10 @@ export async function deleteCategory(category: string, locale: string, boardId?:
         let deletedCount = 0;
 
         categorySnap.docs.forEach((doc) => {
-            const data = doc.data();
+            const categoryData = mapFinanceCategory(doc);
             // Se estamos deletando categoria de um board específico, a query já filtrou.
             // Se estamos deletando "pessoal" (sem boardId), precisamos garantir que não deletamos a do board se tiver mesmo nome (colisão).
-            if (!boardId && data.boardId) return;
+            if (!boardId && categoryData.boardId) return;
 
             batch.delete(doc.ref);
             deletedCount++;
@@ -139,7 +140,7 @@ export async function updateCategory(
             if (boardId) {
                 exists = true;
             } else {
-                exists = duplicateSnap.docs.some(d => !d.data().boardId);
+                exists = duplicateSnap.docs.some((doc) => !mapFinanceCategory(doc).boardId);
             }
         }
 
@@ -167,7 +168,7 @@ export async function updateCategory(
         // OR just update the items. Current logic creates docs for new categories, so "old" might be just a string usage.
         // If doc exists, rename it.
         oldCatSnap.docs.forEach(doc => {
-            if (!boardId && doc.data().boardId) return; // Skip if collision with board item in personal view (edge case)
+            if (!boardId && mapFinanceCategory(doc).boardId) return; // Skip if collision with board item in personal view (edge case)
             batch.update(doc.ref, { name: trimmedNew });
         });
 
@@ -184,7 +185,7 @@ export async function updateCategory(
 
         const itemsSnap = await itemsQuery.get();
         itemsSnap.docs.forEach(doc => {
-            if (!boardId && doc.data().boardId) return; // Skip board items if in personal mode
+            if (!boardId && mapFinanceItem(doc).boardId) return; // Skip board items if in personal mode
             batch.update(doc.ref, { category: trimmedNew });
         });
 

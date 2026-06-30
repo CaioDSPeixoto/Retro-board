@@ -13,6 +13,7 @@ import {
   createMovedFinanceItemPayload,
   mapFinanceBoard,
   mapFinanceCard,
+  mapFinanceCategory,
   mapFinanceFixedTemplate,
   mapFinanceItem,
 } from "@/lib/finance/schema";
@@ -127,7 +128,7 @@ export async function createCategory(name: string, locale: string, boardId?: str
       exists = true;
     } else {
       // Verifica se algum dos docs encontrados também não tem boardId.
-      exists = snap.docs.some(d => !d.data().boardId);
+      exists = snap.docs.some((doc) => !mapFinanceCategory(doc).boardId);
     }
   }
 
