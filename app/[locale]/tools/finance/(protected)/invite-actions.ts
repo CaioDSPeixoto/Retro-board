@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceBoardInvite } from "@/types/finance";
 import { getTranslations } from "next-intl/server";
+import { mapFinanceBoard, mapFinanceBoardInvite } from "@/lib/finance/schema";
 
 async function getMyEmail(sessionUser: string) {
   const user = await adminAuth.getUser(sessionUser);
@@ -42,7 +43,7 @@ export async function listInvitesForMe(locale: string) {
     .where("email", "==", myEmail)
     .get();
 
-  const invites = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoardInvite[];
+  const invites = snap.docs.map(mapFinanceBoardInvite);
   return { invites };
 }
 
@@ -58,7 +59,7 @@ export async function listOwnerRequests(locale: string) {
     .where("ownerId", "==", sessionUser)
     .get();
 
-  const invites = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as FinanceBoardInvite[];
+  const invites = snap.docs.map(mapFinanceBoardInvite);
   return { invites };
 }
 
@@ -73,7 +74,7 @@ export async function sendInviteByEmail(boardId: string, email: string, locale: 
   const boardSnap = await adminDb.doc(`finance_boards/${boardId}`).get();
   if (!boardSnap.exists) return { error: t("errors.boardNotFound") };
 
-  const board = { id: boardSnap.id, ...(boardSnap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(boardSnap);
   if (board.ownerId !== sessionUser) return { error: t("errors.onlyOwnerCanInvite") };
 
   await adminDb.collection("finance_board_invites").add({
@@ -110,7 +111,7 @@ export async function requestJoinByCode(boardIdOrCode: string, locale: string) {
     boardSnap = boardByInviteCode.docs[0];
   }
 
-  const board = { id: boardSnap.id, ...(boardSnap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(boardSnap);
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];
 
   if (board.ownerId === sessionUser || members.includes(sessionUser)) {
@@ -152,7 +153,7 @@ export async function respondInvite(inviteId: string, action: "accept" | "reject
   const inviteSnap = await inviteRef.get();
   if (!inviteSnap.exists) return { error: t("errors.inviteNotFound") };
 
-  const invite = { id: inviteSnap.id, ...(inviteSnap.data() as any) } as FinanceBoardInvite;
+  const invite = mapFinanceBoardInvite(inviteSnap);
 
   const myEmail = await getMyEmail(sessionUser);
 
@@ -182,7 +183,7 @@ export async function respondInvite(inviteId: string, action: "accept" | "reject
   const boardSnap = await boardRef.get();
   if (!boardSnap.exists) return { error: t("errors.boardNotFound") };
 
-  const board = { id: boardSnap.id, ...(boardSnap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(boardSnap);
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];
 
   let memberIdToAdd: string | null = null;

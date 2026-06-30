@@ -14,6 +14,7 @@ import { getMonthRange } from "@/lib/finance/utils";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Spinner from "@/components/ui/Spinner";
+import { mapFinanceItem } from "@/lib/finance/schema";
 
 type Props = {
   cards: FinanceCard[];
@@ -70,36 +71,7 @@ export default function FinanceCardsPanel({
       (snapshot) => {
         const docs: FinanceItem[] = [];
         snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as any;
-          docs.push({
-            id: docSnap.id,
-            userId: data.userId,
-            boardId: data.boardId,
-            title: data.title,
-            amount: data.amount,
-            date: data.date,
-            type: data.type,
-            status: data.status,
-            category: data.category,
-            createdAt: data.createdAt,
-            isFixed: data.isFixed,
-            isSynthetic: data.isSynthetic,
-            createdBy: data.createdBy,
-            createdByName: data.createdByName,
-            paidAmount: data.paidAmount,
-            openAmount: data.openAmount,
-            carriedFromMonth: data.carriedFromMonth,
-            carriedFromItemId: data.carriedFromItemId,
-            fixedTemplateId: data.fixedTemplateId,
-            installmentGroupId: data.installmentGroupId,
-            installmentIndex: data.installmentIndex,
-            installmentTotal: data.installmentTotal,
-            originalAmount: data.originalAmount,
-            cardId: data.cardId,
-            cardName: data.cardName,
-            cardMode: data.cardMode,
-            cardLastDigits: data.cardLastDigits,
-          });
+          docs.push(mapFinanceItem(docSnap));
         });
         setError(null);
         setCardItems(docs);

@@ -1,4 +1,4 @@
-﻿// app/[locale]/tools/finance/(protected)/actions.ts
+// app/[locale]/tools/finance/(protected)/actions.ts
 "use server";
 
 import { adminDb } from "@/lib/firebase-admin";
@@ -9,13 +9,20 @@ import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/consta
 import { getMonthRange } from "@/lib/finance/utils";
 import { getTranslations } from "next-intl/server";
 import { FieldValue } from "firebase-admin/firestore";
+import {
+  createMovedFinanceItemPayload,
+  mapFinanceBoard,
+  mapFinanceCard,
+  mapFinanceFixedTemplate,
+  mapFinanceItem,
+} from "@/lib/finance/schema";
 
 /* ================= helpers ================= */
 
 async function getBoard(boardId: string): Promise<FinanceBoard | null> {
   const snap = await adminDb.collection("finance_boards").doc(boardId).get();
   if (!snap.exists) return null;
-  return { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
+  return mapFinanceBoard(snap);
 }
 
 function isMember(board: FinanceBoard, userId: string) {
@@ -177,7 +184,7 @@ export async function renameFinanceBoard(
   const snap = await ref.get();
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
-  const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
     return { error: "Somente o dono pode renomear" };
 
@@ -199,7 +206,7 @@ export async function deleteFinanceBoard(
   const snap = await ref.get();
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
-  const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
     return { error: "Somente o dono pode excluir" };
 
@@ -254,7 +261,7 @@ export async function removeMemberFromBoard(
   const snap = await ref.get();
   if (!snap.exists) return { error: "Quadro não encontrado" };
 
-  const board = { id: snap.id, ...(snap.data() as any) } as FinanceBoard;
+  const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
     return { error: "Somente o dono pode remover membros" };
 
@@ -309,10 +316,10 @@ export async function ensureFixedItemsForCurrentMonth(
   let created = 0;
 
   for (const doc of templatesSnap.docs) {
-    const data = doc.data() as any;
-    if (boardId ? data.boardId !== boardId : data.boardId) continue;
+    const template = mapFinanceFixedTemplate(doc);
+    if (boardId ? template.boardId !== boardId : template.boardId) continue;
 
-    const day = Math.min(Math.max(Number(data.day || 1), 1), lastDay);
+    const day = Math.min(Math.max(Number(template.day || 1), 1), lastDay);
     const date = `${yearStr}-${monthStr}-${String(day).padStart(2, "0")}`;
     const itemRef = adminDb
       .collection("finance_items")
@@ -328,13 +335,13 @@ export async function ensureFixedItemsForCurrentMonth(
     if (!legacyExisting.empty) continue;
 
     const newItem: Omit<FinanceItem, "id"> = {
-      userId: boardId ? data.userId || sessionUser : sessionUser,
-      title: data.title,
-      amount: Number(data.amount || 0),
+      userId: boardId ? template.userId || sessionUser : sessionUser,
+      title: template.title,
+      amount: Number(template.amount || 0),
       date,
-      type: data.type === "income" ? "income" : "expense",
+      type: template.type,
       status: "pending",
-      category: data.category || ACCOUNT_FIXED_CATEGORY,
+      category: template.category || ACCOUNT_FIXED_CATEGORY,
       createdAt: nowIso,
       isFixed: true,
       isSynthetic: false,
@@ -441,7 +448,7 @@ export async function updateFinanceCard(formData: FormData) {
   const snap = await ref.get();
   if (!snap.exists) return { error: "Cartão não encontrado" };
 
-  const existing = snap.data() as any;
+  const existing = mapFinanceCard(snap);
   if (existing.userId !== sessionUser) {
     return { error: "Sem permissão" };
   }
@@ -471,7 +478,7 @@ export async function deleteFinanceCard(formData: FormData) {
   const snap = await ref.get();
   if (!snap.exists) return { error: "Cartão não encontrado" };
 
-  const existing = snap.data() as any;
+  const existing = mapFinanceCard(snap);
   if (existing.userId !== sessionUser) {
     return { error: "Sem permissão" };
   }
@@ -702,7 +709,7 @@ export async function updateFinanceItem(formData: FormData) {
   const snap = await ref.get();
   if (!snap.exists) return { error: "Item não encontrado" };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: t("errors.unauthorized") };
 
@@ -747,7 +754,7 @@ export async function deleteFinanceItem(id: string, locale: string) {
   const snap = await ref.get();
   if (!snap.exists) return { error: "Item não encontrado" };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
 
@@ -797,7 +804,7 @@ export async function bulkFinanceItemsAction(
       continue;
     }
 
-    const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+    const existing = mapFinanceItem(snap);
     const allowed = await canEditItem(existing, sessionUser);
     if (!allowed || existing.isSynthetic) {
       skipped++;
@@ -847,7 +854,6 @@ export async function bulkFinanceItemsAction(
       nextDate.setMonth(nextDate.getMonth() + 1);
       const newDateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
       const newRef = adminDb.collection("finance_items").doc();
-      const { fixedTemplateId: _fixedTemplateId, ...carriedData } = snap.data() as any;
 
       await commitIfNeeded(2);
       batch.update(ref, {
@@ -855,17 +861,7 @@ export async function bulkFinanceItemsAction(
         paidAmount: 0,
         originalAmount: existing.originalAmount ?? existing.amount,
       });
-      batch.set(newRef, {
-        ...carriedData,
-        date: newDateStr,
-        status: "pending" as FinanceStatus,
-        paidAmount: 0,
-        openAmount: existing.amount,
-        createdAt: nowIso,
-        carriedFromMonth: (existing.date || "").slice(0, 7),
-        carriedFromItemId: existing.id,
-        isSynthetic: false,
-      });
+      batch.set(newRef, createMovedFinanceItemPayload(existing, newDateStr, nowIso));
       registerWrite(2);
       changed++;
     }
@@ -889,7 +885,7 @@ export async function toggleStatus(
   const snap = await ref.get();
   if (!snap.exists) return { error: "Item não encontrado" };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
 
@@ -913,7 +909,7 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
   const snap = await ref.get();
   if (!snap.exists) return { error: t("errors.itemNotFound") };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: t("errors.unauthorized") };
 
@@ -953,7 +949,7 @@ export async function applyPaymentToFinanceItem(
   const snap = await ref.get();
   if (!snap.exists) return { error: "Item não encontrado" };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
 
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: "Unauthorized" };
@@ -1151,7 +1147,7 @@ export async function getInstallmentGroupItems(id: string, locale: string) {
   const snap = await ref.get();
   if (!snap.exists) return { error: t("errors.itemNotFound"), items: [] };
 
-  const existing = { id: snap.id, ...(snap.data() as any) } as FinanceItem;
+  const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
   if (!allowed) return { error: t("errors.unauthorized"), items: [] };
   if (!existing.installmentGroupId) return { items: [existing] };
@@ -1161,38 +1157,7 @@ export async function getInstallmentGroupItems(id: string, locale: string) {
     .where("installmentGroupId", "==", existing.installmentGroupId)
     .get();
 
-  const rawItems = groupSnap.docs.map((doc) => {
-    const data = doc.data() as any;
-    return {
-      id: doc.id,
-      userId: data.userId,
-      boardId: data.boardId,
-      title: data.title,
-      amount: data.amount,
-      date: data.date,
-      type: data.type,
-      status: data.status,
-      category: data.category,
-      createdAt: data.createdAt,
-      isFixed: data.isFixed,
-      isSynthetic: data.isSynthetic,
-      createdBy: data.createdBy,
-      createdByName: data.createdByName,
-      paidAmount: data.paidAmount,
-      openAmount: data.openAmount,
-      carriedFromMonth: data.carriedFromMonth,
-      carriedFromItemId: data.carriedFromItemId,
-      fixedTemplateId: data.fixedTemplateId,
-      installmentGroupId: data.installmentGroupId,
-      installmentIndex: data.installmentIndex,
-      installmentTotal: data.installmentTotal,
-      originalAmount: data.originalAmount,
-      cardId: data.cardId,
-      cardName: data.cardName,
-      cardMode: data.cardMode,
-      cardLastDigits: data.cardLastDigits,
-    } as FinanceItem;
-  });
+  const rawItems = groupSnap.docs.map(mapFinanceItem);
 
   const items = rawItems.filter((item) => {
     if (existing.boardId) return item.boardId === existing.boardId;

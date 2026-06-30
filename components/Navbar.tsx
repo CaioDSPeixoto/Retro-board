@@ -5,6 +5,7 @@ import packageInfo from '../package.json';
 import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
 import { cookies } from "next/headers";
+import FinanceNotificationBell from "@/components/finance/FinanceNotificationBell";
 
 export default async function Navbar({ locale }: { locale: string }) {
   const t = await getTranslations("Navbar");
@@ -36,6 +37,7 @@ export default async function Navbar({ locale }: { locale: string }) {
 
         {/* RIGHT */}
         <div className="flex items-center gap-2">
+          {hasFinanceSession && <FinanceNotificationBell />}
           <ThemeToggle />
           <UserMenu locale={locale} isLoggedIn={hasFinanceSession} appVersion={appVersion} />
         </div>

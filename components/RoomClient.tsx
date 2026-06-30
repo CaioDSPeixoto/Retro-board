@@ -20,11 +20,12 @@ import { useTranslations } from "next-intl";
 import ExportButtons from "@/components/ExportButtons";
 import NameModal from "@/components/NameModal";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
-
-type RoomData = {
-  requireName: boolean;
-  roomName: string;
-};
+import {
+  createRetroCardPayload,
+  mapRetroCard,
+  mapRoom,
+  type RoomData,
+} from "@/lib/retroboard/schema";
 
 type Props = {
   roomId: string;
@@ -64,10 +65,10 @@ export default function RoomClient({ roomId, locale }: Props) {
         return;
       }
 
-      const data = snap.data();
+      const data = mapRoom(snap);
 
       setRoomData({
-        requireName: data.requireName ?? true,
+        ...data,
         roomName: data.roomName || t("defaults.roomName"),
       });
 
@@ -108,9 +109,7 @@ export default function RoomClient({ roomId, locale }: Props) {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data = snapshot.docs.map(
-          (d) => ({ id: d.id, ...d.data() } as Card)
-        );
+        const data = snapshot.docs.map(mapRetroCard);
 
         setRoomError("");
         setCards(data);
@@ -125,14 +124,15 @@ export default function RoomClient({ roomId, locale }: Props) {
   const addCard = async (category: Card["category"], text: string) => {
     if (!text.trim()) return;
 
-    await addDoc(collection(db, "rooms", roomId, "cards"), {
-      category,
-      text,
-      likes: 0,
-      dislikes: 0,
-      author: userName || t("defaults.anonymous"),
-      createdAt: new Date(),
-    });
+    await addDoc(
+      collection(db, "rooms", roomId, "cards"),
+      createRetroCardPayload({
+        category,
+        text,
+        author: userName || t("defaults.anonymous"),
+        createdAt: new Date(),
+      }),
+    );
   };
 
   const vote = async (id: string, type: "likes" | "dislikes") => {

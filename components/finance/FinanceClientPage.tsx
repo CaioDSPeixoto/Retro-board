@@ -2,10 +2,9 @@
 
 import type { FinanceBoard, FinanceCard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
-import { format, addDays, addMonths, subMonths, parseISO } from "date-fns";
+import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  FiBell,
   FiChevronLeft,
   FiChevronRight,
   FiPlus,
@@ -32,6 +31,7 @@ import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
 import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
 import { getFinanceTotals, getOpenAmount } from "@/lib/finance/calculations";
+import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
@@ -89,7 +89,6 @@ export default function FinanceClientPage({
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
   const [realtimeError, setRealtimeError] = useState<string | null>(null);
-  const [showNotifications, setShowNotifications] = useState(false);
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
 
@@ -148,36 +147,7 @@ export default function FinanceClientPage({
       (snapshot) => {
         const docs: FinanceItem[] = [];
         snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as any;
-          docs.push({
-            id: docSnap.id,
-            userId: data.userId,
-            boardId: data.boardId,
-            title: data.title,
-            amount: data.amount,
-            date: data.date,
-            type: data.type,
-            status: data.status,
-            category: data.category,
-            createdAt: data.createdAt,
-            isFixed: data.isFixed,
-            isSynthetic: data.isSynthetic,
-            createdBy: data.createdBy,
-            createdByName: data.createdByName,
-            paidAmount: data.paidAmount,
-            openAmount: data.openAmount,
-            carriedFromMonth: data.carriedFromMonth,
-            carriedFromItemId: data.carriedFromItemId,
-            fixedTemplateId: data.fixedTemplateId,
-            installmentGroupId: data.installmentGroupId,
-            installmentIndex: data.installmentIndex,
-            installmentTotal: data.installmentTotal,
-            originalAmount: data.originalAmount,
-            cardId: data.cardId,
-            cardName: data.cardName,
-            cardMode: data.cardMode,
-            cardLastDigits: data.cardLastDigits,
-          });
+          docs.push(mapFinanceItem(docSnap));
         });
 
         docs.sort((a, b) => {
@@ -286,7 +256,6 @@ export default function FinanceClientPage({
   const accumulatedBalance = previousCashBalance + balance;
 
   const todayStr = new Date().toISOString().split("T")[0];
-  const dueSoonLimitStr = format(addDays(new Date(), 3), "yyyy-MM-dd");
 
   const visibleItems = useMemo(() => {
     const query = normalizeForSearch(nameFilter);
@@ -336,32 +305,6 @@ export default function FinanceClientPage({
     [overdueItems],
   );
 
-  const dueSoonItems = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          !item.isSynthetic &&
-          item.status !== "paid" &&
-          item.status !== "moved" &&
-          item.date >= todayStr &&
-          item.date <= dueSoonLimitStr,
-      ),
-    [dueSoonLimitStr, items, todayStr],
-  );
-
-  const partialItems = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          !item.isSynthetic &&
-          item.status === "partial",
-      ),
-    [items],
-  );
-
-  const notificationCount =
-    overdueItems.length + dueSoonItems.length + partialItems.length;
-
   const clearFilters = () => {
     setNameFilter("");
     setStatusFilter("all");
@@ -381,10 +324,6 @@ export default function FinanceClientPage({
   useEffect(() => {
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
   }, [overdueItems.length]);
-
-  useEffect(() => {
-    if (notificationCount === 0) setShowNotifications(false);
-  }, [notificationCount]);
 
   useEffect(() => {
     if (!bulkMessage) return;
@@ -794,58 +733,6 @@ export default function FinanceClientPage({
                 )}
               </div>
             )}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowNotifications((prev) => !prev)}
-                className={`relative p-2 rounded-xl border shadow-sm transition ${
-                  notificationCount > 0
-                    ? "finance-info-soft"
-                    : "finance-surface"
-                }`}
-                aria-label={t("notificationsTitle")}
-                title={t("notificationsTitle")}
-              >
-                <FiBell size={18} />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
-                    {notificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] finance-surface border shadow-lg rounded-xl p-3 z-50">
-                  <p className="text-xs font-bold text-[var(--color-text-primary)]">
-                    {t("notificationsTitle")}
-                  </p>
-                  {notificationCount === 0 ? (
-                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                      {t("notificationsEmpty")}
-                    </p>
-                  ) : (
-                    <div className="mt-2 space-y-2 text-xs">
-                      {overdueItems.length > 0 && (
-                        <p className="finance-warning-text font-semibold">
-                          {t("notificationOverdue", { count: overdueItems.length })}
-                        </p>
-                      )}
-                      {dueSoonItems.length > 0 && (
-                        <p className="text-[var(--color-accent-text)] font-semibold">
-                          {t("notificationDueSoon", { count: dueSoonItems.length })}
-                        </p>
-                      )}
-                      {partialItems.length > 0 && (
-                        <p className="text-[var(--color-text-secondary)] font-semibold">
-                          {t("notificationPartial", { count: partialItems.length })}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
 
             {currentBoard && isOwner && (
               <button

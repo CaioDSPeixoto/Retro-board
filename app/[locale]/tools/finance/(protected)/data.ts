@@ -6,6 +6,12 @@ import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange } from "@/lib/finance/utils";
 import { getRealizedBalance } from "@/lib/finance/calculations";
 import { canAccessFinanceBoard, mapFinanceItem } from "@/lib/finance/server";
+import {
+  mapFinanceBoard,
+  mapFinanceBoardInvite,
+  mapFinanceCard,
+  mapFinanceCategory,
+} from "@/lib/finance/schema";
 
 /* ================= utils ================= */
 
@@ -21,22 +27,7 @@ export async function getInvitesData(userId: string): Promise<FinanceBoardInvite
     .where("userId", "==", userId)
     .get();
 
-  const invites: FinanceBoardInvite[] = snap.docs.map((doc) => {
-    const data = doc.data() as any;
-    return {
-      id: doc.id,
-      boardId: data.boardId,
-      boardName: data.boardName,
-      ownerId: data.ownerId,
-      type: data.type,
-      email: data.email,
-      userId: data.userId,
-      status: data.status,
-      createdBy: data.createdBy,
-      createdAt: data.createdAt,
-      respondedAt: data.respondedAt,
-    };
-  });
+  const invites: FinanceBoardInvite[] = snap.docs.map(mapFinanceBoardInvite);
 
   return invites;
 }
@@ -58,17 +49,7 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
 
   const boardsById = new Map<string, FinanceBoard>();
   const addBoard = (doc: any) => {
-    const data = doc.data() as any;
-    boardsById.set(doc.id, {
-      id: doc.id,
-      name: data.name,
-      ownerId: data.ownerId,
-      memberIds: Array.isArray(data.memberIds) ? data.memberIds : [],
-      createdAt: data.createdAt ?? "",
-      isPersonal: data.isPersonal ?? false,
-      code: data.code,
-      inviteCode: data.inviteCode,
-    });
+    boardsById.set(doc.id, mapFinanceBoard(doc));
   };
 
   memberSnap.forEach(addBoard);
@@ -100,16 +81,14 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
 
   const userCats = new Set<string>();
   snap.forEach((doc: any) => {
-    const data = doc.data() as any;
+    const category = mapFinanceCategory(doc);
     // Se pedimos boardId, o filtro do banco já garantiu.
     // Se não pedimos boardId, só queremos as que não têm boardId.
     if (!boardId) {
-      if (data.boardId) return;
+      if (category.boardId) return;
     }
 
-    if (typeof data.name === "string" && data.name.trim()) {
-      userCats.add(data.name.trim());
-    }
+    if (category.name) userCats.add(category.name);
   });
 
   const all = new Set<string>([...BUILTIN_CATEGORIES, ...userCats]);
@@ -207,20 +186,7 @@ export async function getFinanceCardsData(
   const cards: FinanceCard[] = [];
 
   snap.forEach((doc: any) => {
-    const data = doc.data() as any;
-    cards.push({
-      id: doc.id,
-      userId: data.userId,
-      boardId: data.boardId,
-      name: data.name,
-      mode: data.mode,
-      lastDigits: data.lastDigits,
-      limit: data.limit,
-      closingDay: data.closingDay,
-      dueDay: data.dueDay,
-      createdAt: data.createdAt,
-      createdBy: data.createdBy,
-    });
+    cards.push(mapFinanceCard(doc));
   });
 
   return cards.sort((a, b) => a.name.localeCompare(b.name));

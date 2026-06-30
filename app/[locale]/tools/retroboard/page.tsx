@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
+import { createRoomPayload } from "@/lib/retroboard/schema";
 
 export default function RetroboardPage() {
   const t = useTranslations("Retroboard");
@@ -44,12 +45,12 @@ export default function RetroboardPage() {
     try {
       setIsLoading(true);
 
-      await setDoc(doc(db, "rooms", roomId), {
+      await setDoc(doc(db, "rooms", roomId), createRoomPayload({
         roomName,
         requireName,
         createdAt: serverTimestamp(),
         expiresAt,
-      });
+      }));
 
       if (userName.trim()) localStorage.setItem("userName", userName.trim());
 
