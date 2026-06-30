@@ -10,7 +10,6 @@ export async function getSession() {
     const decoded = await adminAuth.verifySessionCookie(session.value, true);
     return decoded.uid;
   } catch {
-    cookieStore.delete("finance_session");
     return null;
   }
 }
