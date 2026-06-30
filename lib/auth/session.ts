@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { adminAuth } from "@/lib/firebase-admin";
 
 export async function getSession() {
   const cookieStore = await cookies();
@@ -7,6 +6,7 @@ export async function getSession() {
   if (!session?.value) return null;
 
   try {
+    const { adminAuth } = await import("@/lib/firebase-admin-auth");
     const decoded = await adminAuth.verifySessionCookie(session.value, true);
     return decoded.uid;
   } catch {

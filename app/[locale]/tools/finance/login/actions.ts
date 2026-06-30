@@ -2,7 +2,7 @@
 
 import { createFinanceSession } from "@/lib/auth/login";
 import { destroySession } from "@/lib/auth/logout";
-import { adminAuth } from "@/lib/firebase-admin";
+import { adminAuth } from "@/lib/firebase-admin-auth";
 import { redirect } from "next/navigation";
 
 export async function loginAction(idToken: string, locale: string) {

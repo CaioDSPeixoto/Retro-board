@@ -1,6 +1,7 @@
 "use server";
 
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { adminAuth } from "@/lib/firebase-admin-auth";
+import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceBoardInvite } from "@/types/finance";
