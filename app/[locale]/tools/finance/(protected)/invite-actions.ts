@@ -99,8 +99,16 @@ export async function requestJoinByCode(boardIdOrCode: string, locale: string) {
   const code = boardIdOrCode.trim();
   if (!code) return { error: t("errors.invalidCode") };
 
-  const boardSnap = await adminDb.doc(`finance_boards/${code}`).get();
-  if (!boardSnap.exists) return { error: t("errors.boardNotFound") };
+  let boardSnap = await adminDb.doc(`finance_boards/${code}`).get();
+  if (!boardSnap.exists) {
+    const boardByInviteCode = await adminDb
+      .collection("finance_boards")
+      .where("inviteCode", "==", code.toUpperCase())
+      .limit(1)
+      .get();
+    if (boardByInviteCode.empty) return { error: t("errors.boardNotFound") };
+    boardSnap = boardByInviteCode.docs[0];
+  }
 
   const board = { id: boardSnap.id, ...(boardSnap.data() as any) } as FinanceBoard;
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];

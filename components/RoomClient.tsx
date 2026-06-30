@@ -39,6 +39,7 @@ export default function RoomClient({ roomId, locale }: Props) {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [userName, setUserName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
+  const [roomError, setRoomError] = useState("");
 
   const [isMobile, setIsMobile] = useState(false);
   const [origin, setOrigin] = useState("");
@@ -50,7 +51,13 @@ export default function RoomClient({ roomId, locale }: Props) {
 
   useEffect(() => {
     const fetchRoom = async () => {
-      const snap = await getDoc(doc(db, "rooms", roomId));
+      let snap;
+      try {
+        snap = await getDoc(doc(db, "rooms", roomId));
+      } catch {
+        setRoomError(t("errors.loadRoom"));
+        return;
+      }
 
       if (!snap.exists()) {
         router.push(`/${locale}`);
@@ -87,21 +94,30 @@ export default function RoomClient({ roomId, locale }: Props) {
   useEffect(() => {
     const cached = localStorage.getItem(`room:${roomId}:cards`);
     if (cached) {
-      setCards(JSON.parse(cached));
+      try {
+        setCards(JSON.parse(cached));
+      } catch {
+        localStorage.removeItem(`room:${roomId}:cards`);
+      }
     }
   }, [roomId]);
 
   useEffect(() => {
     const q = query(collection(db, "rooms", roomId, "cards"));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(
-        (d) => ({ id: d.id, ...d.data() } as Card)
-      );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map(
+          (d) => ({ id: d.id, ...d.data() } as Card)
+        );
 
-      setCards(data);
-      localStorage.setItem(`room:${roomId}:cards`, JSON.stringify(data));
-    });
+        setRoomError("");
+        setCards(data);
+        localStorage.setItem(`room:${roomId}:cards`, JSON.stringify(data));
+      },
+      () => setRoomError(t("errors.realtime")),
+    );
 
     return () => unsubscribe();
   }, [roomId]);
@@ -161,6 +177,12 @@ export default function RoomClient({ roomId, locale }: Props) {
             {roomData.roomName}
           </span>
         </header>
+
+        {roomError && (
+          <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+            {roomError}
+          </div>
+        )}
 
         <Board cards={cards} addCard={addCard} vote={vote} />
         <ExportButtons cards={cards} title={roomData.roomName} />

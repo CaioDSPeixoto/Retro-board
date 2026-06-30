@@ -40,6 +40,10 @@
       "bom": "Good",
       "ruim": "Bad",
       "melhorar": "Improve"
+    },
+    "errors": {
+      "loadRoom": "Could not load the room. Check your connection and try again.",
+      "realtime": "Could not sync cards in real time."
     }
   },
   "Column": {
@@ -472,7 +476,8 @@
       "inviteNotPending": "Invite is no longer pending.",
       "onlyInviteeCanAccept": "Only the invitee can accept.",
       "onlyOwnerCanApprove": "Only the owner can approve.",
-      "requestMissingUserId": "Request missing userId."
+      "requestMissingUserId": "Request missing userId.",
+      "realtimeUnavailable": "Could not sync data in real time. Refresh the page if the information looks outdated."
     },
     "clearFiltersButton": "Clear {count} filter(s)",
     "bulkResultMessage": "{changed} item(s) updated. {skipped} skipped.",

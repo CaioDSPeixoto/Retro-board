@@ -1,6 +1,10 @@
 import os
 import json
 import re
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 def load_json(path):
     with open(path, 'r', encoding='utf-8') as f:

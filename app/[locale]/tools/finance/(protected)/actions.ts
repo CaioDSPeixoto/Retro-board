@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
+import { getMonthRange } from "@/lib/finance/utils";
 import { getTranslations } from "next-intl/server";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -40,6 +41,16 @@ function parseMoneyInput(value: string): number {
   }
 
   return parseFloat(trimmed);
+}
+
+function createInviteCode() {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
+}
+
+function isAlreadyExistsError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  return code === 6 || code === "already-exists";
 }
 
 async function findCarriedItems(itemId: string) {
@@ -144,6 +155,7 @@ export async function createFinanceBoard(name: string, locale: string) {
     memberIds: [sessionUser],
     createdAt: new Date().toISOString(),
     isPersonal: false,
+    inviteCode: createInviteCode(),
   });
 
   revalidatePath(`/${locale}/tools/finance`);
@@ -256,6 +268,92 @@ export async function removeMemberFromBoard(
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
+}
+
+export async function ensureFixedItemsForCurrentMonth(
+  month: string,
+  locale: string,
+  boardId?: string | null,
+) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+  if (!/^\d{4}-\d{2}$/.test(month)) return { error: "Mês inválido" };
+
+  const { start, end } = getMonthRange(month);
+  if (!start || !end) return { error: "Mês inválido" };
+
+  if (boardId) {
+    const board = await getBoard(boardId);
+    if (!board) return { error: "Quadro não encontrado" };
+    if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
+  }
+
+  let templatesQuery: any = adminDb
+    .collection("finance_fixed_templates")
+    .where("active", "==", true);
+
+  if (boardId) {
+    templatesQuery = templatesQuery.where("boardId", "==", boardId);
+  } else {
+    templatesQuery = templatesQuery.where("userId", "==", sessionUser);
+  }
+
+  const templatesSnap = await templatesQuery.get();
+  if (templatesSnap.empty) return { success: true, created: 0 };
+
+  const [yearStr, monthStr] = month.split("-");
+  const year = Number(yearStr);
+  const monthNumber = Number(monthStr);
+  const lastDay = new Date(year, monthNumber, 0).getDate();
+  const nowIso = new Date().toISOString();
+  let created = 0;
+
+  for (const doc of templatesSnap.docs) {
+    const data = doc.data() as any;
+    if (boardId ? data.boardId !== boardId : data.boardId) continue;
+
+    const day = Math.min(Math.max(Number(data.day || 1), 1), lastDay);
+    const date = `${yearStr}-${monthStr}-${String(day).padStart(2, "0")}`;
+    const itemRef = adminDb
+      .collection("finance_items")
+      .doc(`fixed_${doc.id}_${month}`);
+
+    const legacyExisting = await adminDb
+      .collection("finance_items")
+      .where("fixedTemplateId", "==", doc.id)
+      .where("date", ">=", start)
+      .where("date", "<=", end)
+      .limit(1)
+      .get();
+    if (!legacyExisting.empty) continue;
+
+    const newItem: Omit<FinanceItem, "id"> = {
+      userId: boardId ? data.userId || sessionUser : sessionUser,
+      title: data.title,
+      amount: Number(data.amount || 0),
+      date,
+      type: data.type === "income" ? "income" : "expense",
+      status: "pending",
+      category: data.category || ACCOUNT_FIXED_CATEGORY,
+      createdAt: nowIso,
+      isFixed: true,
+      isSynthetic: false,
+      createdBy: sessionUser,
+      fixedTemplateId: doc.id,
+      paidAmount: 0,
+      ...(boardId ? { boardId } : {}),
+    };
+
+    try {
+      await itemRef.create(newItem);
+      created++;
+    } catch (error) {
+      if (!isAlreadyExistsError(error)) throw error;
+    }
+  }
+
+  if (created > 0) revalidatePath(`/${locale}/tools/finance`);
+  return { success: true, created };
 }
 
 export async function createFinanceCard(formData: FormData) {

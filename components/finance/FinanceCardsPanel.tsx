@@ -65,42 +65,47 @@ export default function FinanceCardsPanel({
       ? query(itemsQuery, where("boardId", "==", boardId))
       : query(itemsQuery, where("userId", "==", sessionUserId));
 
-    const unsubscribe = onSnapshot(itemsQuery, (snapshot) => {
-      const docs: FinanceItem[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data() as any;
-        docs.push({
-          id: docSnap.id,
-          userId: data.userId,
-          boardId: data.boardId,
-          title: data.title,
-          amount: data.amount,
-          date: data.date,
-          type: data.type,
-          status: data.status,
-          category: data.category,
-          createdAt: data.createdAt,
-          isFixed: data.isFixed,
-          isSynthetic: data.isSynthetic,
-          createdBy: data.createdBy,
-          createdByName: data.createdByName,
-          paidAmount: data.paidAmount,
-          openAmount: data.openAmount,
-          carriedFromMonth: data.carriedFromMonth,
-          carriedFromItemId: data.carriedFromItemId,
-          fixedTemplateId: data.fixedTemplateId,
-          installmentGroupId: data.installmentGroupId,
-          installmentIndex: data.installmentIndex,
-          installmentTotal: data.installmentTotal,
-          originalAmount: data.originalAmount,
-          cardId: data.cardId,
-          cardName: data.cardName,
-          cardMode: data.cardMode,
-          cardLastDigits: data.cardLastDigits,
+    const unsubscribe = onSnapshot(
+      itemsQuery,
+      (snapshot) => {
+        const docs: FinanceItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as any;
+          docs.push({
+            id: docSnap.id,
+            userId: data.userId,
+            boardId: data.boardId,
+            title: data.title,
+            amount: data.amount,
+            date: data.date,
+            type: data.type,
+            status: data.status,
+            category: data.category,
+            createdAt: data.createdAt,
+            isFixed: data.isFixed,
+            isSynthetic: data.isSynthetic,
+            createdBy: data.createdBy,
+            createdByName: data.createdByName,
+            paidAmount: data.paidAmount,
+            openAmount: data.openAmount,
+            carriedFromMonth: data.carriedFromMonth,
+            carriedFromItemId: data.carriedFromItemId,
+            fixedTemplateId: data.fixedTemplateId,
+            installmentGroupId: data.installmentGroupId,
+            installmentIndex: data.installmentIndex,
+            installmentTotal: data.installmentTotal,
+            originalAmount: data.originalAmount,
+            cardId: data.cardId,
+            cardName: data.cardName,
+            cardMode: data.cardMode,
+            cardLastDigits: data.cardLastDigits,
+          });
         });
-      });
-      setCardItems(docs);
-    });
+        setError(null);
+        setCardItems(docs);
+      },
+      () => setError(t("errors.realtimeUnavailable")),
+    );
 
     return () => unsubscribe();
   }, [boardId, cards, currentMonth, items, sessionUserId]);

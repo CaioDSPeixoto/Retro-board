@@ -34,12 +34,16 @@
     },
     "share": {
       "copied": "Link copiado para a área de transferência!",
-      "whatsappUrl": "https://api.whatsapp.com/sendtext=Entre na sala: {url}"
+      "whatsappUrl": "https://api.whatsapp.com/send?text=Entre na sala: {url}"
     },
     "categories": {
       "bom": "Bom",
       "ruim": "Ruim",
       "melhorar": "Melhorar"
+    },
+    "errors": {
+      "loadRoom": "Não foi possível carregar a sala. Verifique sua conexão e tente novamente.",
+      "realtime": "Não foi possível sincronizar os cards em tempo real."
     }
   },
   "Column": {
@@ -472,7 +476,8 @@
       "inviteNotPending": "Convite não está pendente.",
       "onlyInviteeCanAccept": "Somente o convidado pode aceitar.",
       "onlyOwnerCanApprove": "Somente o dono pode aprovar.",
-      "requestMissingUserId": "Pedido sem userId."
+      "requestMissingUserId": "Pedido sem userId.",
+      "realtimeUnavailable": "Não foi possível sincronizar os dados em tempo real. Atualize a página se as informações parecerem desatualizadas."
     },
     "clearFiltersButton": "Limpar {count} filtro(s)",
     "bulkResultMessage": "{changed} lançamento(s) alterado(s). {skipped} ignorado(s).",

@@ -116,110 +116,6 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   return Array.from(all).sort((a, b) => a.localeCompare(b));
 }
 
-/* ================= fixed templates helper ================= */
-
-async function ensureFixedItemsForMonth(
-  userId: string,
-  month: string,
-  boardId?: string | null,
-  existingItems: FinanceItem[] = [],
-): Promise<FinanceItem[]> {
-  const { start, end } = getMonthRange(month);
-  if (boardId) {
-    const allowed = await canAccessFinanceBoard(boardId, userId);
-    if (!allowed) return existingItems;
-  }
-
-  // Busca todos os templates ativos do usuário.
-  let templatesQuery: any = adminDb
-    .collection("finance_fixed_templates")
-    .where("active", "==", true);
-
-  if (boardId) {
-    templatesQuery = templatesQuery.where("boardId", "==", boardId);
-  } else {
-    templatesQuery = templatesQuery.where("userId", "==", userId);
-  }
-
-  const templatesSnap = await templatesQuery.get();
-
-  const allTemplates: {
-    id: string;
-    title: string;
-    amount: number;
-    day: number;
-    category: string;
-    type?: "income" | "expense";
-    boardId?: string;
-  }[] = [];
-
-  templatesSnap.forEach((doc: any) => {
-    const data = doc.data() as any;
-    allTemplates.push({
-      id: doc.id,
-      title: data.title,
-      amount: data.amount,
-      day: data.day,
-      category: data.category,
-      type: data.type,
-      boardId: data.boardId,
-    });
-  });
-
-  // Filtra templates do quadro ou pessoais.
-  const templates = allTemplates.filter((tpl) =>
-    boardId ? tpl.boardId === boardId : !tpl.boardId,
-  );
-
-  if (templates.length === 0) return existingItems;
-
-  const items = [...existingItems];
-
-  for (const tpl of templates) {
-    // Verifica se já existe item deste template neste mês.
-    const alreadyExists = items.some(
-      (it) => it.fixedTemplateId === tpl.id && it.date.startsWith(month),
-    );
-    if (alreadyExists) continue;
-
-    // Cria uma nova conta fixa para este mês.
-    const [yStr, mStr] = month.split("-");
-    const year = parseInt(yStr, 10);
-    const m = parseInt(mStr, 10);
-
-    const lastDay = new Date(year, m, 0).getDate();
-    const day = Math.min(Math.max(tpl.day || 1, 1), lastDay);
-
-    const date = `${yStr}-${mStr}-${String(day).padStart(2, "0")}`;
-
-    const newItem: Omit<FinanceItem, "id"> = {
-      userId,
-      title: tpl.title,
-      amount: tpl.amount,
-      date,
-      type: tpl.type || "expense",
-      status: "pending",
-      category: tpl.category,
-      createdAt: new Date().toISOString(),
-      isFixed: true,
-      isSynthetic: false,
-      createdBy: userId,
-      fixedTemplateId: tpl.id,
-      paidAmount: 0,
-    };
-
-    // Só adiciona boardId se existir para não mandar undefined para o Firestore.
-    if (boardId) {
-      (newItem as any).boardId = boardId;
-    }
-
-    const ref = await adminDb.collection("finance_items").add(newItem);
-    items.push({ id: ref.id, ...newItem });
-  }
-
-  return items;
-}
-
 /* ================= items ================= */
 
 export async function getFinanceItemsData(
@@ -253,16 +149,7 @@ export async function getFinanceItemsData(
     items.push(mapFinanceItem(doc));
   });
 
-  // Garante que as contas fixas deste mês existam para esse usuário.
-  // A query já trouxe tudo do quadro, inclusive de outros membros.
-  const withFixed = await ensureFixedItemsForMonth(
-    sessionUserId,
-    month,
-    boardId,
-    items,
-  );
-
-  return withFixed.sort((a, b) => {
+  return items.sort((a, b) => {
     if (a.date === b.date) return a.title.localeCompare(b.title);
     return a.date.localeCompare(b.date);
   });

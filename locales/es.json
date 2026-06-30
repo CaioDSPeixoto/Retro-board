@@ -40,6 +40,10 @@
       "bom": "Bueno",
       "ruim": "Malo",
       "melhorar": "Mejorar"
+    },
+    "errors": {
+      "loadRoom": "No se pudo cargar la sala. Verifica tu conexi?n e int?ntalo de nuevo.",
+      "realtime": "No se pudieron sincronizar las tarjetas en tiempo real."
     }
   },
   "Column": {
@@ -472,7 +476,8 @@
       "inviteNotPending": "La invitación no está pendiente.",
       "onlyInviteeCanAccept": "Solo el invitado puede aceptar.",
       "onlyOwnerCanApprove": "Solo el dueño puede aprobar.",
-      "requestMissingUserId": "Pedido sin userId."
+      "requestMissingUserId": "Pedido sin userId.",
+      "realtimeUnavailable": "No se pudieron sincronizar los datos en tiempo real. Actualiza la p?gina si la informaci?n parece desactualizada."
     },
     "clearFiltersButton": "Limpiar {count} filtro(s)",
     "bulkResultMessage": "{changed} registro(s) actualizado(s). {skipped} omitido(s).",

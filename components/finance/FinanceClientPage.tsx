@@ -21,7 +21,10 @@ import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceAccountsPanel from "@/components/finance/FinanceAccountsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
-import { bulkFinanceItemsAction } from "@/app/[locale]/tools/finance/(protected)/actions";
+import {
+  bulkFinanceItemsAction,
+  ensureFixedItemsForCurrentMonth,
+} from "@/app/[locale]/tools/finance/(protected)/actions";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -85,6 +88,7 @@ export default function FinanceClientPage({
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
+  const [realtimeError, setRealtimeError] = useState<string | null>(null);
   const showMetrics = activeView === "metrics";
   const showAccounts = activeView === "accounts";
   const showCards = activeView === "cards";
@@ -112,6 +116,19 @@ export default function FinanceClientPage({
       return;
     }
 
+    let cancelled = false;
+
+    ensureFixedItemsForCurrentMonth(currentMonth, locale, currentBoardId ?? null)
+      .then((res) => {
+        if (cancelled) return;
+        if (res && "created" in res && Number(res.created || 0) > 0) {
+          router.refresh();
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRealtimeError(t("errors.realtimeUnavailable"));
+      });
+
     const { start, end } = getMonthRange(currentMonth);
 
     let q = query(
@@ -126,57 +143,68 @@ export default function FinanceClientPage({
       q = query(q, where("userId", "==", sessionUserId));
     }
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const docs: FinanceItem[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data() as any;
-        docs.push({
-          id: docSnap.id,
-          userId: data.userId,
-          boardId: data.boardId,
-          title: data.title,
-          amount: data.amount,
-          date: data.date,
-          type: data.type,
-          status: data.status,
-          category: data.category,
-          createdAt: data.createdAt,
-          isFixed: data.isFixed,
-          isSynthetic: data.isSynthetic,
-          createdBy: data.createdBy,
-          createdByName: data.createdByName,
-          paidAmount: data.paidAmount,
-          openAmount: data.openAmount,
-          carriedFromMonth: data.carriedFromMonth,
-          carriedFromItemId: data.carriedFromItemId,
-          fixedTemplateId: data.fixedTemplateId,
-          installmentGroupId: data.installmentGroupId,
-          installmentIndex: data.installmentIndex,
-          installmentTotal: data.installmentTotal,
-          originalAmount: data.originalAmount,
-          cardId: data.cardId,
-          cardName: data.cardName,
-          cardMode: data.cardMode,
-          cardLastDigits: data.cardLastDigits,
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        const docs: FinanceItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as any;
+          docs.push({
+            id: docSnap.id,
+            userId: data.userId,
+            boardId: data.boardId,
+            title: data.title,
+            amount: data.amount,
+            date: data.date,
+            type: data.type,
+            status: data.status,
+            category: data.category,
+            createdAt: data.createdAt,
+            isFixed: data.isFixed,
+            isSynthetic: data.isSynthetic,
+            createdBy: data.createdBy,
+            createdByName: data.createdByName,
+            paidAmount: data.paidAmount,
+            openAmount: data.openAmount,
+            carriedFromMonth: data.carriedFromMonth,
+            carriedFromItemId: data.carriedFromItemId,
+            fixedTemplateId: data.fixedTemplateId,
+            installmentGroupId: data.installmentGroupId,
+            installmentIndex: data.installmentIndex,
+            installmentTotal: data.installmentTotal,
+            originalAmount: data.originalAmount,
+            cardId: data.cardId,
+            cardName: data.cardName,
+            cardMode: data.cardMode,
+            cardLastDigits: data.cardLastDigits,
+          });
         });
-      });
 
-      docs.sort((a, b) => {
-        if (a.date === b.date) return a.title.localeCompare(b.title);
-        return a.date.localeCompare(b.date);
-      });
+        docs.sort((a, b) => {
+          if (a.date === b.date) return a.title.localeCompare(b.title);
+          return a.date.localeCompare(b.date);
+        });
 
-      setItems(docs);
-    });
+        setRealtimeError(null);
+        setItems(docs);
+      },
+      () => setRealtimeError(t("errors.realtimeUnavailable")),
+    );
 
-    return () => unsub();
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, [
     currentMonth,
     currentBoardId,
+    locale,
+    router,
     sessionUserId,
     rangeFrom,
     rangeTo,
     initialItems,
+    t,
   ]);
 
   const currentBoard = useMemo(
@@ -630,6 +658,11 @@ export default function FinanceClientPage({
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
       {activeView === "list" && (
         <div className="mb-3">
+          {realtimeError && (
+            <div className="mb-3 rounded-xl border finance-warning-soft px-3 py-2 text-xs font-semibold">
+              {realtimeError}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -746,7 +779,7 @@ export default function FinanceClientPage({
                 <input
                   type="text"
                   readOnly
-                  value={currentBoard.id}
+                  value={currentBoard.inviteCode || currentBoard.id}
                   className="w-full p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-xs text-[var(--color-text-secondary)]"
                 />
                 <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">

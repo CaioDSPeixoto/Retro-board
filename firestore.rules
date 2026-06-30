@@ -51,5 +51,53 @@ service cloud.firestore {
     match /finance_board_invites/{inviteId} {
       allow read, write: if false;
     }
+
+    match /rooms/{roomId} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.resource.data.keys().hasOnly([
+          "roomName",
+          "requireName",
+          "createdAt",
+          "expiresAt"
+        ])
+        && request.resource.data.roomName is string
+        && request.resource.data.roomName.size() > 0
+        && request.resource.data.roomName.size() <= 120
+        && request.resource.data.requireName is bool
+        && request.resource.data.expiresAt is timestamp;
+      allow update, delete: if false;
+
+      match /cards/{cardId} {
+        allow read: if exists(/databases/$(database)/documents/rooms/$(roomId));
+        allow create: if exists(/databases/$(database)/documents/rooms/$(roomId))
+          && request.resource.data.keys().hasOnly([
+            "category",
+            "text",
+            "likes",
+            "dislikes",
+            "author",
+            "createdAt"
+          ])
+          && request.resource.data.category in ["bom", "ruim", "melhorar"]
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.author is string
+          && request.resource.data.author.size() > 0
+          && request.resource.data.author.size() <= 80
+          && request.resource.data.likes == 0
+          && request.resource.data.dislikes == 0;
+        allow update: if exists(/databases/$(database)/documents/rooms/$(roomId))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes", "dislikes"])
+          && request.resource.data.likes is int
+          && request.resource.data.dislikes is int
+          && request.resource.data.likes >= resource.data.likes
+          && request.resource.data.dislikes >= resource.data.dislikes
+          && request.resource.data.likes <= resource.data.likes + 1
+          && request.resource.data.dislikes <= resource.data.dislikes + 1;
+        allow delete: if false;
+      }
+    }
   }
 }
