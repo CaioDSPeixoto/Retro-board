@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isBoardMember(boardId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/finance_boards/$(boardId))
+        && request.auth.uid in get(/databases/$(database)/documents/finance_boards/$(boardId)).data.memberIds;
+    }
+
+    function canReadFinanceResource(data) {
+      return signedIn()
+        && (
+          data.userId == request.auth.uid
+          || (data.boardId is string && isBoardMember(data.boardId))
+        );
+    }
+
+    match /finance_boards/{boardId} {
+      allow read: if isBoardMember(boardId);
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /finance_items/{itemId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create: if canReadFinanceResource(request.resource.data);
+      allow update, delete: if canReadFinanceResource(resource.data);
+    }
+
+    match /finance_categories/{categoryId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create: if canReadFinanceResource(request.resource.data);
+      allow update, delete: if canReadFinanceResource(resource.data);
+    }
+
+    match /finance_cards/{cardId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create: if canReadFinanceResource(request.resource.data);
+      allow update, delete: if canReadFinanceResource(resource.data);
+    }
+
+    match /finance_fixed_templates/{templateId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create: if canReadFinanceResource(request.resource.data);
+      allow update, delete: if canReadFinanceResource(resource.data);
+    }
+
+    match /finance_board_invites/{inviteId} {
+      allow read, write: if false;
+    }
+  }
+}

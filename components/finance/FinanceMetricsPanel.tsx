@@ -5,6 +5,7 @@ import type { FinanceItem } from "@/types/finance";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTranslations } from "next-intl";
+import { getFinanceTotals, getForecastAmount, getPaidAmount } from "@/lib/finance/calculations";
 
 type Props = {
   items: FinanceItem[];
@@ -33,6 +34,7 @@ export default function FinanceMetricsPanel({
   const unknownUserLabel = t("unknownUserLabel");
 
   const metrics = useMemo(() => {
+    const totals = getFinanceTotals(baseItems);
     let totalIncome = 0;
     let totalExpense = 0;
     let incomeCount = 0;
@@ -63,22 +65,26 @@ export default function FinanceMetricsPanel({
         continue;
       }
 
+      const paidAmount = getPaidAmount(item);
+      const forecastAmount = getForecastAmount(item);
+      const totalAmount = paidAmount + forecastAmount;
+
       if (item.type === "income") {
-        totalIncome += item.amount;
+        totalIncome += totalAmount;
         incomeCount++;
-        if (isPaid) finishedIncomeTotal += item.amount;
-        else pendingIncomeTotal += item.amount;
+        finishedIncomeTotal += paidAmount;
+        pendingIncomeTotal += forecastAmount;
         if (isOverdue) overdueIncomeCount++;
       } else {
-        totalExpense += item.amount;
+        totalExpense += totalAmount;
         expenseCount++;
-        if (isPaid) finishedExpenseTotal += item.amount;
-        else pendingExpenseTotal += item.amount;
+        finishedExpenseTotal += paidAmount;
+        pendingExpenseTotal += forecastAmount;
         if (isOverdue) overdueExpenseCount++;
       }
     }
 
-    const balance = totalIncome - totalExpense;
+    const balance = totals.balance;
 
     return {
       totalIncome,

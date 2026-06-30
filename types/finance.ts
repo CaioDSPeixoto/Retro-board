@@ -39,8 +39,24 @@ export type FinanceItem = {
   originalAmount?: number;
 
   // cartão (opcional)
+  cardId?: string;
   cardName?: string; // "Nubank", "Santander", etc.
   cardMode?: "credit" | "debit"; // crédito / débito
+  cardLastDigits?: string;
+};
+
+export type FinanceCard = {
+  id: string;
+  userId: string;
+  boardId?: string;
+  name: string;
+  mode: "credit" | "debit";
+  lastDigits?: string;
+  limit?: number;
+  closingDay?: number;
+  dueDay?: number;
+  createdAt: string;
+  createdBy?: string;
 };
 
 // ====== BOARDS ======

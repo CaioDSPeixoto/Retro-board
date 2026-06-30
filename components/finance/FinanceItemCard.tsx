@@ -11,6 +11,8 @@ import {
   FiCircle,
   FiTrash2,
   FiEdit2,
+  FiLayers,
+  FiX,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +21,7 @@ import {
   deleteFinanceItem,
   applyPaymentToFinanceItem,
   revertFinanceItemPayment,
+  getInstallmentGroupItems,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import Spinner from "@/components/ui/Spinner";
 
@@ -53,6 +56,9 @@ export default function FinanceItemCard({
     "full",
   );
   const [partialValue, setPartialValue] = useState("");
+  const [installmentsOpen, setInstallmentsOpen] = useState(false);
+  const [installmentsLoading, setInstallmentsLoading] = useState(false);
+  const [installmentItems, setInstallmentItems] = useState<FinanceItem[]>([]);
 
   const isIncome = item.type === "income";
   const isPaid = item.status === "paid";
@@ -64,7 +70,8 @@ export default function FinanceItemCard({
   const originalAmount = item.originalAmount ?? item.amount;
   const openAmount = isMoved
     ? 0
-    : Math.max(item.amount - paidAmount, 0);
+    : item.openAmount ?? Math.max(item.amount - paidAmount, 0);
+  const paymentTargetAmount = isPartial && openAmount > 0 ? openAmount : item.amount;
 
   const isRolled = !!item.carriedFromMonth;
   const isInstallment = !!item.installmentGroupId;
@@ -154,6 +161,26 @@ export default function FinanceItemCard({
     }
   };
 
+  const handleDeleteInstallment = async (itemId: string) => {
+    try {
+      setDeleting(true);
+      setActionError(null);
+
+      const res = await deleteFinanceItem(itemId, locale);
+      if (res && "error" in res && res.error) {
+        setActionError(res.error as string);
+        return;
+      }
+
+      setInstallmentItems((prev) => prev.filter((i) => i.id !== itemId));
+      router.refresh();
+    } catch {
+      setActionError(t("errors.deleteFailed"));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleConfirmPayment = async () => {
     if (isSynthetic || toggling) return;
 
@@ -187,15 +214,38 @@ export default function FinanceItemCard({
     onEdit(item);
   };
 
+  const handleOpenInstallments = async () => {
+    if (!isInstallment || installmentsLoading) return;
+
+    try {
+      setInstallmentsLoading(true);
+      setActionError(null);
+
+      const res = await getInstallmentGroupItems(item.id, locale);
+      if (res && "error" in res && res.error) {
+        setActionError(res.error as string);
+        return;
+      }
+
+      setInstallmentItems(res.items || []);
+      setInstallmentsOpen(true);
+    } catch {
+      setActionError(t("errors.updateFailed"));
+    } finally {
+      setInstallmentsLoading(false);
+    }
+  };
+
   const canToggle = !isSynthetic && !isMoved;
   const canShowToggleButton =
     canToggle &&
     (item.status === "pending" ||
+      item.status === "partial" ||
       (item.status === "paid" &&
         paidAmount >= item.amount &&
         originalAmount <= item.amount));
   const canDelete =
-    !isSynthetic && !isMoved && !isRolled && !isInstallment && !isPaid && !isPartial;
+    !isSynthetic && !isPaid && !isPartial;
 
   return (
     <>
@@ -326,6 +376,17 @@ export default function FinanceItemCard({
                   {toggling ? <Spinner size="sm" color="gray" /> : isPaid ? <FiCheckCircle size={18} /> : <FiCircle size={18} />}
                 </button>
               )}
+              {isInstallment && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleOpenInstallments(); }}
+                  disabled={toggling || deleting || installmentsLoading}
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition disabled:opacity-40 disabled:cursor-wait"
+                  aria-label={t("installmentsAria")}
+                  title={t("installmentsAria")}
+                >
+                  {installmentsLoading ? <Spinner size="sm" color="gray" /> : <FiLayers size={16} />}
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleEditClick(); }}
@@ -415,7 +476,7 @@ export default function FinanceItemCard({
             <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {item.title} —{" "}
               <span className={isIncome ? "text-green-500" : "text-red-500"}>
-                {formatCurrency(item.amount)}
+                {formatCurrency(paymentTargetAmount)}
               </span>
             </p>
 
@@ -430,7 +491,7 @@ export default function FinanceItemCard({
                 <span>
                   {t("paymentModalTotal")}{" "}
                   <span className="font-semibold">
-                    ({formatCurrency(item.amount)})
+                    ({formatCurrency(paymentTargetAmount)})
                   </span>
                 </span>
               </label>
@@ -464,17 +525,19 @@ export default function FinanceItemCard({
                 )}
               </div>
 
-              <div className="mt-3 border-t border-[var(--color-border-subtle)] pt-3">
-                <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
-                  <input
-                    type="radio"
-                    className="w-4 h-4 text-blue-600"
-                    checked={paymentMode === "move"}
-                    onChange={() => setPaymentMode("move")}
-                  />
-                  <span>{t("paymentModalMoveLabel")}</span>
-                </label>
-              </div>
+              {!isPartial && (
+                <div className="mt-3 border-t border-[var(--color-border-subtle)] pt-3">
+                  <label className="flex items-center gap-2 text-sm text-[var(--color-text-primary)] cursor-pointer">
+                    <input
+                      type="radio"
+                      className="w-4 h-4 text-blue-600"
+                      checked={paymentMode === "move"}
+                      onChange={() => setPaymentMode("move")}
+                    />
+                    <span>{t("paymentModalMoveLabel")}</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             {actionError && (
@@ -500,6 +563,96 @@ export default function FinanceItemCard({
                 )}
                 {t("confirmAction")}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {installmentsOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-[var(--color-surface-overlay)] w-full max-w-lg rounded-2xl shadow-2xl p-5 border border-[var(--color-border)] max-h-[85vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+                  {t("installmentsTitle")}
+                </h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+                  {item.title}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInstallmentsOpen(false)}
+                className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-surface-raised)]"
+                aria-label={t("cancel")}
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            {actionError && (
+              <p className="text-xs text-red-500 mb-3">{actionError}</p>
+            )}
+
+            <div className="space-y-2">
+              {installmentItems.map((installment) => {
+                const installmentPaid = installment.status === "paid";
+                const installmentPartial = installment.status === "partial";
+                const installmentCanDelete =
+                  !installment.isSynthetic && !installmentPaid && !installmentPartial;
+                const installmentCanEdit =
+                  !!onEdit && !installment.isSynthetic && !installmentPaid && !installmentPartial;
+
+                return (
+                  <div
+                    key={installment.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+                        {installment.title}
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-muted)]">
+                        {format(parseISO(installment.date), "P", { locale: dateLocale })} · {formatCurrency(installment.amount)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+                        {installment.status === "paid"
+                          ? installment.type === "income" ? t("statusReceived") : t("statusPaid")
+                          : installment.status === "partial"
+                            ? t("statusPartial")
+                            : installment.status === "moved"
+                              ? t("statusMoved")
+                              : t("statusPending")}
+                      </span>
+                      {installmentCanEdit && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInstallmentsOpen(false);
+                            onEdit?.(installment);
+                          }}
+                          className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)]"
+                          aria-label={t("editAria")}
+                        >
+                          <FiEdit2 size={16} />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInstallment(installment.id)}
+                        disabled={!installmentCanDelete || deleting}
+                        className="text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label={t("deleteAria")}
+                      >
+                        {deleting ? <Spinner size="sm" color="gray" /> : <FiTrash2 size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -8,8 +8,10 @@ import {
   getFinanceItemsData,
   getCategoriesData,
   getBoardsData,
+  getCashBalanceBeforeMonth,
+  getFinanceCardsData,
 } from "./data";
-import type { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceCard } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
@@ -108,6 +110,8 @@ export default async function FinancePage({
   }
 
   const categories = await getCategoriesData(boardId);
+  const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
+  const cards: FinanceCard[] = await getFinanceCardsData(boardId);
 
   return (
     <div className="max-w-5xl mx-auto px-6 pb-10 pt-4">
@@ -119,6 +123,8 @@ export default async function FinancePage({
         boards={boards}
         currentBoardId={boardId}
         sessionUserId={safeSessionUserId}
+        previousCashBalance={previousCashBalance}
+        initialCards={cards}
       />
     </div>
   );

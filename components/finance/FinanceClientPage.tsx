@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceCard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -12,18 +12,23 @@ import {
   FiSettings,
   FiAlertCircle,
   FiShare2,
+  FiEye,
 } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
+import FinanceAccountsPanel from "@/components/finance/FinanceAccountsPanel";
+import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
+import { bulkFinanceItemsAction } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
 import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
+import { getFinanceTotals } from "@/lib/finance/calculations";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
@@ -35,6 +40,8 @@ type Props = {
   boards: FinanceBoard[];
   currentBoardId?: string | null;
   sessionUserId: string;
+  previousCashBalance?: number;
+  initialCards?: FinanceCard[];
 };
 
 export default function FinanceClientPage({
@@ -45,6 +52,8 @@ export default function FinanceClientPage({
   boards,
   currentBoardId,
   sessionUserId,
+  previousCashBalance = 0,
+  initialCards = [],
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
@@ -55,7 +64,14 @@ export default function FinanceClientPage({
   const [userName, setUserName] = useState<string>(t("defaultUserName"));
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
   const [items, setItems] = useState<FinanceItem[]>(initialItems);
+  const [cards, setCards] = useState<FinanceCard[]>(initialCards);
   const [nameFilter, setNameFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | FinanceStatus>("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [personFilter, setPersonFilter] = useState("all");
+  const [cardFilter, setCardFilter] = useState("all");
+  const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "open" | "settled">("all");
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -63,11 +79,17 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [showMetrics, setShowMetrics] = useState(false);
+  const [activeView, setActiveView] = useState<"list" | "metrics" | "accounts" | "cards">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState<"pay" | "move" | "delete" | null>(null);
+  const [bulkError, setBulkError] = useState<string | null>(null);
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
+  const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
+  const showMetrics = activeView === "metrics";
+  const showAccounts = activeView === "accounts";
+  const showCards = activeView === "cards";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -81,6 +103,10 @@ export default function FinanceClientPage({
     });
     return () => unsubscribe();
   }, [t]);
+
+  useEffect(() => {
+    setCards(initialCards);
+  }, [initialCards]);
 
   useEffect(() => {
     if (rangeFrom || rangeTo) {
@@ -130,8 +156,10 @@ export default function FinanceClientPage({
           installmentIndex: data.installmentIndex,
           installmentTotal: data.installmentTotal,
           originalAmount: data.originalAmount,
+          cardId: data.cardId,
           cardName: data.cardName,
           cardMode: data.cardMode,
+          cardLastDigits: data.cardLastDigits,
         });
       });
 
@@ -179,7 +207,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveView("list");
     });
   };
 
@@ -193,7 +221,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveView("list");
     });
   };
 
@@ -207,7 +235,7 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveView("list");
     });
   };
 
@@ -220,47 +248,66 @@ export default function FinanceClientPage({
     params.delete("to");
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
-      setShowMetrics(false);
+      setActiveView("list");
     });
   };
 
   const totals = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        const isPaid = item.status === "paid";
-        const isMoved = item.status === "moved";
-
-        if (item.type === "income") {
-          if (isPaid) acc.incomes += item.amount;
-          else if (!isMoved) acc.incomesForecast += item.amount;
-        } else {
-          if (isPaid) acc.expenses += item.amount;
-          else if (!isMoved) acc.expensesForecast += item.amount;
-        }
-
-        return acc;
-      },
-      {
-        incomes: 0,
-        expenses: 0,
-        incomesForecast: 0,
-        expensesForecast: 0,
-      },
-    );
+    return getFinanceTotals(items);
   }, [items]);
 
-  const balance = totals.incomes - totals.expenses;
+  const balance = totals.balance;
+  const accumulatedBalance = previousCashBalance + balance;
 
   const todayStr = new Date().toISOString().split("T")[0];
 
+  const filterOptions = useMemo(() => {
+    const categories = new Set<string>();
+    const people = new Map<string, string>();
+    const cardOptions = new Map<string, string>();
+
+    for (const item of items) {
+      if (item.category) categories.add(item.category);
+      if (item.createdBy || item.createdByName) {
+        people.set(item.createdBy || item.createdByName || "", item.createdByName || item.createdBy || "");
+      }
+      const cardKey = item.cardId || item.cardName;
+      if (cardKey) {
+        cardOptions.set(cardKey, item.cardName || cardKey);
+      }
+    }
+
+    return {
+      categories: Array.from(categories).sort((a, b) => a.localeCompare(b)),
+      people: Array.from(people.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+      cards: Array.from(cardOptions.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+    };
+  }, [items]);
+
   const visibleItems = useMemo(() => {
     const query = normalizeForSearch(nameFilter);
-    if (!query) return items;
 
-    return items.filter((item) =>
-      normalizeForSearch(item.title || "").includes(query),
-    );
-  }, [items, nameFilter]);
+    return items.filter((item) => {
+      const matchesName =
+        !query || normalizeForSearch(item.title || "").includes(query);
+      const matchesStatus =
+        statusFilter === "all" || item.status === statusFilter;
+      const matchesType = typeFilter === "all" || item.type === typeFilter;
+      const matchesCategory =
+        categoryFilter === "all" || item.category === categoryFilter;
+      const matchesPerson =
+        personFilter === "all" || item.createdBy === personFilter || item.createdByName === personFilter;
+      const itemCard = item.cardId || item.cardName || "";
+      const matchesCard = cardFilter === "all" || itemCard === cardFilter;
+      const matchesDue =
+        dueFilter === "all" ||
+        (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
+        (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
+        (dueFilter === "settled" && item.status === "paid");
+
+      return matchesName && matchesStatus && matchesType && matchesCategory && matchesPerson && matchesCard && matchesDue;
+    });
+  }, [items, nameFilter, statusFilter, typeFilter, categoryFilter, personFilter, cardFilter, dueFilter, todayStr]);
 
   const overdueItems = useMemo(
     () =>
@@ -284,13 +331,13 @@ export default function FinanceClientPage({
   );
 
   useEffect(() => {
-    if (showMetrics) {
+    if (activeView !== "list") {
       setShareOpen(false);
       setSelectionMode(false);
       setSelectedItems(new Set());
     }
     setOverdueInfoOpen(false);
-  }, [showMetrics]);
+  }, [activeView]);
 
   useEffect(() => {
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
@@ -322,6 +369,25 @@ export default function FinanceClientPage({
   const handleOpenCreateModal = () => {
     setEditingItem(null);
     setIsModalOpen(true);
+  };
+
+  const handleBulkAction = async (action: "pay" | "move" | "delete") => {
+    if (selectedItems.size === 0 || bulkLoading) return;
+
+    setBulkLoading(action);
+    setBulkError(null);
+
+    const res = await bulkFinanceItemsAction(Array.from(selectedItems), action, locale);
+    if (res && "error" in res && res.error) {
+      setBulkError(res.error as string);
+      setBulkLoading(null);
+      return;
+    }
+
+    setSelectedItems(new Set());
+    setSelectionMode(false);
+    setBulkLoading(null);
+    router.refresh();
   };
 
   const handleEditItem = (item: FinanceItem) => {
@@ -471,6 +537,23 @@ export default function FinanceClientPage({
         <div className="text-center mb-4">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
           <h2 className="text-4xl font-extrabold">{currency(balance)}</h2>
+          <button
+            type="button"
+            onClick={() => setShowAccumulatedBalance((prev) => !prev)}
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-blue-50 transition"
+            aria-expanded={showAccumulatedBalance}
+          >
+            <FiEye size={13} />
+            {t("accumulatedBalanceToggle")}
+          </button>
+          {showAccumulatedBalance && (
+            <div className="mt-2 inline-flex flex-col items-center rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
+              <span>{t("previousBalanceLabel")}: {currency(previousCashBalance)}</span>
+              <span className="font-bold">
+                {t("accumulatedBalanceLabel")}: {currency(accumulatedBalance)}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-4 mt-6">
@@ -580,7 +663,7 @@ export default function FinanceClientPage({
       <div className="mt-3">
         <div className="flex justify-between items-center mb-3">
           <div>
-            {!showMetrics && (
+            {activeView === "list" && (
               <button
                 onClick={toggleSelectionMode}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectionMode
@@ -595,33 +678,31 @@ export default function FinanceClientPage({
 
           <div className="flex items-center gap-2">
             <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => setShowMetrics(false)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${!showMetrics
-                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                  }`}
-              >
-                {t("tabListLabel")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowMetrics(true)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${showMetrics
-                  ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                  }`}
-              >
-                {t("tabMetricsLabel")}
-              </button>
+              {[
+                ["list", t("tabListLabel")],
+                ["metrics", t("tabMetricsLabel")],
+                ["accounts", t("tabAccountsLabel")],
+                ["cards", t("tabCardsLabel")],
+              ].map(([view, label]) => (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => setActiveView(view as typeof activeView)}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeView === view
+                    ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                    }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
-      {!showMetrics && (
+      {activeView === "list" && (
         <div className="mb-3">
           <div className="flex items-center gap-2">
             <input
@@ -674,6 +755,76 @@ export default function FinanceClientPage({
                 <FiShare2 size={18} />
               </button>
             )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterTypeAll")}</option>
+              <option value="income">{t("filterTypeIncome")}</option>
+              <option value="expense">{t("filterTypeExpense")}</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterStatusAll")}</option>
+              <option value="paid">{t("filterStatusPaid")}</option>
+              <option value="partial">{t("filterStatusPartial")}</option>
+              <option value="pending">{t("filterStatusPending")}</option>
+              <option value="moved">{t("filterStatusMoved")}</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterCategoryAll")}</option>
+              {filterOptions.categories.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+
+            <select
+              value={personFilter}
+              onChange={(e) => setPersonFilter(e.target.value)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterPersonAll")}</option>
+              {filterOptions.people.map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+
+            <select
+              value={cardFilter}
+              onChange={(e) => setCardFilter(e.target.value)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterCardAll")}</option>
+              {filterOptions.cards.map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+
+            <select
+              value={dueFilter}
+              onChange={(e) => setDueFilter(e.target.value as typeof dueFilter)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="all">{t("filterDueAll")}</option>
+              <option value="overdue">{t("filterDueOverdue")}</option>
+              <option value="open">{t("filterDueOpen")}</option>
+              <option value="settled">{t("filterDueSettled")}</option>
+            </select>
           </div>
 
           <div className="flex justify-end mt-1">
@@ -739,7 +890,7 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {false && !showMetrics && overdueItems.length > 0 && (
+      {false && activeView === "list" && overdueItems.length > 0 && (
         <div className="mb-4">
           <details className="bg-amber-50/50 border border-amber-100/70 rounded-xl px-3 py-2 group opacity-80 hover:opacity-100 transition">
             <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
@@ -801,6 +952,15 @@ export default function FinanceClientPage({
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
         />
+      ) : showAccounts ? (
+        <FinanceAccountsPanel items={items} />
+      ) : showCards ? (
+        <FinanceCardsPanel
+          cards={cards}
+          items={items}
+          boardId={currentBoardId ?? null}
+          locale={locale}
+        />
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
           <p className="text-[var(--color-text-muted)] mb-2">
@@ -830,8 +990,8 @@ export default function FinanceClientPage({
       )}
 
       {
-        selectionMode && selectedItems.size > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
+        activeView === "list" && selectionMode && selectedItems.size > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3 z-50 animate-in fade-in slide-in-from-bottom-4 max-w-[calc(100vw-2rem)]">
             <div className="flex flex-col">
               <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
               <span className={`text-lg font-bold ${selectedTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
@@ -842,13 +1002,42 @@ export default function FinanceClientPage({
             <span className="text-xs text-gray-400 font-medium">
               {selectedItems.size} {selectedItems.size === 1 ? t("itemSingular") : t("itemPlural")}
             </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleBulkAction("pay")}
+                disabled={!!bulkLoading}
+                className="px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-bold disabled:opacity-60"
+              >
+                {bulkLoading === "pay" ? t("bulkLoading") : t("bulkPay")}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkAction("move")}
+                disabled={!!bulkLoading}
+                className="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold disabled:opacity-60"
+              >
+                {bulkLoading === "move" ? t("bulkLoading") : t("bulkMove")}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkAction("delete")}
+                disabled={!!bulkLoading}
+                className="px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-bold disabled:opacity-60"
+              >
+                {bulkLoading === "delete" ? t("bulkLoading") : t("bulkDelete")}
+              </button>
+            </div>
+            {bulkError && (
+              <p className="basis-full text-xs text-red-500">{bulkError}</p>
+            )}
           </div>
         )
       }
 
       {/* BOTÃO FLOAT – só na LISTA e se NÃO estiver em seleção */}
       {
-        !showMetrics && !selectionMode && (
+        activeView === "list" && !selectionMode && (
           <button
             onClick={handleOpenCreateModal}
             className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
@@ -865,6 +1054,7 @@ export default function FinanceClientPage({
         onClose={() => setIsModalOpen(false)}
         locale={locale}
         initialCategories={initialCategories}
+        initialCards={cards}
         initialItem={editingItem}
         boardId={currentBoardId ?? null}
         currentMonth={currentMonth}

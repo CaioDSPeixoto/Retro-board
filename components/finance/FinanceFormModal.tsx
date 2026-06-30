@@ -9,7 +9,7 @@ import {
   updateFinanceItem,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { useRouter } from "next/navigation";
-import type { FinanceItem } from "@/types/finance";
+import type { FinanceCard, FinanceItem } from "@/types/finance";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useTranslations } from "next-intl";
@@ -22,6 +22,7 @@ type Props = {
   onClose: () => void;
   locale: string;
   initialCategories: string[];
+  initialCards?: FinanceCard[];
   initialItem?: FinanceItem | null;
   boardId?: string | null;
   currentMonth?: string;
@@ -55,6 +56,7 @@ export default function FinanceFormModal({
   onClose,
   locale,
   initialCategories,
+  initialCards = [],
   initialItem,
   boardId,
   currentMonth,
@@ -89,6 +91,7 @@ export default function FinanceFormModal({
 
   // cartão
   const [cardName, setCardName] = useState<string>(initialItem?.cardName || "");
+  const [cardId, setCardId] = useState<string>(initialItem?.cardId || "");
   const [cardMode, setCardMode] = useState<"" | "credit" | "debit">(
     initialItem?.cardMode || "",
   );
@@ -117,6 +120,7 @@ export default function FinanceFormModal({
     if (initialItem) {
       setType(initialItem.type);
       setCategory(initialItem.category || nextCategories[0] || fixedCategoryName);
+      setCardId(initialItem.cardId || "");
       setCardName(initialItem.cardName || "");
       setCardMode(initialItem.cardMode || "");
       setEnableCustomDescription(false);
@@ -125,6 +129,7 @@ export default function FinanceFormModal({
 
     setType("expense");
     setCategory(nextCategories[0] || fixedCategoryName);
+    setCardId("");
     setCardName("");
     setCardMode("");
     setEnableCustomDescription(false);
@@ -138,10 +143,19 @@ export default function FinanceFormModal({
   }, [showNewCategoryForm]);
 
   const isCardFixedCategory = category === CARD_FIXED_CATEGORY;
+  const selectedCard = initialCards.find((card) => card.id === cardId);
 
   // default pra cartão fixo
   useEffect(() => {
     if (!isCardFixedCategory || isEditMode) return;
+
+    if (!cardId && initialCards.length > 0) {
+      const firstCard = initialCards[0];
+      setCardId(firstCard.id);
+      setCardName(firstCard.name);
+      setCardMode(firstCard.mode);
+      return;
+    }
 
     if (!cardName) {
       setCardName(DEFAULT_CARD_OPTIONS[0] || "");
@@ -149,7 +163,7 @@ export default function FinanceFormModal({
     if (!cardMode) {
       setCardMode("credit");
     }
-  }, [isCardFixedCategory, cardName, cardMode, isEditMode]);
+  }, [isCardFixedCategory, cardId, cardName, cardMode, isEditMode, initialCards]);
 
   if (!isOpen) return null;
 
@@ -183,7 +197,7 @@ export default function FinanceFormModal({
 
   const generatedCardDescription =
     isCardFixedCategory && cardName && cardMode
-      ? `Cartão ${cardName} - ${cardMode === "credit"
+      ? `Cartão ${cardName}${selectedCard?.lastDigits ? ` final ${selectedCard.lastDigits}` : ""} - ${cardMode === "credit"
         ? t("cardModeCreditLabel")
         : t("cardModeDebitLabel")
       }`
@@ -243,6 +257,10 @@ export default function FinanceFormModal({
               if (generatedCardDescription) {
                 fd.set("title", generatedCardDescription);
               }
+              if (selectedCard) {
+                fd.set("cardId", selectedCard.id);
+                if (selectedCard.lastDigits) fd.set("cardLastDigits", selectedCard.lastDigits);
+              }
               if (cardName) fd.set("cardName", cardName);
               if (cardMode) fd.set("cardMode", cardMode);
             }
@@ -264,11 +282,17 @@ export default function FinanceFormModal({
           {isEditMode && initialItem && (
             <>
               <input type="hidden" name="id" value={initialItem.id} />
+              {initialItem.cardId && (
+                <input type="hidden" name="cardId" value={initialItem.cardId} />
+              )}
               {initialItem.cardName && (
                 <input type="hidden" name="cardName" value={initialItem.cardName} />
               )}
               {initialItem.cardMode && (
                 <input type="hidden" name="cardMode" value={initialItem.cardMode} />
+              )}
+              {initialItem.cardLastDigits && (
+                <input type="hidden" name="cardLastDigits" value={initialItem.cardLastDigits} />
               )}
             </>
           )}
@@ -414,11 +438,28 @@ export default function FinanceFormModal({
                       {t("cardNameLabel")}
                     </label>
                     <select
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
+                      value={cardId || cardName}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const card = initialCards.find((item) => item.id === value);
+                        if (card) {
+                          setCardId(card.id);
+                          setCardName(card.name);
+                          setCardMode(card.mode);
+                          return;
+                        }
+
+                        setCardId("");
+                        setCardName(value);
+                      }}
                       className="w-full p-2.5 rounded-xl border focus:border-blue-500 focus:outline-none text-sm"
                       style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
                     >
+                      {initialCards.map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.name}{card.lastDigits ? ` final ${card.lastDigits}` : ""}
+                        </option>
+                      ))}
                       {DEFAULT_CARD_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
@@ -471,8 +512,10 @@ export default function FinanceFormModal({
                   </div>
                 )}
 
+                <input type="hidden" name="cardId" value={cardId} />
                 <input type="hidden" name="cardName" value={cardName} />
                 <input type="hidden" name="cardMode" value={cardMode} />
+                <input type="hidden" name="cardLastDigits" value={selectedCard?.lastDigits || ""} />
               </div>
             )}
           </div>

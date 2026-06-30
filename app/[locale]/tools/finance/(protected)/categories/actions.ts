@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
+import { canAccessFinanceBoard } from "@/lib/finance/server";
 
 export async function deleteCategory(category: string, locale: string, boardId?: string) {
     const t = await getTranslations({ locale, namespace: "Finance" });
@@ -13,16 +14,21 @@ export async function deleteCategory(category: string, locale: string, boardId?:
         return { error: t("errors.unauthorized") };
     }
 
+    if (boardId) {
+        const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
+        if (!allowed) return { error: t("errors.noPermission") };
+    }
+
     try {
         // 1. Check if category is in use
         let activeItemsQuery = adminDb
             .collection("finance_items")
-            .where("userId", "==", sessionUserId)
             .where("category", "==", category);
 
         if (boardId) {
             activeItemsQuery = activeItemsQuery.where("boardId", "==", boardId);
         } else {
+            activeItemsQuery = activeItemsQuery.where("userId", "==", sessionUserId);
             // Se deletando pessoal, verifica se tem item pessoal (sem boardId) usando?
             // Ou se tem QUALQUER item usando?
             // Por segurança, se for pessoal, não deve ter nenhum item pendurado nela, mesmo em boards (se permitirmos misturar).
@@ -50,11 +56,12 @@ export async function deleteCategory(category: string, locale: string, boardId?:
         // 2. Delete the category document
         let categoryQuery = adminDb
             .collection("finance_categories")
-            .where("userId", "==", sessionUserId)
             .where("name", "==", category);
 
         if (boardId) {
             categoryQuery = categoryQuery.where("boardId", "==", boardId);
+        } else {
+            categoryQuery = categoryQuery.where("userId", "==", sessionUserId);
         }
 
         const categorySnap = await categoryQuery.get();
@@ -103,6 +110,11 @@ export async function updateCategory(
         return { error: t("errors.unauthorized") };
     }
 
+    if (boardId) {
+        const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
+        if (!allowed) return { error: t("errors.noPermission") };
+    }
+
     const trimmedNew = newName.trim();
     if (!trimmedNew) return { error: t("errors.invalidCategoryName") };
 
@@ -112,12 +124,12 @@ export async function updateCategory(
         // 1. Check if new name already exists (in the same context)
         let duplicateQuery = adminDb
             .collection("finance_categories")
-            .where("userId", "==", sessionUserId)
             .where("name", "==", trimmedNew);
 
         if (boardId) {
             duplicateQuery = duplicateQuery.where("boardId", "==", boardId);
         } else {
+            duplicateQuery = duplicateQuery.where("userId", "==", sessionUserId);
             // Logic for personal/no-board items
         }
 
@@ -138,11 +150,12 @@ export async function updateCategory(
         // 2. Find the old category doc
         let oldCatQuery = adminDb
             .collection("finance_categories")
-            .where("userId", "==", sessionUserId)
             .where("name", "==", oldName);
 
         if (boardId) {
             oldCatQuery = oldCatQuery.where("boardId", "==", boardId);
+        } else {
+            oldCatQuery = oldCatQuery.where("userId", "==", sessionUserId);
         }
 
         const oldCatSnap = await oldCatQuery.get();
@@ -161,11 +174,12 @@ export async function updateCategory(
         // 3. Update all items using this category
         let itemsQuery = adminDb
             .collection("finance_items")
-            .where("userId", "==", sessionUserId)
             .where("category", "==", oldName);
 
         if (boardId) {
             itemsQuery = itemsQuery.where("boardId", "==", boardId);
+        } else {
+            itemsQuery = itemsQuery.where("userId", "==", sessionUserId);
         }
 
         const itemsSnap = await itemsQuery.get();
