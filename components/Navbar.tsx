@@ -1,14 +1,15 @@
 import { FiHome, FiTool, FiFileText } from "react-icons/fi";
 import UserMenu from "./UserMenu";
 import { getTranslations } from "next-intl/server";
-import { getSession } from "@/lib/auth/session";
 import packageInfo from '../package.json';
 import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
+import { cookies } from "next/headers";
 
 export default async function Navbar({ locale }: { locale: string }) {
   const t = await getTranslations("Navbar");
-  const session = await getSession();
+  const cookieStore = await cookies();
+  const hasFinanceSession = !!cookieStore.get("finance_session")?.value;
 
   const appVersion = packageInfo.version || "0.0.0";
 
@@ -36,7 +37,7 @@ export default async function Navbar({ locale }: { locale: string }) {
         {/* RIGHT */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <UserMenu locale={locale} isLoggedIn={!!session} appVersion={appVersion} />
+          <UserMenu locale={locale} isLoggedIn={hasFinanceSession} appVersion={appVersion} />
         </div>
       </div>
     </nav>
