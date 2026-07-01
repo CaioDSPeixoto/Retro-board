@@ -1,11 +1,9 @@
 "use client";
 
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import { FiExternalLink } from "react-icons/fi";
 
 const profileName = process.env.NEXT_PUBLIC_PROFILE_NAME || "Desenvolvedor";
 const githubUrl = process.env.NEXT_PUBLIC_PROFILE_GITHUB || "";
-const projectUrl = process.env.NEXT_PUBLIC_PROFILE_PROJECT || "";
 const linkedinUrl = process.env.NEXT_PUBLIC_PROFILE_LINKEDIN || "";
 
 export default function Footer() {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 import { useTodos } from "@/hooks/useTodos";
 import TodoItem from "./todo/TodoItem";
 

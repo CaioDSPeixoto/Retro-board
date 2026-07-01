@@ -15,7 +15,7 @@ export default function RetroboardPage() {
   const params = useParams();
   const locale = params?.locale || "pt";
   const [requireName, setRequireName] = useState(false);
-  const [duration, setDuration] = useState(720);
+  const duration = 720;
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEntering, setIsEntering] = useState(false);

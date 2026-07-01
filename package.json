@@ -6,11 +6,17 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "test": "vitest run"
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit --noUnusedLocals --noUnusedParameters --pretty false",
+    "check:locales": "python check_locales.py",
+    "check:dead-code": "depcheck --json --ignores=\"@tailwindcss/postcss,@types/react-dom,autoprefixer,postcss,tailwindcss,typescript\"",
+    "audit:firestore": "node scripts/audit-firestore-schemas.mjs",
+    "backup:firestore": "node scripts/export-firestore-backup.mjs"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
-    "file-saver": "^2.0.5",
     "firebase": "^12.3.0",
     "firebase-admin": "^13.6.0",
     "jspdf": "^4.2.1",
@@ -19,17 +25,25 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
+    "server-only": "^0.0.1",
     "uuid": "^14.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "depcheck": "^1.4.7",
+    "eslint": "^10.6.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.1.13",
     "typescript": "^5",
+    "typescript-eslint": "^8.62.1",
     "vitest": "^4.1.9"
   },
   "overrides": {

@@ -155,11 +155,6 @@ export function mapFinanceCategory(doc: FirestoreDocumentLike): FinanceCategoryD
   });
 }
 
-export function mapFinanceCategoryName(doc: FirestoreDocumentLike): string | null {
-  const category = mapFinanceCategory(doc);
-  return category.name || null;
-}
-
 export function mapFinanceFixedTemplate(
   doc: FirestoreDocumentLike,
 ): FinanceFixedTemplateDocument {

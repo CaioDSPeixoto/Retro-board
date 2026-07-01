@@ -4,9 +4,10 @@ import { adminAuth } from "@/lib/firebase-admin-auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import type { FinanceBoard, FinanceBoardInvite } from "@/types/finance";
+import type { FinanceBoardInvite } from "@/types/finance";
 import { getTranslations } from "next-intl/server";
 import { mapFinanceBoard, mapFinanceBoardInvite } from "@/lib/finance/schema";
+import { checkActionRateLimit, logFinanceAction } from "@/lib/security/action-guard";
 
 async function getMyEmail(sessionUser: string) {
   const user = await adminAuth.getUser(sessionUser);
@@ -67,6 +68,11 @@ export async function sendInviteByEmail(boardId: string, email: string, locale: 
   const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:send-invite", {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const trimmedEmail = email.trim().toLowerCase();
   if (!trimmedEmail) return { error: t("errors.invalidEmail") };
@@ -87,6 +93,11 @@ export async function sendInviteByEmail(boardId: string, email: string, locale: 
     createdBy: sessionUser,
     createdAt: new Date().toISOString(),
   });
+  logFinanceAction("board_invite_sent", {
+    userId: sessionUser,
+    boardId: board.id,
+    inviteType: "email",
+  });
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
@@ -96,6 +107,11 @@ export async function requestJoinByCode(boardIdOrCode: string, locale: string) {
   const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:request-join", {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const code = boardIdOrCode.trim();
   if (!code) return { error: t("errors.invalidCode") };
@@ -139,6 +155,10 @@ export async function requestJoinByCode(boardIdOrCode: string, locale: string) {
     createdBy: sessionUser,
     createdAt: new Date().toISOString(),
   });
+  logFinanceAction("board_join_requested", {
+    userId: sessionUser,
+    boardId: board.id,
+  });
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
@@ -148,6 +168,11 @@ export async function respondInvite(inviteId: string, action: "accept" | "reject
   const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:respond-invite", {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const inviteRef = adminDb.doc(`finance_board_invites/${inviteId}`);
   const inviteSnap = await inviteRef.get();
@@ -168,6 +193,11 @@ export async function respondInvite(inviteId: string, action: "accept" | "reject
     await inviteRef.update({
       status: "rejected",
       respondedAt: new Date().toISOString(),
+    });
+    logFinanceAction("board_invite_rejected", {
+      userId: sessionUser,
+      inviteId,
+      boardId: invite.boardId,
     });
 
     revalidatePath(`/${locale}/tools/finance`);
@@ -208,6 +238,12 @@ export async function respondInvite(inviteId: string, action: "accept" | "reject
     status: "accepted",
     respondedAt: new Date().toISOString(),
     ...(invite.type === "email" ? { userId: sessionUser } : {}),
+  });
+  logFinanceAction("board_invite_accepted", {
+    userId: sessionUser,
+    inviteId,
+    boardId: invite.boardId,
+    memberId: memberIdToAdd,
   });
 
   revalidatePath(`/${locale}/tools/finance`);

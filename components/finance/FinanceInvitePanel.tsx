@@ -4,7 +4,6 @@ import type { FinanceBoardInvite } from "@/types/finance";
 import { useTranslations } from "next-intl";
 
 type Props = {
-  locale: string;
   loading: boolean;
   invitesForMe: FinanceBoardInvite[];
   ownerRequests: FinanceBoardInvite[];
@@ -14,7 +13,6 @@ type Props = {
 };
 
 export default function FinanceInvitesPanel({
-  locale,
   loading,
   invitesForMe,
   ownerRequests,

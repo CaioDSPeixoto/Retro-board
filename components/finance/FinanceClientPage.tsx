@@ -20,6 +20,7 @@ import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
+import FinanceAccountsPanel from "@/components/finance/FinanceAccountsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -79,7 +80,7 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [activeView, setActiveView] = useState<"list" | "metrics" | "cards">("list");
+  const [activeView, setActiveView] = useState<"list" | "accounts" | "metrics" | "cards">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<"pay" | "move" | "delete" | null>(null);
@@ -91,6 +92,7 @@ export default function FinanceClientPage({
   const [realtimeError, setRealtimeError] = useState<string | null>(null);
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
+  const showAccounts = activeView === "accounts";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -666,6 +668,7 @@ export default function FinanceClientPage({
             <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
               {[
                 ["list", t("tabListLabel")],
+                ["accounts", t("tabAccountsLabel")],
                 ["metrics", t("tabMetricsLabel")],
                 ["cards", t("tabCardsLabel")],
               ].map(([view, label]) => (
@@ -858,7 +861,13 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {showMetrics ? (
+      {showAccounts ? (
+        <FinanceAccountsPanel
+          items={items}
+          locale={locale}
+          onEdit={handleEditItem}
+        />
+      ) : showMetrics ? (
         <FinanceMetricsPanel
           items={items}
           currentMonth={currentMonth}

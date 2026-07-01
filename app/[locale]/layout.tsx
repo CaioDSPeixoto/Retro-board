@@ -58,9 +58,6 @@ export default async function RootLayout({
             <Navbar locale={locale} />
             <main className="flex-1 w-full flex flex-col">
               {children}
-              <div className="mt-auto">
-                {/* <AdBanner /> */}
-              </div>
             </main>
             <Footer />
           </NextIntlClientProvider>

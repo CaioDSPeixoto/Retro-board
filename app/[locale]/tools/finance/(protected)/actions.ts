@@ -17,6 +17,7 @@ import {
   mapFinanceFixedTemplate,
   mapFinanceItem,
 } from "@/lib/finance/schema";
+import { checkActionRateLimit, logFinanceAction } from "@/lib/security/action-guard";
 
 /* ================= helpers ================= */
 
@@ -93,6 +94,11 @@ export async function createCategory(name: string, locale: string, boardId?: str
   const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:create-category", {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const trimmed = name.trim();
   if (!trimmed) return { error: t("errors.invalidCategoryName") };
@@ -142,6 +148,11 @@ export async function createCategory(name: string, locale: string, boardId?: str
     createdAt: new Date().toISOString(),
     ...(boardId ? { boardId } : {}),
   });
+  logFinanceAction("category_created", {
+    userId: sessionUser,
+    boardId: boardId || null,
+    categoryName: trimmed,
+  });
 
   revalidatePath(`/${locale}/tools/finance`);
   revalidatePath(`/${locale}/tools/finance/categories`);
@@ -153,6 +164,11 @@ export async function createCategory(name: string, locale: string, boardId?: str
 export async function createFinanceBoard(name: string, locale: string) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:create-board", {
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const trimmed = name.trim();
   if (!trimmed) return { error: "Nome inválido" };
@@ -164,6 +180,10 @@ export async function createFinanceBoard(name: string, locale: string) {
     createdAt: new Date().toISOString(),
     isPersonal: false,
     inviteCode: createInviteCode(),
+  });
+  logFinanceAction("board_created", {
+    userId: sessionUser,
+    boardId: ref.id,
   });
 
   revalidatePath(`/${locale}/tools/finance`);
@@ -367,6 +387,11 @@ export async function ensureFixedItemsForCurrentMonth(
 export async function createFinanceCard(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:create-card", {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const locale = String(formData.get("locale") || "pt").toLowerCase();
   const name = String(formData.get("name") || "").trim();
@@ -405,6 +430,11 @@ export async function createFinanceCard(formData: FormData) {
     ...(limit !== undefined ? { limit } : {}),
     ...(closingDay !== undefined ? { closingDay } : {}),
     ...(dueDay !== undefined ? { dueDay } : {}),
+  });
+  logFinanceAction("card_created", {
+    userId: sessionUser,
+    cardMode: mode,
+    hasLimit: limit !== undefined,
   });
 
   revalidatePath(`/${locale}/tools/finance`);
@@ -501,6 +531,11 @@ export async function deleteFinanceCard(formData: FormData) {
 export async function addFinanceItem(formData: FormData) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:add-item", {
+    limit: 80,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const titleRaw = String(formData.get("title") || "");
   const amountStr = String(formData.get("amount") || "");
@@ -608,6 +643,14 @@ export async function addFinanceItem(formData: FormData) {
     };
 
     await adminDb.collection("finance_items").add(newItem);
+    logFinanceAction("item_created", {
+      userId: sessionUser,
+      boardId: boardId || null,
+      type,
+      status,
+      amount,
+      installments: 1,
+    });
 
     revalidatePath(`/${locale}/tools/finance`);
     return { success: true };
@@ -662,6 +705,13 @@ export async function addFinanceItem(formData: FormData) {
   }
 
   // Para lançamentos parcelados, não criamos template de "Contas Fixas".
+  logFinanceAction("installment_items_created", {
+    userId: sessionUser,
+    boardId: boardId || null,
+    type,
+    amount,
+    installments,
+  });
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
 }

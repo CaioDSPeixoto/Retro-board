@@ -108,7 +108,6 @@ export default function FinanceBoardsClient({
 
   useEffect(() => {
     fetchInvitesAndApprovals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRespondInvite = async (inviteId: string, action: "accept" | "reject") => {
@@ -241,7 +240,7 @@ export default function FinanceBoardsClient({
         </div>
       )}
 
-      {/* Seção de ação: criar ou entrar */}
+      {/* Secao de acao: criar ou entrar */}
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden">
         {/* SELETOR DE ABAS */}
         <div className="flex border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]">
@@ -267,7 +266,7 @@ export default function FinanceBoardsClient({
           </button>
         </div>
 
-        {/* CONTEÚDO DAS ABAS */}
+        {/* CONTEUDO DAS ABAS */}
         <div className="p-4">
           {activeTab === "create" ? (
             <form onSubmit={handleCreate} className="flex flex-col gap-3 md:flex-row">
@@ -303,9 +302,8 @@ export default function FinanceBoardsClient({
         </div>
       </div>
 
-      {/* APROVAÇÕES + CONVITES */}
+      {/* APROVACOES + CONVITES */}
       <FinanceInvitesPanel
-        locale={locale}
         loading={invitesLoading}
         invitesForMe={invitesForMe}
         ownerRequests={ownerRequests}
@@ -393,7 +391,7 @@ export default function FinanceBoardsClient({
                       {membersLabel(board.memberIds?.length || 1)}
                     </span>
                     <span className="text-sm font-semibold text-[var(--color-accent-primary)]">
-                      {tBoards("openBoard")} →
+                      {tBoards("openBoard")} {"->"}
                     </span>
                   </div>
                 </Link>

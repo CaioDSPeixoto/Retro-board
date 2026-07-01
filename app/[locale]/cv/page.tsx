@@ -44,7 +44,7 @@ export default async function ResumePage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  await params;
   const t = await getTranslations("Resume");
 
   const header = t.raw("header") as Header;
