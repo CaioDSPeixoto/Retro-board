@@ -45,6 +45,7 @@ type Props = {
   currentBoardId?: string | null;
   sessionUserId: string;
   previousCashBalance?: number;
+  previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
 };
 
@@ -57,6 +58,7 @@ export default function FinanceClientPage({
   currentBoardId,
   sessionUserId,
   previousCashBalance = 0,
+  previousMonthCashBalance = 0,
   initialCards = [],
 }: Props) {
   const t = useTranslations("FinancePage");
@@ -602,6 +604,10 @@ export default function FinanceClientPage({
           {showAccumulatedBalance && (
             <div className="mt-2 flex w-full max-w-sm flex-col items-stretch rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
               <div className="flex items-center justify-between gap-3">
+                <span className="text-blue-100">{t("previousMonthBalanceLabel")}</span>
+                <span className="font-semibold">{currency(previousMonthCashBalance)}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
                 <span className="text-blue-100">{t("previousBalanceLabel")}</span>
                 <span className="font-semibold">{currency(previousCashBalance)}</span>
               </div>

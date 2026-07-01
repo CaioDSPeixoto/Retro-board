@@ -9,6 +9,7 @@ import {
   getCategoriesData,
   getBoardsData,
   getCashBalanceBeforeMonth,
+  getPreviousMonthCashBalance,
   getFinanceCardsData,
 } from "./data";
 import type { FinanceBoard, FinanceItem, FinanceCard } from "@/types/finance";
@@ -111,6 +112,7 @@ export default async function FinancePage({
 
   const categories = await getCategoriesData(boardId);
   const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
+  const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
   const cards: FinanceCard[] = await getFinanceCardsData(boardId);
 
   return (
@@ -124,6 +126,7 @@ export default async function FinancePage({
         currentBoardId={boardId}
         sessionUserId={safeSessionUserId}
         previousCashBalance={previousCashBalance}
+        previousMonthCashBalance={previousMonthCashBalance}
         initialCards={cards}
       />
     </div>

@@ -3,7 +3,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import type { FinanceBoard, FinanceItem, FinanceBoardInvite, FinanceCard } from "@/types/finance";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
-import { getMonthRange } from "@/lib/finance/utils";
+import { getMonthRange, getPreviousMonthKey } from "@/lib/finance/utils";
 import { getRealizedBalance } from "@/lib/finance/calculations";
 import { canAccessFinanceBoard, mapFinanceItem } from "@/lib/finance/server";
 import {
@@ -164,6 +164,15 @@ export async function getCashBalanceBeforeMonth(
     items.push(mapFinanceItem(doc));
   });
 
+  return getRealizedBalance(items);
+}
+
+export async function getPreviousMonthCashBalance(
+  month: string,
+  boardId?: string | null,
+): Promise<number> {
+  const previousMonth = getPreviousMonthKey(month);
+  const items = await getFinanceItemsData(previousMonth, boardId);
   return getRealizedBalance(items);
 }
 

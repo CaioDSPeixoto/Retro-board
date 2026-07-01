@@ -14,6 +14,15 @@ export function getMonthRange(month: string): { start: string; end: string } {
 }
 
 /**
+ * Retorna o mês anterior no formato "YYYY-MM".
+ */
+export function getPreviousMonthKey(month: string): string {
+  const [yearStr, monthStr] = month.split("-");
+  const date = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10) - 2, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
  * Normaliza uma string para busca (remove acentos, lowercase, trim).
  */
 export function normalizeForSearch(value: string): string {
