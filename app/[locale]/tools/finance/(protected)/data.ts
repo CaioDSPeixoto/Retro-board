@@ -2,6 +2,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import type { FinanceBoard, FinanceItem, FinanceBoardInvite, FinanceCard } from "@/types/finance";
+import type { DocumentData, Query, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange, getPreviousMonthKey } from "@/lib/finance/utils";
 import { getRealizedBalance } from "@/lib/finance/calculations";
@@ -14,6 +15,9 @@ import {
 } from "@/lib/finance/schema";
 
 /* ================= utils ================= */
+
+type FirestoreQuery = Query<DocumentData, DocumentData>;
+type FirestoreDoc = QueryDocumentSnapshot<DocumentData, DocumentData>;
 
 /* ================= invites ================= */
 
@@ -48,7 +52,7 @@ export async function getBoardsData(): Promise<FinanceBoard[]> {
     .get();
 
   const boardsById = new Map<string, FinanceBoard>();
-  const addBoard = (doc: any) => {
+  const addBoard = (doc: FirestoreDoc) => {
     boardsById.set(doc.id, mapFinanceBoard(doc));
   };
 
@@ -64,7 +68,7 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   const sessionUserId = await getSession();
   if (!sessionUserId) return BUILTIN_CATEGORIES;
 
-  let query: any = adminDb.collection("finance_categories");
+  let query: FirestoreQuery = adminDb.collection("finance_categories");
 
   // Se tiver boardId, filtra por ele.
   // Se não tiver boardId, queremos apenas as categorias pessoais.
@@ -80,7 +84,7 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   const snap = await query.get();
 
   const userCats = new Set<string>();
-  snap.forEach((doc: any) => {
+  snap.forEach((doc: FirestoreDoc) => {
     const category = mapFinanceCategory(doc);
     // Se pedimos boardId, o filtro do banco já garantiu.
     // Se não pedimos boardId, só queremos as que não têm boardId.
@@ -110,7 +114,7 @@ export async function getFinanceItemsData(
     if (!allowed) return [];
   }
 
-  let queryRef: any = adminDb
+  let queryRef: FirestoreQuery = adminDb
     .collection("finance_items")
     .where("date", ">=", start)
     .where("date", "<=", end);
@@ -124,7 +128,7 @@ export async function getFinanceItemsData(
   const snap = await queryRef.get();
 
   const items: FinanceItem[] = [];
-  snap.forEach((doc: any) => {
+  snap.forEach((doc: FirestoreDoc) => {
     items.push(mapFinanceItem(doc));
   });
 
@@ -147,7 +151,7 @@ export async function getCashBalanceBeforeMonth(
     if (!allowed) return 0;
   }
 
-  let queryRef: any = adminDb
+  let queryRef: FirestoreQuery = adminDb
     .collection("finance_items")
     .where("date", "<", start);
 
@@ -160,7 +164,7 @@ export async function getCashBalanceBeforeMonth(
   const snap = await queryRef.get();
 
   const items: FinanceItem[] = [];
-  snap.forEach((doc: any) => {
+  snap.forEach((doc: FirestoreDoc) => {
     items.push(mapFinanceItem(doc));
   });
 
@@ -194,7 +198,7 @@ export async function getFinanceCardsData(
   const snap = await queryRef.get();
   const cards: FinanceCard[] = [];
 
-  snap.forEach((doc: any) => {
+  snap.forEach((doc: FirestoreDoc) => {
     cards.push(mapFinanceCard(doc));
   });
 

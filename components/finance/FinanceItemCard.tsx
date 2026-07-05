@@ -239,6 +239,7 @@ export default function FinanceItemCard({
   };
 
   const canToggle = !isSynthetic && !isMoved;
+  const canBulkSelect = !isSynthetic && !isMoved;
   const canShowToggleButton =
     canToggle &&
     (item.status === "pending" ||
@@ -253,15 +254,15 @@ export default function FinanceItemCard({
     <>
       {/* CARD */}
       <div
-        className={`${compact ? "p-3 mb-2" : "p-4 mb-3"} rounded-xl shadow-sm border flex items-center justify-between gap-3 transition-colors ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
+        className={`${compact ? "p-3 mb-2" : "p-4 mb-3"} rounded-xl shadow-sm border flex items-center justify-between gap-3 transition-colors ${selectionMode && !canBulkSelect ? "opacity-60" : ""} ${!isPaid && !isMoved && item.date < new Date().toISOString().split("T")[0]
           ? "finance-warning-soft"
           : "bg-[var(--color-surface)] border-[var(--color-border)]"
           } ${selected ? "ring-2 ring-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)]" : ""}`}
-        onClick={() => selectionMode && onToggleSelection && onToggleSelection(item.id)}
+        onClick={() => selectionMode && canBulkSelect && onToggleSelection && onToggleSelection(item.id)}
       >
         {selectionMode ? (
           <div className="mr-1">
-          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)]" : "bg-[var(--color-surface)] border-[var(--color-border)]"}`}>
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${selected ? "bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)]" : "bg-[var(--color-surface)] border-[var(--color-border)]"} ${!canBulkSelect ? "border-dashed" : ""}`}>
               {selected && <FiCheckCircle className="text-white" size={14} />}
             </div>
           </div>

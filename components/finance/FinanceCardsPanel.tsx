@@ -9,7 +9,8 @@ import {
   deleteFinanceCard,
   updateFinanceCard,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
-import { getCardStatementCycle, isDateInCycle } from "@/lib/finance/card-cycle";
+import { getCardStatementCycle } from "@/lib/finance/card-cycle";
+import { calculateCardDashboard } from "@/lib/finance/card-dashboard";
 import { getMonthRange } from "@/lib/finance/utils";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -82,24 +83,10 @@ export default function FinanceCardsPanel({
     return () => unsubscribe();
   }, [boardId, cards, currentMonth, items, sessionUserId]);
 
-  const cardTotals = useMemo(() => {
-    const map = new Map<string, number>();
-
-    for (const card of cards) {
-      const cycle = getCardStatementCycle(currentMonth, card.closingDay, card.dueDay);
-      const used = cardItems.reduce((total, item) => {
-        if (item.type !== "expense" || item.status === "moved") return total;
-        const matchesCard = item.cardId === card.id || (!item.cardId && item.cardName === card.name);
-        if (!matchesCard) return total;
-        if (cycle && !isDateInCycle(item.date, cycle)) return total;
-        return total + Number(item.amount || 0);
-      }, 0);
-
-      map.set(card.id, used);
-    }
-
-    return map;
-  }, [cardItems, cards, currentMonth]);
+  const cardsDashboard = useMemo(
+    () => calculateCardDashboard(cards, cardItems, currentMonth),
+    [cardItems, cards, currentMonth],
+  );
 
   const currency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -219,6 +206,53 @@ export default function FinanceCardsPanel({
         </form>
       </section>
 
+      {cards.length > 0 && (
+        <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <div className="mb-3">
+            <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+              {t("cardsDashboardTitle")}
+            </h2>
+            <p className="text-[11px] text-[var(--color-text-muted)]">
+              {t("cardsDashboardHint", { count: cardsDashboard.cardsWithLimit })}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="rounded-xl bg-[var(--color-surface-raised)] p-3">
+              <p className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+                {t("cardsTotalLimitLabel")}
+              </p>
+              <p className="mt-1 text-lg font-bold text-[var(--color-text-primary)]">
+                {currency(cardsDashboard.totalLimit)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-[var(--color-surface-raised)] p-3">
+              <p className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+                {t("cardsUsedLimitLabel")}
+              </p>
+              <p className="mt-1 text-lg font-bold finance-danger-text">
+                {currency(cardsDashboard.totalUsed)}
+              </p>
+              {cardsDashboard.totalLimit > 0 && (
+                <p className={`mt-0.5 text-[11px] font-semibold ${cardsDashboard.totalUsagePercent > 100 ? "finance-danger-text" : "text-[var(--color-text-muted)]"}`}>
+                  {t("cardsUsagePercentLabel", { percent: cardsDashboard.totalUsagePercent.toFixed(0) })}
+                </p>
+              )}
+            </div>
+            <div className="rounded-xl bg-[var(--color-surface-raised)] p-3">
+              <p className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+                {cardsDashboard.totalAvailable >= 0
+                  ? t("cardsAvailableLimitLabel")
+                  : t("cardsOverLimitLabel")}
+              </p>
+              <p className={`mt-1 text-lg font-bold ${cardsDashboard.totalAvailable >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
+                {currency(Math.abs(cardsDashboard.totalAvailable))}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {cards.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
@@ -226,10 +260,12 @@ export default function FinanceCardsPanel({
           </div>
         ) : (
           cards.map((card) => {
-            const used = cardTotals.get(card.id) ?? 0;
+            const used = cardsDashboard.cardTotals.get(card.id) ?? 0;
             const cycle = getCardStatementCycle(currentMonth, card.closingDay, card.dueDay);
             const limit = Number(card.limit || 0);
-            const percent = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+            const usagePercent = limit > 0 ? (used / limit) * 100 : 0;
+            const progressPercent = Math.min(usagePercent, 100);
+            const available = limit - used;
 
             return (
               <article
@@ -243,7 +279,7 @@ export default function FinanceCardsPanel({
                     </h3>
                     <p className="text-[11px] text-[var(--color-text-muted)]">
                       {card.mode === "credit" ? t("cardModeCredit") : t("cardModeDebit")}
-                      {card.lastDigits ? ` · final ${card.lastDigits}` : ""}
+                      {card.lastDigits ? ` - final ${card.lastDigits}` : ""}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[var(--color-accent-primary)]">
@@ -265,11 +301,21 @@ export default function FinanceCardsPanel({
                   <div className="mt-3">
                     <div className="flex justify-between text-[11px] text-[var(--color-text-muted)] mb-1">
                       <span>{t("cardLimitLabel")}: {currency(limit)}</span>
-                      <span>{percent.toFixed(0)}%</span>
+                      <span className={usagePercent > 100 ? "finance-danger-text font-bold" : ""}>
+                        {usagePercent.toFixed(0)}%
+                      </span>
                     </div>
                     <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
-                    <div className="h-2 rounded-full bg-[var(--color-accent-primary)]" style={{ width: `${percent}%` }} />
+                      <div
+                        className={`h-2 rounded-full ${usagePercent > 100 ? "bg-[var(--color-danger-strong)]" : "bg-[var(--color-accent-primary)]"}`}
+                        style={{ width: `${progressPercent}%` }}
+                      />
                     </div>
+                    <p className={`mt-1 text-[11px] font-semibold ${available >= 0 ? "text-[var(--color-text-secondary)]" : "finance-danger-text"}`}>
+                      {available >= 0
+                        ? t("cardAvailableLimitLabel")
+                        : t("cardOverLimitLabel")}: {currency(Math.abs(available))}
+                    </p>
                   </div>
                 )}
 

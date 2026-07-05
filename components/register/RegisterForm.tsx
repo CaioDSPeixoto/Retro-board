@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 import { auth } from "@/lib/firebase";
 import { loginAction } from "@/app/[locale]/tools/finance/login/actions";
 import Link from "next/link";
@@ -43,9 +44,10 @@ export default function RegisterForm({ locale }: { locale: string }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
       idToken = await userCredential.user.getIdToken(true);
-    } catch (firebaseError: any) {
-      if (firebaseError.code === "auth/email-already-in-use") setError(t("errors.inUse"));
-      else if (firebaseError.code === "auth/invalid-email") setError(t("errors.invalid"));
+    } catch (firebaseError: unknown) {
+      const code = firebaseError instanceof FirebaseError ? firebaseError.code : "";
+      if (code === "auth/email-already-in-use") setError(t("errors.inUse"));
+      else if (code === "auth/invalid-email") setError(t("errors.invalid"));
       else setError(t("errors.general"));
 
       setLoading(false);

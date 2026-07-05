@@ -1,5 +1,15 @@
 import { getMessages } from "next-intl/server";
 
+type Highlight = {
+  title: string;
+  desc: string;
+};
+
+type TimelineEvent = {
+  year: string;
+  text: string;
+};
+
 type FunStat =
   | {
       icon: string;
@@ -14,6 +24,28 @@ type FunStat =
       label: string;
       type: "daysSinceProdBug" | "daysSinceWarRoom";
     };
+
+type ComputedFunStat = FunStat & {
+  value: string;
+};
+
+type HomeMessages = {
+  title: string;
+  subtitle: string;
+  aboutTitle: string;
+  aboutBody: string;
+  highlightsTitle: string;
+  highlights: Highlight[];
+  stacksTitle: string;
+  stacks: string[];
+  historyTitle: string;
+  historyBody: string;
+  timeline: TimelineEvent[];
+  funStatsTitle: string;
+  funStats: FunStat[];
+  lastProdBugAt?: string;
+  lastWarRoomAt?: string;
+};
 
 function daysBetweenUTC(fromISO: string, to = new Date()) {
   const from = new Date(fromISO + "T00:00:00Z");
@@ -40,13 +72,13 @@ export default async function HomePage({
 }) {
   await params;
   const messages = await getMessages();
-  const t = messages.Home as any;
+  const t = messages.Home as unknown as HomeMessages;
 
-  const funStats = (t.funStats as FunStat[]) ?? [];
-  const lastProdBugAt = (t.lastProdBugAt as string) || "";
-  const lastWarRoomAt = (t.lastWarRoomAt as string) || "";
+  const funStats = t.funStats ?? [];
+  const lastProdBugAt = t.lastProdBugAt || "";
+  const lastWarRoomAt = t.lastWarRoomAt || "";
 
-  const computedFunStats = funStats.map((stat) => {
+  const computedFunStats: ComputedFunStat[] = funStats.map((stat) => {
     if ("baseValue" in stat && "dailyIncrement" in stat && "baseDate" in stat) {
       const value = computeDailyValue(stat.baseValue, stat.baseDate, stat.dailyIncrement);
       const formatted = `${stat.prefix ?? ""}${formatNumberBR(value)}`;
@@ -94,7 +126,7 @@ export default async function HomePage({
         >
           <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>{t.highlightsTitle}</h2>
           <div className="mt-3 grid gap-3">
-            {t.highlights.map((item: any, i: number) => (
+            {t.highlights.map((item, i) => (
               <div
                 key={i}
                 className="rounded-xl border p-3 transition-all duration-300 hover:scale-[1.03] hover:shadow-md"
@@ -115,7 +147,7 @@ export default async function HomePage({
       >
         <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>{t.stacksTitle}</h2>
         <div className="flex flex-wrap gap-2 mt-4">
-          {t.stacks.map((stack: any, i: number) => (
+          {t.stacks.map((stack, i) => (
             <span
               key={i}
               className="px-3 py-1 text-sm rounded-full border transition-all duration-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 cursor-default"
@@ -140,7 +172,7 @@ export default async function HomePage({
         <p className="mt-3 mb-6" style={{ color: "var(--color-text-secondary)" }}>{t.historyBody}</p>
 
         <div className="relative border-l-2 border-blue-400 ml-3 space-y-6">
-          {t.timeline.map((event: any, i: number) => (
+          {t.timeline.map((event, i) => (
             <div key={i} className="relative pl-6 group">
               <span className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full bg-blue-500 border-2 border-[var(--color-surface)] transition-all duration-300 group-hover:scale-125 group-hover:bg-blue-600" />
               <div
@@ -162,7 +194,7 @@ export default async function HomePage({
       >
         <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>{t.funStatsTitle}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-          {computedFunStats.map((stat: any, i: number) => (
+          {computedFunStats.map((stat, i) => (
             <div
               key={i}
               className="rounded-xl border p-4 text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1"

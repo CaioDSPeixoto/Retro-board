@@ -4,7 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { addDays, format } from "date-fns";
 import { FiBell } from "react-icons/fi";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  type DocumentData,
+  type QueryDocumentSnapshot,
+  type QuerySnapshot,
+} from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import { auth, db } from "@/lib/firebase";
 import type { FinanceItem } from "@/types/finance";
@@ -36,8 +44,8 @@ export default function FinanceNotificationBell() {
       unsubscribeBoardItems = [];
     };
 
-    const applySnapshot = (snapshot: any) => {
-      snapshot.docChanges().forEach((change: any) => {
+    const applySnapshot = (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+      snapshot.docChanges().forEach((change) => {
         if (change.type === "removed") {
           itemMap.delete(change.doc.id);
           return;
@@ -89,7 +97,7 @@ export default function FinanceNotificationBell() {
           });
           publishItems();
 
-          snapshot.forEach((boardDoc: any) => {
+          snapshot.forEach((boardDoc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
             const unsubscribeBoardListener = onSnapshot(
               query(
                 collection(db, "finance_items"),
@@ -122,8 +130,9 @@ export default function FinanceNotificationBell() {
   const partialItems = items.filter(
     (item) => !item.isSynthetic && item.status === "partial",
   );
-  const notificationCount =
-    overdueItems.length + dueSoonItems.length + partialItems.length;
+  const notificationCount = new Set(
+    [...overdueItems, ...dueSoonItems, ...partialItems].map((item) => item.id),
+  ).size;
 
   if (!available) return null;
 

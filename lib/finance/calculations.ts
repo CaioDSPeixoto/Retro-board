@@ -8,6 +8,8 @@ export type FinanceTotals = {
   balance: number;
 };
 
+export type BulkFinanceAction = "pay" | "move" | "delete";
+
 export function getPaidAmount(item: FinanceItem): number {
   if (item.status === "paid") return Number(item.paidAmount ?? item.amount ?? 0);
   if (item.status === "partial") return Number(item.paidAmount ?? 0);
@@ -72,6 +74,26 @@ export function getFinanceTotals(items: FinanceItem[]): FinanceTotals {
   totals.balance = roundMoney(totals.incomes - totals.expenses);
 
   return totals;
+}
+
+export function getBulkSelectionTotal(items: FinanceItem[], selectedIds: Set<string>): number {
+  return roundMoney(
+    items.reduce((total, item) => {
+      if (!selectedIds.has(item.id)) return total;
+      if (item.isSynthetic || item.status === "moved") return total;
+
+      const amount = getOpenAmount(item) || Number(item.amount || 0);
+      return total + getSignedAmount(item, amount);
+    }, 0),
+  );
+}
+
+export function isBulkActionEligible(item: FinanceItem, action: BulkFinanceAction): boolean {
+  if (item.isSynthetic || item.status === "moved") return false;
+
+  if (action === "pay") return item.status !== "paid";
+  if (action === "move") return item.status !== "paid" && item.status !== "partial";
+  return item.status !== "paid" && item.status !== "partial";
 }
 
 export function roundMoney(value: number): number {

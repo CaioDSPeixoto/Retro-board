@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   getFinanceTotals,
+  getBulkSelectionTotal,
   getOpenAmount,
   getPaidAmount,
   getRealizedBalance,
+  isBulkActionEligible,
 } from "./calculations";
 import type { FinanceItem } from "../../types/finance";
 
@@ -56,5 +58,33 @@ describe("finance calculations", () => {
     ]);
 
     expect(balance).toBe(850);
+  });
+
+  it("calcula total selecionado usando valor em aberto e ignorando itens inacionaveis", () => {
+    const selectedItems = [
+      item({ id: "income-1", type: "income", status: "pending", amount: 500 }),
+      item({ id: "expense-1", type: "expense", status: "partial", amount: 400, paidAmount: 150, openAmount: 250 }),
+      item({ id: "moved-1", type: "expense", status: "moved", amount: 900 }),
+      item({ id: "synthetic-1", type: "income", status: "pending", amount: 700, isSynthetic: true }),
+    ];
+
+    expect(
+      getBulkSelectionTotal(
+        selectedItems,
+        new Set(["income-1", "expense-1", "moved-1", "synthetic-1"]),
+      ),
+    ).toBe(250);
+  });
+
+  it("define elegibilidade das acoes em massa por status", () => {
+    expect(isBulkActionEligible(item({ status: "pending" }), "pay")).toBe(true);
+    expect(isBulkActionEligible(item({ status: "partial" }), "pay")).toBe(true);
+    expect(isBulkActionEligible(item({ status: "paid" }), "pay")).toBe(false);
+
+    expect(isBulkActionEligible(item({ status: "pending" }), "move")).toBe(true);
+    expect(isBulkActionEligible(item({ status: "partial" }), "move")).toBe(false);
+    expect(isBulkActionEligible(item({ status: "paid" }), "delete")).toBe(false);
+    expect(isBulkActionEligible(item({ status: "pending", isSynthetic: true }), "delete")).toBe(false);
+    expect(isBulkActionEligible(item({ status: "moved" }), "pay")).toBe(false);
   });
 });

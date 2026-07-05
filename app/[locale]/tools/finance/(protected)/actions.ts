@@ -8,7 +8,13 @@ import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange } from "@/lib/finance/utils";
 import { getTranslations } from "next-intl/server";
-import { FieldValue } from "firebase-admin/firestore";
+import {
+  FieldValue,
+  type DocumentData,
+  type Query,
+  type QueryDocumentSnapshot,
+  type UpdateData,
+} from "firebase-admin/firestore";
 import {
   createMovedFinanceItemPayload,
   mapFinanceBoard,
@@ -20,6 +26,9 @@ import {
 import { checkActionRateLimit, logFinanceAction } from "@/lib/security/action-guard";
 
 /* ================= helpers ================= */
+
+type FirestoreQuery = Query<DocumentData, DocumentData>;
+type FirestoreDoc = QueryDocumentSnapshot<DocumentData, DocumentData>;
 
 async function getBoard(boardId: string): Promise<FinanceBoard | null> {
   const snap = await adminDb.collection("finance_boards").doc(boardId).get();
@@ -80,7 +89,7 @@ async function deleteCarriedItems(itemId: string) {
   await batch.commit();
 }
 
-async function deleteDocsInChunks(docs: any[]) {
+async function deleteDocsInChunks(docs: FirestoreDoc[]) {
   for (let index = 0; index < docs.length; index += 450) {
     const batch = adminDb.batch();
     docs.slice(index, index + 450).forEach((doc) => batch.delete(doc.ref));
@@ -316,7 +325,7 @@ export async function ensureFixedItemsForCurrentMonth(
     if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
   }
 
-  let templatesQuery: any = adminDb
+  let templatesQuery: FirestoreQuery = adminDb
     .collection("finance_fixed_templates")
     .where("active", "==", true);
 
@@ -776,7 +785,7 @@ export async function updateFinanceItem(formData: FormData) {
   if (paidAmount >= amount) status = "paid";
   else if (paidAmount > 0) status = "partial";
 
-  const updateData: any = {
+  const updateData: UpdateData<DocumentData> = {
     title: title.trim(),
     amount,
     date,
@@ -1040,7 +1049,7 @@ export async function applyPaymentToFinanceItem(
       return { error: "Este lançamento não pode ser movido." };
     }
 
-    const newItemData: any = {
+    const newItemData: Omit<FinanceItem, "id"> = {
       userId: existing.userId,
       title: existing.title,
       amount: totalAmount,
@@ -1153,7 +1162,7 @@ export async function applyPaymentToFinanceItem(
     });
     duplicated.forEach((doc) => batch.delete(doc.ref));
   } else {
-    const newItemData: any = {
+    const newItemData: Omit<FinanceItem, "id"> = {
       userId: existing.userId,
       title: existing.title,
       amount: remaining,

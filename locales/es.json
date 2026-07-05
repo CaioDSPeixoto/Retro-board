@@ -40,7 +40,7 @@
       "melhorar": "Mejorar"
     },
     "errors": {
-      "loadRoom": "No se pudo cargar la sala. Verifica tu conexi?n e int?ntalo de nuevo.",
+      "loadRoom": "No se pudo cargar la sala. Verifica tu conexión e inténtalo de nuevo.",
       "realtime": "No se pudieron sincronizar las tarjetas en tiempo real."
     }
   },
@@ -428,6 +428,8 @@
     "manageCategoriesLabel": "Gestionar categorías",
     "selectButton": "Seleccionar",
     "cancelSelection": "Cancelar selección",
+    "selectVisibleButton": "Seleccionar visibles",
+    "clearSelectionButton": "Limpiar selección",
     "selectedTotalLabel": "Total seleccionado",
     "bulkPay": "Finalizar",
     "bulkMove": "Mover",
@@ -448,6 +450,15 @@
     "cardLimitLabel": "Límite",
     "cardClosingDayLabel": "Cierra día",
     "cardDueDayLabel": "Vence día",
+    "cardsDashboardTitle": "Resumen de tarjetas",
+    "cardsDashboardHint": "{count} tarjeta(s) con límite registrado.",
+    "cardsTotalLimitLabel": "Límite total",
+    "cardsUsedLimitLabel": "Usado en el período",
+    "cardsUsagePercentLabel": "{percent}% del límite",
+    "cardsAvailableLimitLabel": "Disponible",
+    "cardsOverLimitLabel": "Sobre el límite",
+    "cardAvailableLimitLabel": "Disponible",
+    "cardOverLimitLabel": "Sobre el límite",
     "errors": {
       "unauthorized": "No autorizado.",
       "invalidEmail": "Email inválido.",
@@ -462,7 +473,7 @@
       "onlyInviteeCanAccept": "Solo el invitado puede aceptar.",
       "onlyOwnerCanApprove": "Solo el dueño puede aprobar.",
       "requestMissingUserId": "Pedido sin userId.",
-      "realtimeUnavailable": "No se pudieron sincronizar los datos en tiempo real. Actualiza la p?gina si la informaci?n parece desactualizada."
+      "realtimeUnavailable": "No se pudieron sincronizar los datos en tiempo real. Actualiza la página si la información parece desactualizada."
     },
     "clearFiltersButton": "Limpiar {count} filtro(s)",
     "bulkResultMessage": "{changed} registro(s) actualizado(s). {skipped} omitido(s).",
@@ -471,7 +482,7 @@
     "closeBulkMessage": "Cerrar aviso",
     "cardStatementCycleLabel": "Factura {start} a {end}",
     "cardUpdateButton": "Guardar tarjeta",
-    "cardCancelEditButton": "Cancelar edici?n",
+    "cardCancelEditButton": "Cancelar edición",
     "cardEditButton": "Editar",
     "cardDeleteButton": "Eliminar",
     "accumulatedBalanceHint": "El resultado del mes anterior considera solo el mes pasado. El saldo acumulado anterior considera todos los meses antes de este.",
@@ -483,9 +494,9 @@
     "notificationsTitle": "Notificaciones",
     "notificationsEmpty": "No hay notificaciones por ahora.",
     "notificationOverdue": "{count} cuenta(s) vencida(s).",
-    "notificationDueSoon": "{count} cuenta(s) vence(n) en los pr?ximos 3 d?as.",
+    "notificationDueSoon": "{count} cuenta(s) vence(n) en los próximos 3 días.",
     "notificationPartial": "{count} lanzamiento(s) con pago parcial.",
-    "cardProfileScopeHint": "Las tarjetas son personales: puedes usarlas en cualquier tablero, pero solo t? las ves.",
+    "cardProfileScopeHint": "Las tarjetas son personales: puedes usarlas en cualquier tablero, pero solo tú las ves.",
     "tabAccountsLabel": "Cuentas",
     "accountsSearchPlaceholder": "Buscar cuenta...",
     "accountsFilterAll": "Todas",

@@ -31,7 +31,13 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
 import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
-import { getFinanceTotals, getOpenAmount } from "@/lib/finance/calculations";
+import {
+  getBulkSelectionTotal,
+  getFinanceTotals,
+  getOpenAmount,
+  isBulkActionEligible,
+  type BulkFinanceAction,
+} from "@/lib/finance/calculations";
 import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
@@ -85,7 +91,7 @@ export default function FinanceClientPage({
   const [activeView, setActiveView] = useState<"list" | "accounts" | "metrics" | "cards">("list");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState<"pay" | "move" | "delete" | null>(null);
+  const [bulkLoading, setBulkLoading] = useState<BulkFinanceAction | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
@@ -289,6 +295,15 @@ export default function FinanceClientPage({
     ].filter(Boolean).length;
   }, [dueFilter, nameFilter, statusFilter, typeFilter]);
 
+  const selectableVisibleItems = useMemo(
+    () => visibleItems.filter((item) => !item.isSynthetic && item.status !== "moved"),
+    [visibleItems],
+  );
+
+  const allVisibleSelected =
+    selectableVisibleItems.length > 0 &&
+    selectableVisibleItems.every((item) => selectedItems.has(item.id));
+
   const overdueItems = useMemo(
     () =>
       items.filter(
@@ -351,30 +366,71 @@ export default function FinanceClientPage({
     setBulkMessage(null);
   };
 
+  const handleSelectVisibleItems = () => {
+    setSelectedItems(new Set(selectableVisibleItems.map((item) => item.id)));
+    setBulkError(null);
+    setBulkMessage(null);
+  };
+
+  const handleClearSelectedItems = () => {
+    setSelectedItems(new Set());
+    setBulkError(null);
+    setBulkMessage(null);
+  };
+
   const selectedTotal = useMemo(() => {
-    let total = 0;
-    items.forEach((item) => {
-      if (selectedItems.has(item.id)) {
-        if (item.type === "income") total += item.amount;
-        else total -= item.amount;
-      }
-    });
-    return total;
+    return getBulkSelectionTotal(items, selectedItems);
   }, [items, selectedItems]);
+
+  const selectedActionableItems = useMemo(
+    () =>
+      items.filter(
+        (item) =>
+          selectedItems.has(item.id) &&
+          !item.isSynthetic &&
+          item.status !== "moved",
+      ),
+    [items, selectedItems],
+  );
+
+  const selectedPayableItems = useMemo(
+    () =>
+      selectedActionableItems.filter((item) => isBulkActionEligible(item, "pay")),
+    [selectedActionableItems],
+  );
+
+  const selectedMovableItems = useMemo(
+    () =>
+      selectedActionableItems.filter((item) => isBulkActionEligible(item, "move")),
+    [selectedActionableItems],
+  );
+
+  const selectedDeletableItems = useMemo(
+    () =>
+      selectedActionableItems.filter((item) => isBulkActionEligible(item, "delete")),
+    [selectedActionableItems],
+  );
 
   const handleOpenCreateModal = () => {
     setEditingItem(null);
     setIsModalOpen(true);
   };
 
-  const handleBulkAction = async (action: "pay" | "move" | "delete") => {
-    if (selectedItems.size === 0 || bulkLoading) return;
+  const handleBulkAction = async (action: BulkFinanceAction) => {
+    const eligibleItems =
+      action === "pay"
+        ? selectedPayableItems
+        : action === "move"
+          ? selectedMovableItems
+          : selectedDeletableItems;
+
+    if (eligibleItems.length === 0 || bulkLoading) return;
 
     setBulkLoading(action);
     setBulkError(null);
     setBulkMessage(null);
 
-    const res = await bulkFinanceItemsAction(Array.from(selectedItems), action, locale);
+    const res = await bulkFinanceItemsAction(eligibleItems.map((item) => item.id), action, locale);
     if (res && "error" in res && res.error) {
       setBulkError(res.error as string);
       setBulkLoading(null);
@@ -656,7 +712,7 @@ export default function FinanceClientPage({
       {/* LISTA / MÉTRICAS */}
       <div className="mt-3">
         <div className="flex justify-between items-center mb-3">
-          <div>
+          <div className="flex flex-wrap items-center gap-2">
             {activeView === "list" && (
               <button
                 onClick={toggleSelectionMode}
@@ -666,6 +722,15 @@ export default function FinanceClientPage({
                   }`}
               >
                 {selectionMode ? t("cancelSelection") : t("selectButton")}
+              </button>
+            )}
+            {activeView === "list" && selectionMode && selectableVisibleItems.length > 0 && (
+              <button
+                type="button"
+                onClick={allVisibleSelected ? handleClearSelectedItems : handleSelectVisibleItems}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+              >
+                {allVisibleSelected ? t("clearSelectionButton") : t("selectVisibleButton")}
               </button>
             )}
           </div>
@@ -931,13 +996,13 @@ export default function FinanceClientPage({
             </div>
             <div className="h-8 w-px bg-[var(--color-border)] mx-1" />
             <span className="text-xs text-[var(--color-text-muted)] font-medium">
-              {selectedItems.size} {selectedItems.size === 1 ? t("itemSingular") : t("itemPlural")}
+              {selectedActionableItems.length} {selectedActionableItems.length === 1 ? t("itemSingular") : t("itemPlural")}
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleBulkAction("pay")}
-                disabled={!!bulkLoading}
+                disabled={!!bulkLoading || selectedPayableItems.length === 0}
                 className="px-3 py-2 rounded-xl bg-[var(--color-success-strong)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "pay" ? t("bulkLoading") : t("bulkPay")}
@@ -945,7 +1010,7 @@ export default function FinanceClientPage({
               <button
                 type="button"
                 onClick={() => handleBulkAction("move")}
-                disabled={!!bulkLoading}
+                disabled={!!bulkLoading || selectedMovableItems.length === 0}
                 className="px-3 py-2 rounded-xl bg-[var(--color-accent-primary)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "move" ? t("bulkLoading") : t("bulkMove")}
@@ -953,7 +1018,7 @@ export default function FinanceClientPage({
               <button
                 type="button"
                 onClick={() => handleBulkAction("delete")}
-                disabled={!!bulkLoading}
+                disabled={!!bulkLoading || selectedDeletableItems.length === 0}
                 className="px-3 py-2 rounded-xl bg-[var(--color-danger-strong)] text-white text-xs font-bold disabled:opacity-60"
               >
                 {bulkLoading === "delete" ? t("bulkLoading") : t("bulkDelete")}
