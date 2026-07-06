@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { addDays, format } from "date-fns";
+import Link from "next/link";
 import { FiBell } from "react-icons/fi";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -22,7 +23,26 @@ function isOpenItem(item: FinanceItem) {
   return !item.isSynthetic && item.status !== "paid" && item.status !== "moved";
 }
 
-export default function FinanceNotificationBell() {
+type Props = {
+  locale: string;
+};
+
+function getFinanceNotificationHref(
+  item: FinanceItem,
+  locale: string,
+  filter: { accountsDue?: string; accountsStatus?: string },
+) {
+  const params = new URLSearchParams({
+    month: item.date.slice(0, 7),
+    view: "accounts",
+  });
+  if (item.boardId) params.set("boardId", item.boardId);
+  if (filter.accountsDue) params.set("accountsDue", filter.accountsDue);
+  if (filter.accountsStatus) params.set("accountsStatus", filter.accountsStatus);
+  return `/${locale}/tools/finance?${params.toString()}`;
+}
+
+export default function FinanceNotificationBell({ locale }: Props) {
   const t = useTranslations("FinancePage");
   const [items, setItems] = useState<FinanceItem[]>([]);
   const [open, setOpen] = useState(false);
@@ -136,6 +156,29 @@ export default function FinanceNotificationBell() {
 
   if (!available) return null;
 
+  const firstOverdueItem = overdueItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
+  const firstDueSoonItem = dueSoonItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
+  const firstPartialItem = partialItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
+
+  const renderNotificationLink = (
+    item: FinanceItem | undefined,
+    label: string,
+    className: string,
+    filter: { accountsDue?: string; accountsStatus?: string },
+  ) => {
+    if (!item) return null;
+
+    return (
+      <Link
+        href={getFinanceNotificationHref(item, locale, filter)}
+        onClick={() => setOpen(false)}
+        className={`block rounded-lg px-2 py-1.5 font-semibold transition hover:bg-[var(--color-surface-raised)] ${className}`}
+      >
+        {label}
+      </Link>
+    );
+  };
+
   return (
     <div className="relative">
       <button
@@ -169,19 +212,28 @@ export default function FinanceNotificationBell() {
           ) : (
             <div className="mt-2 space-y-2">
               {overdueItems.length > 0 && (
-                <p className="font-semibold finance-warning-text">
-                  {t("notificationOverdue", { count: overdueItems.length })}
-                </p>
+                renderNotificationLink(
+                  firstOverdueItem,
+                  t("notificationOverdue", { count: overdueItems.length }),
+                  "finance-warning-text",
+                  { accountsDue: "overdue" },
+                )
               )}
               {dueSoonItems.length > 0 && (
-                <p className="font-semibold text-[var(--color-accent-text)]">
-                  {t("notificationDueSoon", { count: dueSoonItems.length })}
-                </p>
+                renderNotificationLink(
+                  firstDueSoonItem,
+                  t("notificationDueSoon", { count: dueSoonItems.length }),
+                  "text-[var(--color-accent-text)]",
+                  { accountsDue: "next7" },
+                )
               )}
               {partialItems.length > 0 && (
-                <p className="font-semibold text-[var(--color-text-secondary)]">
-                  {t("notificationPartial", { count: partialItems.length })}
-                </p>
+                renderNotificationLink(
+                  firstPartialItem,
+                  t("notificationPartial", { count: partialItems.length }),
+                  "text-[var(--color-text-secondary)]",
+                  { accountsStatus: "partial" },
+                )
               )}
             </div>
           )}

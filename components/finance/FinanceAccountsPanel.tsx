@@ -14,20 +14,41 @@ type Props = {
   items: FinanceItem[];
   locale: string;
   onEdit: (item: FinanceItem) => void;
+  initialDueFilter?: AccountDueFilter;
+  initialStatusFilter?: AccountStatusFilter;
 };
 
-type AccountFilter = "all" | "overdue" | "partial";
+export type AccountDueFilter = "all" | "overdue" | "today" | "next7" | "next30";
+export type AccountStatusFilter = "all" | "partial";
+type AccountSortOption = "dateAsc" | "dateDesc" | "amountDesc" | "amountAsc" | "status";
 
-export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
+function addDaysKey(dateKey: string, days: number) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split("T")[0];
+}
+
+export default function FinanceAccountsPanel({
+  items,
+  locale,
+  onEdit,
+  initialDueFilter = "all",
+  initialStatusFilter = "all",
+}: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<AccountFilter>("all");
+  const [dueFilter, setDueFilter] = useState<AccountDueFilter>(initialDueFilter);
+  const [statusFilter, setStatusFilter] = useState<AccountStatusFilter>(initialStatusFilter);
+  const [sortOption, setSortOption] = useState<AccountSortOption>("dateAsc");
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const today = new Date().toISOString().split("T")[0];
+  const next7Limit = addDaysKey(today, 7);
+  const next30Limit = addDaysKey(today, 30);
   const query = normalizeForSearch(search);
 
   const accounts = useMemo(() => {
@@ -40,14 +61,30 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
           !query ||
           normalizeForSearch(item.title).includes(query) ||
           normalizeForSearch(item.category || "").includes(query);
-        const matchesFilter =
-          filter === "all" ||
-          (filter === "overdue" && item.date < today) ||
-          (filter === "partial" && item.status === "partial");
-        return matchesSearch && matchesFilter;
+        const matchesDueFilter =
+          dueFilter === "all" ||
+          (dueFilter === "overdue" && item.date < today) ||
+          (dueFilter === "today" && item.date === today) ||
+          (dueFilter === "next7" && item.date >= today && item.date <= next7Limit) ||
+          (dueFilter === "next30" && item.date >= today && item.date <= next30Limit);
+        const matchesStatusFilter =
+          statusFilter === "all" ||
+          (statusFilter === "partial" && item.status === "partial");
+        return matchesSearch && matchesDueFilter && matchesStatusFilter;
       })
-      .sort((a, b) => a.item.date.localeCompare(b.item.date));
-  }, [filter, items, query, today]);
+      .sort((a, b) => {
+        if (sortOption === "dateDesc") return b.item.date.localeCompare(a.item.date);
+        if (sortOption === "amountDesc") return b.openAmount - a.openAmount;
+        if (sortOption === "amountAsc") return a.openAmount - b.openAmount;
+        if (sortOption === "status") {
+          const statusOrder = { partial: 0, pending: 1, paid: 2, moved: 3 } as const;
+          const leftStatus = statusOrder[a.item.status] ?? 4;
+          const rightStatus = statusOrder[b.item.status] ?? 4;
+          return leftStatus - rightStatus || a.item.date.localeCompare(b.item.date);
+        }
+        return a.item.date.localeCompare(b.item.date);
+      });
+  }, [dueFilter, items, next30Limit, next7Limit, query, sortOption, statusFilter, today]);
 
   const payable = accounts.filter(({ item }) => item.type === "expense");
   const receivable = accounts.filter(({ item }) => item.type === "income");
@@ -138,6 +175,7 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
                       disabled={isPending}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-success-strong)] disabled:opacity-60"
                       title={item.type === "income" ? t("accountsReceiveAction") : t("accountsPayAction")}
+                      aria-label={item.type === "income" ? t("accountsReceiveAction") : t("accountsPayAction")}
                     >
                       {settling ? <Spinner size="sm" color="gray" /> : <FiCheckCircle size={15} />}
                     </button>
@@ -147,6 +185,7 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
                       disabled={isPending || item.status === "partial"}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)] disabled:opacity-50"
                       title={t("accountsMoveAction")}
+                      aria-label={t("accountsMoveAction")}
                     >
                       {moving ? <Spinner size="sm" color="gray" /> : <FiSkipForward size={15} />}
                     </button>
@@ -155,6 +194,7 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
                       onClick={() => onEdit(item)}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)]"
                       title={t("accountsEditAction")}
+                      aria-label={t("accountsEditAction")}
                     >
                       <FiEdit2 size={15} />
                     </button>
@@ -171,7 +211,7 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
   return (
     <div className="space-y-4">
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_180px]">
+        <div className="grid gap-3 md:grid-cols-[1fr_160px_160px_180px]">
           <label className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2">
             <FiSearch className="text-[var(--color-text-muted)]" size={16} />
             <input
@@ -182,13 +222,34 @@ export default function FinanceAccountsPanel({ items, locale, onEdit }: Props) {
             />
           </label>
           <select
-            value={filter}
-            onChange={(event) => setFilter(event.target.value as AccountFilter)}
+            value={dueFilter}
+            onChange={(event) => setDueFilter(event.target.value as AccountDueFilter)}
             className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none"
           >
-            <option value="all">{t("accountsFilterAll")}</option>
-            <option value="overdue">{t("accountsFilterOverdue")}</option>
-            <option value="partial">{t("accountsFilterPartial")}</option>
+            <option value="all">{t("accountsDueAll")}</option>
+            <option value="overdue">{t("accountsDueOverdue")}</option>
+            <option value="today">{t("accountsDueToday")}</option>
+            <option value="next7">{t("accountsDueNext7")}</option>
+            <option value="next30">{t("accountsDueNext30")}</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as AccountStatusFilter)}
+            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none"
+          >
+            <option value="all">{t("accountsStatusAll")}</option>
+            <option value="partial">{t("accountsStatusPartial")}</option>
+          </select>
+          <select
+            value={sortOption}
+            onChange={(event) => setSortOption(event.target.value as AccountSortOption)}
+            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none"
+          >
+            <option value="dateAsc">{t("accountsSortDateAsc")}</option>
+            <option value="dateDesc">{t("accountsSortDateDesc")}</option>
+            <option value="amountDesc">{t("accountsSortAmountDesc")}</option>
+            <option value="amountAsc">{t("accountsSortAmountAsc")}</option>
+            <option value="status">{t("accountsSortStatus")}</option>
           </select>
         </div>
         {error && (

@@ -37,7 +37,7 @@ export default async function Navbar({ locale }: { locale: string }) {
 
         {/* RIGHT */}
         <div className="flex items-center gap-2">
-          {hasFinanceSession && <FinanceNotificationBell />}
+          {hasFinanceSession && <FinanceNotificationBell locale={locale} />}
           <ThemeToggle />
           <UserMenu locale={locale} isLoggedIn={hasFinanceSession} appVersion={appVersion} />
         </div>

@@ -20,7 +20,10 @@ import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
-import FinanceAccountsPanel from "@/components/finance/FinanceAccountsPanel";
+import FinanceAccountsPanel, {
+  type AccountDueFilter,
+  type AccountStatusFilter,
+} from "@/components/finance/FinanceAccountsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -53,6 +56,9 @@ type Props = {
   previousCashBalance?: number;
   previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
+  initialView?: "list" | "accounts" | "metrics" | "cards";
+  initialAccountsDueFilter?: AccountDueFilter;
+  initialAccountsStatusFilter?: AccountStatusFilter;
 };
 
 export default function FinanceClientPage({
@@ -66,6 +72,9 @@ export default function FinanceClientPage({
   previousCashBalance = 0,
   previousMonthCashBalance = 0,
   initialCards = [],
+  initialView = "list",
+  initialAccountsDueFilter = "all",
+  initialAccountsStatusFilter = "all",
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
@@ -88,7 +97,7 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [activeView, setActiveView] = useState<"list" | "accounts" | "metrics" | "cards">("list");
+  const [activeView, setActiveView] = useState<"list" | "accounts" | "metrics" | "cards">(initialView);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<BulkFinanceAction | null>(null);
@@ -937,6 +946,8 @@ export default function FinanceClientPage({
           items={items}
           locale={locale}
           onEdit={handleEditItem}
+          initialDueFilter={initialAccountsDueFilter}
+          initialStatusFilter={initialAccountsStatusFilter}
         />
       ) : showMetrics ? (
         <FinanceMetricsPanel

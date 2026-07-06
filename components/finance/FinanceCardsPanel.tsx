@@ -137,6 +137,7 @@ export default function FinanceCardsPanel({
             required
             defaultValue={editingCard?.name || ""}
             placeholder={t("cardNamePlaceholder")}
+            aria-label={t("cardNamePlaceholder")}
             className="md:col-span-2 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           />
           <input
@@ -146,6 +147,7 @@ export default function FinanceCardsPanel({
             pattern="[0-9]{1,4}"
             defaultValue={editingCard?.lastDigits || ""}
             placeholder={t("cardLastDigitsPlaceholder")}
+            aria-label={t("cardLastDigitsPlaceholder")}
             className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           />
           <input
@@ -155,6 +157,7 @@ export default function FinanceCardsPanel({
             min="0"
             defaultValue={editingCard?.limit ?? ""}
             placeholder={t("cardLimitPlaceholder")}
+            aria-label={t("cardLimitPlaceholder")}
             className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           />
           <input
@@ -164,6 +167,7 @@ export default function FinanceCardsPanel({
             max={31}
             defaultValue={editingCard?.closingDay ?? ""}
             placeholder={t("cardClosingDayPlaceholder")}
+            aria-label={t("cardClosingDayPlaceholder")}
             className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           />
           <input
@@ -173,11 +177,13 @@ export default function FinanceCardsPanel({
             max={31}
             defaultValue={editingCard?.dueDay ?? ""}
             placeholder={t("cardDueDayPlaceholder")}
+            aria-label={t("cardDueDayPlaceholder")}
             className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           />
           <select
             name="mode"
             defaultValue={editingCard?.mode || "credit"}
+            aria-label={t("cardModeLabel")}
             className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
           >
             <option value="credit">{t("cardModeCredit")}</option>
@@ -337,6 +343,7 @@ export default function FinanceCardsPanel({
                   <button
                     type="button"
                     onClick={() => setEditingCard(card)}
+                    aria-label={t("cardEditButton")}
                     className="rounded-lg border border-[var(--color-border)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)]"
                   >
                     {t("cardEditButton")}
@@ -357,6 +364,7 @@ export default function FinanceCardsPanel({
                       });
                     }}
                     disabled={isPending}
+                    aria-label={t("cardDeleteButton")}
                     className="rounded-lg border finance-danger-soft px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-60"
                   >
                     {t("cardDeleteButton")}
