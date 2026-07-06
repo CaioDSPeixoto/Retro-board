@@ -20,10 +20,6 @@ import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
-import FinanceAccountsPanel, {
-  type AccountDueFilter,
-  type AccountStatusFilter,
-} from "@/components/finance/FinanceAccountsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -45,6 +41,16 @@ import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
+type FinanceView = "list" | "metrics" | "cards";
+type FinanceListDueFilter = "all" | "overdue" | "today" | "next7" | "next30" | "open" | "settled";
+
+function addDaysKey(dateKey: string, days: number) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split("T")[0];
+}
+
 type Props = {
   initialItems: FinanceItem[];
   initialCategories: string[];
@@ -56,9 +62,9 @@ type Props = {
   previousCashBalance?: number;
   previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
-  initialView?: "list" | "accounts" | "metrics" | "cards";
-  initialAccountsDueFilter?: AccountDueFilter;
-  initialAccountsStatusFilter?: AccountStatusFilter;
+  initialView?: FinanceView;
+  initialDueFilter?: FinanceListDueFilter;
+  initialStatusFilter?: "all" | FinanceStatus;
 };
 
 export default function FinanceClientPage({
@@ -73,8 +79,8 @@ export default function FinanceClientPage({
   previousMonthCashBalance = 0,
   initialCards = [],
   initialView = "list",
-  initialAccountsDueFilter = "all",
-  initialAccountsStatusFilter = "all",
+  initialDueFilter = "all",
+  initialStatusFilter = "all",
 }: Props) {
   const t = useTranslations("FinancePage");
   const router = useRouter();
@@ -87,9 +93,9 @@ export default function FinanceClientPage({
   const [items, setItems] = useState<FinanceItem[]>(initialItems);
   const [cards, setCards] = useState<FinanceCard[]>(initialCards);
   const [nameFilter, setNameFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | FinanceStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | FinanceStatus>(initialStatusFilter);
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
-  const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "open" | "settled">("all");
+  const [dueFilter, setDueFilter] = useState<FinanceListDueFilter>(initialDueFilter);
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -97,7 +103,7 @@ export default function FinanceClientPage({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const [activeView, setActiveView] = useState<"list" | "accounts" | "metrics" | "cards">(initialView);
+  const [activeView, setActiveView] = useState<FinanceView>(initialView);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<BulkFinanceAction | null>(null);
@@ -106,10 +112,8 @@ export default function FinanceClientPage({
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
-  const [realtimeError, setRealtimeError] = useState<string | null>(null);
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
-  const showAccounts = activeView === "accounts";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -143,9 +147,7 @@ export default function FinanceClientPage({
           router.refresh();
         }
       })
-      .catch(() => {
-        if (!cancelled) setRealtimeError(t("errors.realtimeUnavailable"));
-      });
+      .catch(() => undefined);
 
     const { start, end } = getMonthRange(currentMonth);
 
@@ -174,10 +176,9 @@ export default function FinanceClientPage({
           return a.date.localeCompare(b.date);
         });
 
-        setRealtimeError(null);
         setItems(docs);
       },
-      () => setRealtimeError(t("errors.realtimeUnavailable")),
+      () => undefined,
     );
 
     return () => {
@@ -193,7 +194,6 @@ export default function FinanceClientPage({
     rangeFrom,
     rangeTo,
     initialItems,
-    t,
   ]);
 
   const currentBoard = useMemo(
@@ -211,6 +211,27 @@ export default function FinanceClientPage({
   const isShowingRealCurrentMonth =
     currentMonth === format(new Date(), "yyyy-MM");
 
+  const resetViewParams = (params: URLSearchParams) => {
+    params.set("view", "list");
+    params.delete("due");
+    params.delete("status");
+    params.delete("accountsDue");
+    params.delete("accountsStatus");
+  };
+
+  const handleViewChange = (view: FinanceView) => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("view", view);
+    params.delete("due");
+    params.delete("status");
+    params.delete("accountsDue");
+    params.delete("accountsStatus");
+    setActiveView(view);
+    startRouteTransition(() => {
+      router.replace(`/${locale}/tools/finance?${params.toString()}`, { scroll: false });
+    });
+  };
+
   const handlePrevMonth = () => {
     const newMonth = format(subMonths(currentDate, 1), "yyyy-MM");
     const params = new URLSearchParams(searchParams?.toString());
@@ -220,6 +241,7 @@ export default function FinanceClientPage({
     // ao navegar de mês, volta para a LISTA
     params.delete("from");
     params.delete("to");
+    resetViewParams(params);
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
       setActiveView("list");
@@ -234,6 +256,7 @@ export default function FinanceClientPage({
     else params.delete("boardId");
     params.delete("from");
     params.delete("to");
+    resetViewParams(params);
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
       setActiveView("list");
@@ -248,6 +271,7 @@ export default function FinanceClientPage({
     else params.delete("boardId");
     params.delete("from");
     params.delete("to");
+    resetViewParams(params);
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
       setActiveView("list");
@@ -261,6 +285,7 @@ export default function FinanceClientPage({
     params.set("month", currentMonth);
     params.delete("from");
     params.delete("to");
+    resetViewParams(params);
     startRouteTransition(() => {
       router.push(`/${locale}/tools/finance?${params.toString()}`);
       setActiveView("list");
@@ -288,6 +313,9 @@ export default function FinanceClientPage({
       const matchesDue =
         dueFilter === "all" ||
         (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
+        (dueFilter === "today" && item.date === todayStr && item.status !== "paid" && item.status !== "moved") ||
+        (dueFilter === "next7" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 7) && item.status !== "paid" && item.status !== "moved") ||
+        (dueFilter === "next30" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 30) && item.status !== "paid" && item.status !== "moved") ||
         (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
         (dueFilter === "settled" && item.status === "paid");
 
@@ -339,6 +367,14 @@ export default function FinanceClientPage({
     setTypeFilter("all");
     setDueFilter("all");
   };
+
+  useEffect(() => {
+    setDueFilter(initialDueFilter);
+  }, [initialDueFilter]);
+
+  useEffect(() => {
+    setStatusFilter(initialStatusFilter);
+  }, [initialStatusFilter]);
 
   useEffect(() => {
     if (activeView !== "list") {
@@ -491,8 +527,20 @@ export default function FinanceClientPage({
 
   const visibleExpenses = visibleItems.filter((item) => item.type === "expense");
   const visibleIncomes = visibleItems.filter((item) => item.type === "income");
-  const visibleExpensesTotal = visibleExpenses.reduce((sum, item) => sum + item.amount, 0);
-  const visibleIncomesTotal = visibleIncomes.reduce((sum, item) => sum + item.amount, 0);
+  const isOpenMoneyView =
+    (dueFilter !== "all" && dueFilter !== "settled") ||
+    statusFilter === "pending" ||
+    statusFilter === "partial";
+  const visibleExpensesTotal = visibleExpenses.reduce(
+    (sum, item) => sum + (isOpenMoneyView ? getOpenAmount(item) : item.amount),
+    0,
+  );
+  const visibleIncomesTotal = visibleIncomes.reduce(
+    (sum, item) => sum + (isOpenMoneyView ? getOpenAmount(item) : item.amount),
+    0,
+  );
+  const expenseSectionTitle = isOpenMoneyView ? t("listPayableTitle") : t("listExpensesTitle");
+  const incomeSectionTitle = isOpenMoneyView ? t("listReceivableTitle") : t("listIncomesTitle");
 
   const renderListSection = (
     sectionItems: FinanceItem[],
@@ -748,14 +796,13 @@ export default function FinanceClientPage({
             <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
               {[
                 ["list", t("tabListLabel")],
-                ["accounts", t("tabAccountsLabel")],
                 ["metrics", t("tabMetricsLabel")],
                 ["cards", t("tabCardsLabel")],
               ].map(([view, label]) => (
                 <button
                   key={view}
                   type="button"
-                  onClick={() => setActiveView(view as typeof activeView)}
+                  onClick={() => handleViewChange(view as FinanceView)}
                   className={`px-3 py-1.5 rounded-lg transition-all ${activeView === view
                     ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
@@ -772,11 +819,6 @@ export default function FinanceClientPage({
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
       {activeView === "list" && (
         <div className="mb-3">
-          {realtimeError && (
-            <div className="mb-3 rounded-xl border finance-warning-soft px-3 py-2 text-xs font-semibold">
-              {realtimeError}
-            </div>
-          )}
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -862,6 +904,9 @@ export default function FinanceClientPage({
             >
               <option value="all">{t("filterDueAll")}</option>
               <option value="overdue">{t("filterDueOverdue")}</option>
+              <option value="today">{t("filterDueToday")}</option>
+              <option value="next7">{t("filterDueNext7")}</option>
+              <option value="next30">{t("filterDueNext30")}</option>
               <option value="open">{t("filterDueOpen")}</option>
               <option value="settled">{t("filterDueSettled")}</option>
             </select>
@@ -941,15 +986,7 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {showAccounts ? (
-        <FinanceAccountsPanel
-          items={items}
-          locale={locale}
-          onEdit={handleEditItem}
-          initialDueFilter={initialAccountsDueFilter}
-          initialStatusFilter={initialAccountsStatusFilter}
-        />
-      ) : showMetrics ? (
+      {showMetrics ? (
         <FinanceMetricsPanel
           items={items}
           currentMonth={currentMonth}
@@ -981,14 +1018,14 @@ export default function FinanceClientPage({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {renderListSection(
             visibleExpenses,
-            t("listExpensesTitle"),
+            expenseSectionTitle,
             t("listExpensesEmpty"),
             visibleExpensesTotal,
             "expense",
           )}
           {renderListSection(
             visibleIncomes,
-            t("listIncomesTitle"),
+            incomeSectionTitle,
             t("listIncomesEmpty"),
             visibleIncomesTotal,
             "income",

@@ -27,18 +27,20 @@ type Props = {
   locale: string;
 };
 
+const NOTIFICATION_PREVIEW_LIMIT = 3;
+
 function getFinanceNotificationHref(
   item: FinanceItem,
   locale: string,
-  filter: { accountsDue?: string; accountsStatus?: string },
+  filter: { due?: string; status?: string },
 ) {
   const params = new URLSearchParams({
     month: item.date.slice(0, 7),
-    view: "accounts",
+    view: "list",
   });
   if (item.boardId) params.set("boardId", item.boardId);
-  if (filter.accountsDue) params.set("accountsDue", filter.accountsDue);
-  if (filter.accountsStatus) params.set("accountsStatus", filter.accountsStatus);
+  if (filter.due) params.set("due", filter.due);
+  if (filter.status) params.set("status", filter.status);
   return `/${locale}/tools/finance?${params.toString()}`;
 }
 
@@ -156,26 +158,40 @@ export default function FinanceNotificationBell({ locale }: Props) {
 
   if (!available) return null;
 
-  const firstOverdueItem = overdueItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
-  const firstDueSoonItem = dueSoonItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
-  const firstPartialItem = partialItems.toSorted((a, b) => a.date.localeCompare(b.date))[0];
+  const sortByDueDate = (left: FinanceItem, right: FinanceItem) =>
+    left.date.localeCompare(right.date) || left.title.localeCompare(right.title);
 
-  const renderNotificationLink = (
-    item: FinanceItem | undefined,
+  const renderNotificationGroup = (
+    rows: FinanceItem[],
     label: string,
     className: string,
-    filter: { accountsDue?: string; accountsStatus?: string },
+    filter: { due?: string; status?: string },
   ) => {
-    if (!item) return null;
+    const previewRows = rows.toSorted(sortByDueDate).slice(0, NOTIFICATION_PREVIEW_LIMIT);
+    const hiddenCount = Math.max(rows.length - previewRows.length, 0);
 
     return (
-      <Link
-        href={getFinanceNotificationHref(item, locale, filter)}
-        onClick={() => setOpen(false)}
-        className={`block rounded-lg px-2 py-1.5 font-semibold transition hover:bg-[var(--color-surface-raised)] ${className}`}
-      >
-        {label}
-      </Link>
+      <div className="rounded-lg border border-[var(--color-border)] p-2">
+        <p className={`font-semibold ${className}`}>{label}</p>
+        <div className="mt-1 space-y-1">
+          {previewRows.map((item) => (
+            <Link
+              key={item.id}
+              href={getFinanceNotificationHref(item, locale, filter)}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2 rounded-md px-2 py-1 text-[11px] text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]"
+            >
+              <span className="min-w-0 truncate">{item.title}</span>
+              <span className="shrink-0 text-[var(--color-text-muted)]">{item.date}</span>
+            </Link>
+          ))}
+        </div>
+        {hiddenCount > 0 && (
+          <p className="mt-1 px-2 text-[11px] text-[var(--color-text-muted)]">
+            {t("notificationMoreItems", { count: hiddenCount })}
+          </p>
+        )}
+      </div>
     );
   };
 
@@ -212,27 +228,27 @@ export default function FinanceNotificationBell({ locale }: Props) {
           ) : (
             <div className="mt-2 space-y-2">
               {overdueItems.length > 0 && (
-                renderNotificationLink(
-                  firstOverdueItem,
+                renderNotificationGroup(
+                  overdueItems,
                   t("notificationOverdue", { count: overdueItems.length }),
                   "finance-warning-text",
-                  { accountsDue: "overdue" },
+                  { due: "overdue" },
                 )
               )}
               {dueSoonItems.length > 0 && (
-                renderNotificationLink(
-                  firstDueSoonItem,
+                renderNotificationGroup(
+                  dueSoonItems,
                   t("notificationDueSoon", { count: dueSoonItems.length }),
                   "text-[var(--color-accent-text)]",
-                  { accountsDue: "next7" },
+                  { due: "next7" },
                 )
               )}
               {partialItems.length > 0 && (
-                renderNotificationLink(
-                  firstPartialItem,
+                renderNotificationGroup(
+                  partialItems,
                   t("notificationPartial", { count: partialItems.length }),
                   "text-[var(--color-text-secondary)]",
-                  { accountsStatus: "partial" },
+                  { status: "partial" },
                 )
               )}
             </div>

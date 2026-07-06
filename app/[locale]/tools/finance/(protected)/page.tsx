@@ -13,6 +13,7 @@ import {
   getFinanceCardsData,
 } from "./data";
 import type { FinanceBoard, FinanceItem, FinanceCard } from "@/types/finance";
+import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
@@ -22,13 +23,15 @@ type SearchParams = {
   from?: string;
   to?: string;
   view?: string;
+  due?: string;
+  status?: string;
   accountsDue?: string;
   accountsStatus?: string;
 };
 
-const FINANCE_VIEWS = new Set(["list", "accounts", "metrics", "cards"]);
-const ACCOUNT_DUE_FILTERS = new Set(["all", "overdue", "today", "next7", "next30"]);
-const ACCOUNT_STATUS_FILTERS = new Set(["all", "partial"]);
+const FINANCE_VIEWS = new Set(["list", "metrics", "cards"]);
+const LIST_DUE_FILTERS = new Set(["all", "overdue", "today", "next7", "next30", "open", "settled"]);
+const LIST_STATUS_FILTERS = new Set(["all", "paid", "pending", "partial", "moved"]);
 
 function getMonthList(fromMonth: string, toMonth: string): string[] {
   // ambos no formato "yyyy-MM"
@@ -71,14 +74,16 @@ export default async function FinancePage({
   searchParams: Promise<SearchParams>;
   params: Promise<{ locale: string }>;
 }) {
-  const { month, boardId, from, to, view, accountsDue, accountsStatus } = await searchParams;
+  const { month, boardId, from, to, view, due, status, accountsDue, accountsStatus } = await searchParams;
   const { locale } = await params;
 
   const currentMonth = month || format(new Date(), "yyyy-MM");
   const initialView = FINANCE_VIEWS.has(view || "") ? view : "list";
-  const initialAccountsDueFilter = ACCOUNT_DUE_FILTERS.has(accountsDue || "") ? accountsDue : "all";
-  const initialAccountsStatusFilter = ACCOUNT_STATUS_FILTERS.has(accountsStatus || "")
-    ? accountsStatus
+  const requestedDue = due || accountsDue;
+  const requestedStatus = status || accountsStatus;
+  const initialDueFilter = LIST_DUE_FILTERS.has(requestedDue || "") ? requestedDue : "all";
+  const initialStatusFilter = LIST_STATUS_FILTERS.has(requestedStatus || "")
+    ? requestedStatus
     : "all";
 
   const sessionUserId = await getSession();
@@ -140,9 +145,9 @@ export default async function FinancePage({
         previousCashBalance={previousCashBalance}
         previousMonthCashBalance={previousMonthCashBalance}
         initialCards={cards}
-        initialView={initialView as "list" | "accounts" | "metrics" | "cards"}
-        initialAccountsDueFilter={initialAccountsDueFilter as "all" | "overdue" | "today" | "next7" | "next30"}
-        initialAccountsStatusFilter={initialAccountsStatusFilter as "all" | "partial"}
+        initialView={initialView as "list" | "metrics" | "cards"}
+        initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "next7" | "next30" | "open" | "settled"}
+        initialStatusFilter={initialStatusFilter as "all" | FinanceStatus}
       />
     </div>
   );
