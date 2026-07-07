@@ -51,6 +51,7 @@ export default function FinanceNotificationBell({ locale }: Props) {
   const [available, setAvailable] = useState(false);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const tomorrow = useMemo(() => format(addDays(new Date(), 1), "yyyy-MM-dd"), []);
   const dueSoonLimit = useMemo(() => format(addDays(new Date(), 3), "yyyy-MM-dd"), []);
 
   useEffect(() => {
@@ -146,14 +147,21 @@ export default function FinanceNotificationBell({ locale }: Props) {
   const overdueItems = items.filter(
     (item) => isOpenItem(item) && item.date < today,
   );
+  const dueTomorrowItems = items.filter(
+    (item) => isOpenItem(item) && item.date === tomorrow,
+  );
   const dueSoonItems = items.filter(
-    (item) => isOpenItem(item) && item.date >= today && item.date <= dueSoonLimit,
+    (item) =>
+      isOpenItem(item) &&
+      item.date >= today &&
+      item.date <= dueSoonLimit &&
+      item.date !== tomorrow,
   );
   const partialItems = items.filter(
     (item) => !item.isSynthetic && item.status === "partial",
   );
   const notificationCount = new Set(
-    [...overdueItems, ...dueSoonItems, ...partialItems].map((item) => item.id),
+    [...overdueItems, ...dueTomorrowItems, ...dueSoonItems, ...partialItems].map((item) => item.id),
   ).size;
 
   if (!available) return null;
@@ -233,6 +241,14 @@ export default function FinanceNotificationBell({ locale }: Props) {
                   t("notificationOverdue", { count: overdueItems.length }),
                   "finance-warning-text",
                   { due: "overdue" },
+                )
+              )}
+              {dueTomorrowItems.length > 0 && (
+                renderNotificationGroup(
+                  dueTomorrowItems,
+                  t("notificationDueTomorrow", { count: dueTomorrowItems.length }),
+                  "text-[var(--color-accent-text)]",
+                  { due: "tomorrow" },
                 )
               )}
               {dueSoonItems.length > 0 && (

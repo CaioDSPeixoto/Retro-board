@@ -20,6 +20,7 @@ import FinanceItemCard from "@/components/finance/FinanceItemCard";
 import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
+import FinancePlanningPanel from "@/components/finance/FinancePlanningPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -41,8 +42,9 @@ import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
-type FinanceView = "list" | "metrics" | "cards";
-type FinanceListDueFilter = "all" | "overdue" | "today" | "next7" | "next30" | "open" | "settled";
+type FinanceView = "list" | "planning" | "metrics" | "cards";
+type FinanceListDueFilter = "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled";
+type FinanceListSort = "dateAsc" | "dateDesc" | "amountDesc" | "amountAsc" | "status";
 
 function addDaysKey(dateKey: string, days: number) {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -62,6 +64,7 @@ type Props = {
   previousCashBalance?: number;
   previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
+  initialProjectionItems?: FinanceItem[];
   initialView?: FinanceView;
   initialDueFilter?: FinanceListDueFilter;
   initialStatusFilter?: "all" | FinanceStatus;
@@ -78,6 +81,7 @@ export default function FinanceClientPage({
   previousCashBalance = 0,
   previousMonthCashBalance = 0,
   initialCards = [],
+  initialProjectionItems = [],
   initialView = "list",
   initialDueFilter = "all",
   initialStatusFilter = "all",
@@ -96,6 +100,7 @@ export default function FinanceClientPage({
   const [statusFilter, setStatusFilter] = useState<"all" | FinanceStatus>(initialStatusFilter);
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
   const [dueFilter, setDueFilter] = useState<FinanceListDueFilter>(initialDueFilter);
+  const [sortOption, setSortOption] = useState<FinanceListSort>("dateAsc");
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -114,6 +119,7 @@ export default function FinanceClientPage({
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
+  const showPlanning = activeView === "planning";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -304,24 +310,41 @@ export default function FinanceClientPage({
   const visibleItems = useMemo(() => {
     const query = normalizeForSearch(nameFilter);
 
-    return items.filter((item) => {
-      const matchesName =
-        !query || normalizeForSearch(item.title || "").includes(query);
-      const matchesStatus =
-        statusFilter === "all" || item.status === statusFilter;
-      const matchesType = typeFilter === "all" || item.type === typeFilter;
-      const matchesDue =
-        dueFilter === "all" ||
-        (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
-        (dueFilter === "today" && item.date === todayStr && item.status !== "paid" && item.status !== "moved") ||
-        (dueFilter === "next7" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 7) && item.status !== "paid" && item.status !== "moved") ||
-        (dueFilter === "next30" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 30) && item.status !== "paid" && item.status !== "moved") ||
-        (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
-        (dueFilter === "settled" && item.status === "paid");
+    return items
+      .filter((item) => {
+        const matchesName =
+          !query || normalizeForSearch(item.title || "").includes(query);
+        const matchesStatus =
+          statusFilter === "all" || item.status === statusFilter;
+        const matchesType = typeFilter === "all" || item.type === typeFilter;
+        const matchesDue =
+          dueFilter === "all" ||
+          (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "today" && item.date === todayStr && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "tomorrow" && item.date === addDaysKey(todayStr, 1) && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "next7" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 7) && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "next30" && item.date >= todayStr && item.date <= addDaysKey(todayStr, 30) && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
+          (dueFilter === "settled" && item.status === "paid");
 
-      return matchesName && matchesStatus && matchesType && matchesDue;
-    });
-  }, [items, nameFilter, statusFilter, typeFilter, dueFilter, todayStr]);
+        return matchesName && matchesStatus && matchesType && matchesDue;
+      })
+      .toSorted((left, right) => {
+        if (sortOption === "dateDesc") return right.date.localeCompare(left.date);
+        if (sortOption === "amountDesc") return getOpenAmount(right) - getOpenAmount(left);
+        if (sortOption === "amountAsc") return getOpenAmount(left) - getOpenAmount(right);
+        if (sortOption === "status") {
+          const statusOrder: Record<FinanceStatus, number> = {
+            partial: 0,
+            pending: 1,
+            paid: 2,
+            moved: 3,
+          };
+          return statusOrder[left.status] - statusOrder[right.status] || left.date.localeCompare(right.date);
+        }
+        return left.date.localeCompare(right.date);
+      });
+  }, [items, nameFilter, statusFilter, typeFilter, dueFilter, sortOption, todayStr]);
 
   const activeFilterCount = useMemo(() => {
     return [
@@ -329,8 +352,9 @@ export default function FinanceClientPage({
       statusFilter !== "all",
       typeFilter !== "all",
       dueFilter !== "all",
+      sortOption !== "dateAsc",
     ].filter(Boolean).length;
-  }, [dueFilter, nameFilter, statusFilter, typeFilter]);
+  }, [dueFilter, nameFilter, sortOption, statusFilter, typeFilter]);
 
   const selectableVisibleItems = useMemo(
     () => visibleItems.filter((item) => !item.isSynthetic && item.status !== "moved"),
@@ -366,6 +390,7 @@ export default function FinanceClientPage({
     setStatusFilter("all");
     setTypeFilter("all");
     setDueFilter("all");
+    setSortOption("dateAsc");
   };
 
   useEffect(() => {
@@ -585,6 +610,7 @@ export default function FinanceClientPage({
               selected={selectedItems.has(item.id)}
               onToggleSelection={handleToggleItemSelection}
               compact
+              amountMode={isOpenMoneyView ? "open" : "original"}
             />
           ))}
         </div>
@@ -796,6 +822,7 @@ export default function FinanceClientPage({
             <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
               {[
                 ["list", t("tabListLabel")],
+                ["planning", t("tabPlanningLabel")],
                 ["metrics", t("tabMetricsLabel")],
                 ["cards", t("tabCardsLabel")],
               ].map(([view, label]) => (
@@ -896,7 +923,7 @@ export default function FinanceClientPage({
             </select>
           </div>
 
-          <div className="grid grid-cols-1 gap-2 mt-2">
+          <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
             <select
               value={dueFilter}
               onChange={(e) => setDueFilter(e.target.value as typeof dueFilter)}
@@ -905,10 +932,22 @@ export default function FinanceClientPage({
               <option value="all">{t("filterDueAll")}</option>
               <option value="overdue">{t("filterDueOverdue")}</option>
               <option value="today">{t("filterDueToday")}</option>
+              <option value="tomorrow">{t("filterDueTomorrow")}</option>
               <option value="next7">{t("filterDueNext7")}</option>
               <option value="next30">{t("filterDueNext30")}</option>
               <option value="open">{t("filterDueOpen")}</option>
               <option value="settled">{t("filterDueSettled")}</option>
+            </select>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as FinanceListSort)}
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="dateAsc">{t("sortDateAsc")}</option>
+              <option value="dateDesc">{t("sortDateDesc")}</option>
+              <option value="amountDesc">{t("sortAmountDesc")}</option>
+              <option value="amountAsc">{t("sortAmountAsc")}</option>
+              <option value="status">{t("sortStatus")}</option>
             </select>
           </div>
 
@@ -986,7 +1025,13 @@ export default function FinanceClientPage({
         </div>
       )}
 
-      {showMetrics ? (
+      {showPlanning ? (
+        <FinancePlanningPanel
+          items={items}
+          projectionItems={initialProjectionItems}
+          currentMonth={currentMonth}
+        />
+      ) : showMetrics ? (
         <FinanceMetricsPanel
           items={items}
           currentMonth={currentMonth}

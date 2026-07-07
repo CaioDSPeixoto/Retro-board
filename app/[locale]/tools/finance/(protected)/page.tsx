@@ -29,8 +29,8 @@ type SearchParams = {
   accountsStatus?: string;
 };
 
-const FINANCE_VIEWS = new Set(["list", "metrics", "cards"]);
-const LIST_DUE_FILTERS = new Set(["all", "overdue", "today", "next7", "next30", "open", "settled"]);
+const FINANCE_VIEWS = new Set(["list", "planning", "metrics", "cards"]);
+const LIST_DUE_FILTERS = new Set(["all", "overdue", "today", "tomorrow", "next7", "next30", "open", "settled"]);
 const LIST_STATUS_FILTERS = new Set(["all", "paid", "pending", "partial", "moved"]);
 
 function getMonthList(fromMonth: string, toMonth: string): string[] {
@@ -65,6 +65,14 @@ function getMonthList(fromMonth: string, toMonth: string): string[] {
   }
 
   return months;
+}
+
+function getProjectionMonthList(startMonth: string, monthsCount: number): string[] {
+  const [year, month] = startMonth.split("-").map(Number);
+  return Array.from({ length: monthsCount }, (_, index) => {
+    const date = new Date(year, month - 1 + index, 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  });
 }
 
 export default async function FinancePage({
@@ -131,6 +139,15 @@ export default async function FinancePage({
   const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
   const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
   const cards: FinanceCard[] = await getFinanceCardsData(boardId);
+  const projectionMonths = getProjectionMonthList(currentMonth, 6);
+  const projectionResults = await Promise.all(
+    projectionMonths.map((projectionMonth) =>
+      projectionMonth === currentMonth
+        ? Promise.resolve(items.filter((item) => item.date.slice(0, 7) === currentMonth))
+        : getFinanceItemsData(projectionMonth, boardId),
+    ),
+  );
+  const projectionItems = projectionResults.flat();
 
   return (
     <div className="max-w-5xl mx-auto px-6 pb-10 pt-4">
@@ -145,8 +162,9 @@ export default async function FinancePage({
         previousCashBalance={previousCashBalance}
         previousMonthCashBalance={previousMonthCashBalance}
         initialCards={cards}
-        initialView={initialView as "list" | "metrics" | "cards"}
-        initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "next7" | "next30" | "open" | "settled"}
+        initialProjectionItems={projectionItems}
+        initialView={initialView as "list" | "planning" | "metrics" | "cards"}
+        initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled"}
         initialStatusFilter={initialStatusFilter as "all" | FinanceStatus}
       />
     </div>

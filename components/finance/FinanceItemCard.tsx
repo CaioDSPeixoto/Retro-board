@@ -33,6 +33,7 @@ type Props = {
   selected?: boolean;
   onToggleSelection?: (itemId: string) => void;
   compact?: boolean;
+  amountMode?: "original" | "open";
 };
 
 export default function FinanceItemCard({
@@ -43,6 +44,7 @@ export default function FinanceItemCard({
   selected,
   onToggleSelection,
   compact = false,
+  amountMode = "original",
 }: Props) {
   const router = useRouter();
   const t = useTranslations("Finance");
@@ -73,6 +75,10 @@ export default function FinanceItemCard({
   const openAmount = isMoved
     ? 0
     : item.openAmount ?? Math.max(item.amount - paidAmount, 0);
+  const displayAmount =
+    amountMode === "open" && openAmount > 0 && item.status !== "paid" && !isMoved
+      ? openAmount
+      : item.amount;
   const paymentTargetAmount = isPartial && openAmount > 0 ? openAmount : item.amount;
 
   const isRolled = !!item.carriedFromMonth;
@@ -345,7 +351,7 @@ export default function FinanceItemCard({
               }`}
           >
             {isIncome ? "+ " : "- "}
-            {formatCurrency(item.amount)}
+            {formatCurrency(displayAmount)}
           </span>
 
           <div className="text-[11px] text-[var(--color-text-muted)]">
