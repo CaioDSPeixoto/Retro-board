@@ -78,6 +78,7 @@ describe("finance firestore schema", () => {
       currentBalance: "800",
       startDate: "2026-07-01",
       dueDate: "2026-07-10",
+      linkedInstallmentGroupId: "debt-installments-1",
       createdAt: { toDate: () => new Date("2026-07-01T00:00:00.000Z") },
     }))).toMatchObject({
       id: "debt-1",
@@ -85,6 +86,7 @@ describe("finance firestore schema", () => {
       status: "active",
       originalAmount: 1200,
       currentBalance: 800,
+      linkedInstallmentGroupId: "debt-installments-1",
     });
 
     expect(mapFinanceDebtPayment(doc("payment-1", {

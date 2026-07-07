@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FinanceItem } from "@/types/finance";
+import type { FinanceDebt, FinanceItem } from "@/types/finance";
 import { calculateFinancePlanning, calculateFinanceProjection, getPlanningDaysRemaining } from "./planning";
 
 function item(overrides: Partial<FinanceItem>): FinanceItem {
@@ -12,6 +12,23 @@ function item(overrides: Partial<FinanceItem>): FinanceItem {
     type: "expense",
     status: "pending",
     category: "Geral",
+    createdAt: "2026-07-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function debt(overrides: Partial<FinanceDebt>): FinanceDebt {
+  return {
+    id: "debt-1",
+    userId: "user-1",
+    boardId: "board-1",
+    name: "Fatura",
+    type: "invoice",
+    originalAmount: 1000,
+    currentBalance: 1000,
+    startDate: "2026-07-01",
+    dueDate: "2026-07-20",
+    status: "active",
     createdAt: "2026-07-01T00:00:00.000Z",
     ...overrides,
   };
@@ -140,5 +157,28 @@ describe("finance planning", () => {
       "pace_over",
       "top_category",
     ]);
+  });
+
+  it("inclui dividas abertas no planejamento sem duplicar lancamentos", () => {
+    const summary = calculateFinancePlanning(
+      [
+        item({ id: "income", type: "income", status: "paid", amount: 3000, paidAmount: 3000 }),
+      ],
+      "2026-07",
+      "2026-07-10",
+      [
+        debt({ id: "card", name: "Cartao", currentBalance: 900, dueDate: "2026-07-15" }),
+        debt({ id: "loan", name: "Emprestimo", currentBalance: 400, dueDate: "2026-08-10" }),
+      ],
+    );
+
+    expect(summary.forecastBalance).toBe(3000);
+    expect(summary.debtOpenBalance).toBe(1300);
+    expect(summary.debtDueThisMonthAmount).toBe(900);
+    expect(summary.debtDueThisMonthCount).toBe(1);
+    expect(summary.debtReserveDaily).toBe(40.91);
+    expect(summary.priorityDebt?.name).toBe("Cartao");
+    expect(summary.recommendations.map((recommendation) => recommendation.code)).toContain("debt_priority");
+    expect(summary.recommendations.map((recommendation) => recommendation.code)).toContain("debt_reserve");
   });
 });

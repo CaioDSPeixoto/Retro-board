@@ -2,9 +2,10 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { FiAlertTriangle, FiCalendar, FiTarget, FiTrendingUp } from "react-icons/fi";
-import type { FinanceItem } from "@/types/finance";
+import { FiAlertTriangle, FiCalendar, FiCreditCard, FiTarget, FiTrendingUp } from "react-icons/fi";
+import type { FinanceCard, FinanceDebt, FinanceItem } from "@/types/finance";
 import { getOpenAmount } from "@/lib/finance/calculations";
+import { calculateCardDashboard } from "@/lib/finance/card-dashboard";
 import {
   calculateFinancePlanning,
   calculateFinanceProjection,
@@ -15,6 +16,8 @@ import {
 type Props = {
   items: FinanceItem[];
   projectionItems?: FinanceItem[];
+  debts?: FinanceDebt[];
+  cards?: FinanceCard[];
   currentMonth: string;
 };
 
@@ -31,11 +34,11 @@ function recommendationClassName(priority: FinancePlanningRecommendation["priori
   return "finance-info-soft";
 }
 
-export default function FinancePlanningPanel({ items, projectionItems = [], currentMonth }: Props) {
+export default function FinancePlanningPanel({ items, projectionItems = [], debts = [], cards = [], currentMonth }: Props) {
   const t = useTranslations("FinancePage");
   const summary = useMemo(
-    () => calculateFinancePlanning(items, currentMonth),
-    [items, currentMonth],
+    () => calculateFinancePlanning(items, currentMonth, undefined, debts),
+    [items, currentMonth, debts],
   );
   const projection = useMemo(() => {
     const currentItemIds = new Set(items.map((item) => item.id));
@@ -43,8 +46,34 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
       ...items,
       ...projectionItems.filter((item) => !currentItemIds.has(item.id)),
     ];
-    return calculateFinanceProjection(mergedItems, currentMonth, 6);
-  }, [currentMonth, items, projectionItems]);
+    return calculateFinanceProjection(mergedItems, currentMonth, 6, undefined, debts);
+  }, [currentMonth, debts, items, projectionItems]);
+  const cardAlerts = useMemo(() => {
+    const currentItemIds = new Set(items.map((item) => item.id));
+    const mergedItems = [
+      ...items,
+      ...projectionItems.filter((item) => !currentItemIds.has(item.id)),
+    ];
+    const dashboard = calculateCardDashboard(cards, mergedItems, currentMonth);
+
+    return cards.reduce(
+      (acc, card) => {
+        const used = dashboard.cardTotals.get(card.id) ?? 0;
+        const limit = Number(card.limit || 0);
+        const percent = limit > 0 ? (used / limit) * 100 : 0;
+        if (limit > 0 && used > limit) {
+          acc.overLimit.push({ card, used, limit, percent });
+        } else if ((limit > 0 && percent >= 70) || (limit <= 0 && used >= 1000)) {
+          acc.highInvoice.push({ card, used, limit, percent });
+        }
+        return acc;
+      },
+      {
+        overLimit: [] as Array<{ card: FinanceCard; used: number; limit: number; percent: number }>,
+        highInvoice: [] as Array<{ card: FinanceCard; used: number; limit: number; percent: number }>,
+      },
+    );
+  }, [cards, currentMonth, items, projectionItems]);
 
   const currency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -92,6 +121,17 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
       return t("planningRecommendationTopCategory", {
         category: recommendation.category ?? "",
         percent: String(Math.round(recommendation.percentage ?? 0)),
+        value: currency(recommendation.amount ?? 0),
+      });
+    }
+    if (recommendation.code === "debt_priority") {
+      return t("planningRecommendationDebtPriority", {
+        title: recommendation.title ?? "",
+        value: currency(recommendation.amount ?? 0),
+      });
+    }
+    if (recommendation.code === "debt_reserve") {
+      return t("planningRecommendationDebtReserve", {
         value: currency(recommendation.amount ?? 0),
       });
     }
@@ -158,6 +198,60 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
               {getRecommendationText(recommendation)}
             </p>
           ))}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <div className="mb-3 flex items-center gap-2 text-[var(--color-text-secondary)]">
+            <FiCreditCard size={17} />
+            <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+              {t("planningDebtOpenTitle")}
+            </h2>
+          </div>
+          <p className="text-2xl font-extrabold finance-danger-text">
+            {currency(summary.debtOpenBalance)}
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            {t("planningDebtOpenHint")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <div className="mb-3 flex items-center gap-2 text-[var(--color-text-secondary)]">
+            <FiCalendar size={17} />
+            <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
+              {t("planningDebtDueTitle")}
+            </h2>
+          </div>
+          <p className="text-2xl font-extrabold text-[var(--color-text-primary)]">
+            {currency(summary.debtDueThisMonthAmount)}
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            {t("planningDebtDueHint", { count: summary.debtDueThisMonthCount })}
+          </p>
+        </div>
+
+        <div className={`rounded-2xl border p-4 ${summary.priorityDebt ? "finance-warning-soft" : "finance-success-soft"}`}>
+          <div className="mb-3 flex items-center gap-2">
+            <FiAlertTriangle size={17} />
+            <h2 className="text-sm font-bold">{t("planningDebtPriorityTitle")}</h2>
+          </div>
+          {summary.priorityDebt ? (
+            <>
+              <p className="truncate text-lg font-extrabold">
+                {summary.priorityDebt.name}
+              </p>
+              <p className="mt-1 text-xs">
+                {t("planningDebtPriorityHint", {
+                  value: currency(summary.priorityDebt.currentBalance),
+                  date: summary.priorityDebt.dueDate,
+                })}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm font-semibold">{t("planningDebtPriorityEmpty")}</p>
+          )}
         </div>
       </section>
 
@@ -277,7 +371,29 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
                 {t("planningNegativeAlert", { value: currency(Math.abs(summary.forecastBalance)) })}
               </p>
             )}
-            {summary.overdueCount === 0 && summary.dueSoonCount === 0 && summary.forecastBalance >= 0 && (
+            {cardAlerts.overLimit.map((alert) => (
+              <p key={`over-${alert.card.id}`} className="rounded-xl border finance-danger-soft px-3 py-2 text-xs font-semibold">
+                {t("planningCardOverLimitAlert", {
+                  card: alert.card.name,
+                  value: currency(alert.used - alert.limit),
+                  percent: alert.percent.toFixed(0),
+                })}
+              </p>
+            ))}
+            {cardAlerts.highInvoice.map((alert) => (
+              <p key={`high-${alert.card.id}`} className="rounded-xl border finance-warning-soft px-3 py-2 text-xs font-semibold">
+                {t("planningCardHighInvoiceAlert", {
+                  card: alert.card.name,
+                  value: currency(alert.used),
+                  percent: alert.limit > 0 ? alert.percent.toFixed(0) : "0",
+                })}
+              </p>
+            ))}
+            {summary.overdueCount === 0 &&
+              summary.dueSoonCount === 0 &&
+              summary.forecastBalance >= 0 &&
+              cardAlerts.overLimit.length === 0 &&
+              cardAlerts.highInvoice.length === 0 && (
               <p className="rounded-xl border finance-success-soft px-3 py-2 text-xs font-semibold">
                 {t("planningNoAlerts")}
               </p>

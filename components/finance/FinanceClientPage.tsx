@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceCard, FinanceDebt, FinanceItem, FinanceStatus } from "@/types/finance";
+import type { FinanceBoard, FinanceCard, FinanceDebt, FinanceDebtPayment, FinanceItem, FinanceStatus } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -66,6 +66,7 @@ type Props = {
   previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
   initialDebts?: FinanceDebt[];
+  initialDebtPayments?: FinanceDebtPayment[];
   initialProjectionItems?: FinanceItem[];
   initialView?: FinanceView;
   initialDueFilter?: FinanceListDueFilter;
@@ -84,6 +85,7 @@ export default function FinanceClientPage({
   previousMonthCashBalance = 0,
   initialCards = [],
   initialDebts = [],
+  initialDebtPayments = [],
   initialProjectionItems = [],
   initialView = "list",
   initialDueFilter = "all",
@@ -1034,11 +1036,14 @@ export default function FinanceClientPage({
         <FinancePlanningPanel
           items={items}
           projectionItems={initialProjectionItems}
+          debts={initialDebts}
+          cards={cards}
           currentMonth={currentMonth}
         />
       ) : showDebts ? (
         <FinanceDebtsPanel
           debts={initialDebts}
+          payments={initialDebtPayments}
           boardId={currentBoardId ?? ""}
           locale={locale}
         />

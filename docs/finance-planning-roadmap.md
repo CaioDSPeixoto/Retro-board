@@ -133,6 +133,8 @@ Criar uma entidade propria para dividas, separada de lancamento comum.
 - [x] Pagamento/abatimento parcial com historico em `finance_debt_payments`.
 - [x] Quitacao automatica quando o saldo chega a zero.
 - [x] Status automatico entre ativa, vencida e quitada.
+- [x] Renegociacao simples de saldo, vencimento, parcelas e observacao.
+- [x] Geracao de lancamentos futuros parcelados a partir da divida.
 
 ### Tipos de divida
 
@@ -161,12 +163,12 @@ Criar uma entidade propria para dividas, separada de lancamento comum.
 
 ### Comportamentos
 
-- [ ] Divida parcelada pode gerar lancamentos futuros.
+- [x] Divida parcelada pode gerar lancamentos futuros.
 - [x] Conta atrasada pode aparecer como conta vencida.
 - [ ] Fatura de cartao pode virar conta a pagar.
 - [x] Pagamento parcial reduz saldo atual.
 - [x] Quitacao zera saldo e altera status.
-- [ ] Renegociacao cria nova condicao sem perder contexto.
+- [x] Renegociacao cria nova condicao sem perder contexto.
 
 ## Fase 4: Dashboard de dividas
 
@@ -176,14 +178,14 @@ Depois de cadastrar dividas, criar uma visao propria para acompanhamento.
 
 - [x] Total em dividas.
 - [x] Total vencido.
-- [ ] Total vencendo este mes.
-- [ ] Total parcelado futuro.
-- [ ] Divida mais urgente.
-- [ ] Dividas por tipo.
-- [ ] Evolucao do saldo devedor.
+- [x] Total vencendo este mes.
+- [x] Total parcelado futuro.
+- [x] Divida mais urgente.
+- [x] Dividas por tipo.
+- [x] Evolucao do saldo devedor.
 - [x] Botao para registrar pagamento.
-- [ ] Botao para renegociar.
-- [ ] Botao para transformar em parcelas.
+- [x] Botao para renegociar.
+- [x] Botao para transformar em parcelas.
 
 ### Prioridade sugerida
 
@@ -199,15 +201,15 @@ Criar recomendacoes praticas a partir das projecoes e dividas.
 
 ### Recomendacoes iniciais
 
-- [ ] Gasto diario seguro.
-- [ ] Gasto semanal seguro.
+- [x] Gasto diario seguro.
+- [x] Gasto semanal seguro.
 - [ ] Limite mensal recomendado.
-- [ ] Categoria com maior risco de estouro.
-- [ ] Meses com risco de saldo negativo.
-- [ ] Valor minimo para reservar hoje.
-- [ ] Divida prioritaria.
-- [ ] Alerta de fatura alta.
-- [ ] Alerta de cartao acima do limite.
+- [x] Categoria com maior risco de estouro.
+- [x] Meses com risco de saldo negativo.
+- [x] Valor minimo para reservar hoje.
+- [x] Divida prioritaria.
+- [x] Alerta de fatura alta.
+- [x] Alerta de cartao acima do limite.
 
 ### Exemplos de mensagens
 
@@ -237,6 +239,7 @@ type FinanceDebt = {
   interestRate?: number;
   penaltyAmount?: number;
   installments?: number;
+  linkedInstallmentGroupId?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;

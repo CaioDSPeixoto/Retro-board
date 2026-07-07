@@ -1,4 +1,4 @@
-import type { FinanceItem } from "@/types/finance";
+import type { FinanceDebt, FinanceItem } from "@/types/finance";
 import { getOpenAmount, getPaidAmount, roundMoney } from "@/lib/finance/calculations";
 
 export type PlanningRiskLevel = "low" | "medium" | "high";
@@ -15,6 +15,8 @@ export type PlanningRecommendationCode =
   | "overdue"
   | "pace_over"
   | "top_category"
+  | "debt_priority"
+  | "debt_reserve"
   | "healthy";
 
 export type FinancePlanningRecommendation = {
@@ -24,6 +26,7 @@ export type FinancePlanningRecommendation = {
   count?: number;
   category?: string;
   percentage?: number;
+  title?: string;
 };
 
 export type FinancePlanningSummary = {
@@ -43,6 +46,11 @@ export type FinancePlanningSummary = {
   overdueAmount: number;
   dueSoonCount: number;
   dueSoonAmount: number;
+  debtOpenBalance: number;
+  debtDueThisMonthAmount: number;
+  debtDueThisMonthCount: number;
+  debtReserveDaily: number;
+  priorityDebt: FinanceDebt | null;
   largestOpenExpenses: FinanceItem[];
   topExpenseCategories: FinanceCategoryImpact[];
   recommendations: FinancePlanningRecommendation[];
@@ -152,6 +160,9 @@ function getPlanningRecommendations(params: {
   overdueAmount: number;
   spendingPaceStatus: PlanningPaceStatus;
   topExpenseCategories: FinanceCategoryImpact[];
+  priorityDebt: FinanceDebt | null;
+  debtDueThisMonthAmount: number;
+  debtReserveDaily: number;
 }): FinancePlanningRecommendation[] {
   const recommendations: FinancePlanningRecommendation[] = [];
 
@@ -190,6 +201,23 @@ function getPlanningRecommendations(params: {
     });
   }
 
+  if (params.priorityDebt) {
+    recommendations.push({
+      code: "debt_priority",
+      priority: params.priorityDebt.status === "overdue" ? "danger" : "warning",
+      amount: params.priorityDebt.currentBalance,
+      title: params.priorityDebt.name,
+    });
+  }
+
+  if (params.debtDueThisMonthAmount > 0 && params.debtReserveDaily > 0) {
+    recommendations.push({
+      code: "debt_reserve",
+      priority: "info",
+      amount: params.debtReserveDaily,
+    });
+  }
+
   if (recommendations.length === 0) {
     recommendations.push({
       code: "healthy",
@@ -200,10 +228,39 @@ function getPlanningRecommendations(params: {
   return recommendations.slice(0, 4);
 }
 
+function getDebtInsights(debts: FinanceDebt[], monthKey: string, currentDateKey: string, daysRemaining: number) {
+  const openDebts = debts.filter((debt) => debt.status !== "paid" && debt.currentBalance > 0);
+  const monthDebts = openDebts.filter((debt) => debt.dueDate.slice(0, 7) === monthKey);
+  const debtOpenBalance = roundMoney(
+    openDebts.reduce((total, debt) => total + debt.currentBalance, 0),
+  );
+  const debtDueThisMonthAmount = roundMoney(
+    monthDebts.reduce((total, debt) => total + debt.currentBalance, 0),
+  );
+  const priorityDebt = openDebts
+    .toSorted((left, right) => {
+      const leftOverdue = left.dueDate < currentDateKey ? 0 : 1;
+      const rightOverdue = right.dueDate < currentDateKey ? 0 : 1;
+      if (leftOverdue !== rightOverdue) return leftOverdue - rightOverdue;
+      const dueDiff = left.dueDate.localeCompare(right.dueDate);
+      if (dueDiff !== 0) return dueDiff;
+      return right.currentBalance - left.currentBalance;
+    })[0] ?? null;
+
+  return {
+    debtOpenBalance,
+    debtDueThisMonthAmount,
+    debtDueThisMonthCount: monthDebts.length,
+    debtReserveDaily: daysRemaining > 0 ? roundMoney(debtDueThisMonthAmount / daysRemaining) : debtDueThisMonthAmount,
+    priorityDebt,
+  };
+}
+
 export function calculateFinancePlanning(
   items: FinanceItem[],
   monthKey: string,
   currentDateKey = formatDateKey(new Date()),
+  debts: FinanceDebt[] = [],
 ): FinancePlanningSummary {
   const dueSoonLimit = addDaysKey(currentDateKey, 3);
   const daysRemaining = getPlanningDaysRemaining(monthKey, currentDateKey);
@@ -265,6 +322,7 @@ export function calculateFinancePlanning(
   const totalExpenseCommitment = realizedExpense + pendingExpense;
   const spendingPaceStatus = getSpendingPaceStatus(realizedDailyExpense, dailyRecommendation);
   const topExpenseCategories = getTopExpenseCategories(categoryTotals, totalExpenseCommitment);
+  const debtInsights = getDebtInsights(debts, monthKey, currentDateKey, daysRemaining);
 
   return {
     realizedBalance,
@@ -288,6 +346,11 @@ export function calculateFinancePlanning(
     overdueAmount: roundMoney(overdueAmount),
     dueSoonCount,
     dueSoonAmount: roundMoney(dueSoonAmount),
+    debtOpenBalance: debtInsights.debtOpenBalance,
+    debtDueThisMonthAmount: debtInsights.debtDueThisMonthAmount,
+    debtDueThisMonthCount: debtInsights.debtDueThisMonthCount,
+    debtReserveDaily: debtInsights.debtReserveDaily,
+    priorityDebt: debtInsights.priorityDebt,
     largestOpenExpenses: openExpenses
       .toSorted((left, right) => getOpenAmount(right) - getOpenAmount(left))
       .slice(0, 3),
@@ -298,6 +361,9 @@ export function calculateFinancePlanning(
       overdueAmount: roundMoney(overdueAmount),
       spendingPaceStatus,
       topExpenseCategories,
+      priorityDebt: debtInsights.priorityDebt,
+      debtDueThisMonthAmount: debtInsights.debtDueThisMonthAmount,
+      debtReserveDaily: debtInsights.debtReserveDaily,
     }),
   };
 }
@@ -307,6 +373,7 @@ export function calculateFinanceProjection(
   startMonth: string,
   monthsCount = 6,
   currentDateKey = formatDateKey(new Date()),
+  debts: FinanceDebt[] = [],
 ): FinanceMonthlyProjection[] {
   const itemsByMonth = items.reduce((acc, item) => {
     const monthKey = item.date.slice(0, 7);
@@ -320,7 +387,7 @@ export function calculateFinanceProjection(
     const month = addMonthsKey(startMonth, index);
     return {
       month,
-      summary: calculateFinancePlanning(itemsByMonth.get(month) ?? [], month, currentDateKey),
+      summary: calculateFinancePlanning(itemsByMonth.get(month) ?? [], month, currentDateKey, debts),
     };
   });
 }

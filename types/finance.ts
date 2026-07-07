@@ -84,6 +84,7 @@ export type FinanceDebt = {
   interestRate?: number;
   penaltyAmount?: number;
   installments?: number;
+  linkedInstallmentGroupId?: string;
   notes?: string;
   createdAt: string;
   updatedAt?: string;

@@ -12,9 +12,10 @@ import {
   getPreviousMonthCashBalance,
   getFinanceCardsData,
   getFinanceDebtsData,
+  getFinanceDebtPaymentsData,
   getFinanceFixedTemplatesData,
 } from "./data";
-import type { FinanceBoard, FinanceItem, FinanceCard, FinanceDebt } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceCard, FinanceDebt, FinanceDebtPayment } from "@/types/finance";
 import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { createProjectedFixedItems } from "@/lib/finance/fixed-projection";
@@ -143,6 +144,7 @@ export default async function FinancePage({
   const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
   const cards: FinanceCard[] = await getFinanceCardsData(boardId);
   const debts: FinanceDebt[] = await getFinanceDebtsData(boardId);
+  const debtPayments: FinanceDebtPayment[] = await getFinanceDebtPaymentsData(boardId);
   const fixedTemplates = await getFinanceFixedTemplatesData(boardId);
   const projectionMonths = getProjectionMonthList(currentMonth, 6);
   const projectionResults = await Promise.all(
@@ -175,6 +177,7 @@ export default async function FinancePage({
         previousMonthCashBalance={previousMonthCashBalance}
         initialCards={cards}
         initialDebts={debts}
+        initialDebtPayments={debtPayments}
         initialProjectionItems={projectionItems}
         initialView={initialView as "list" | "planning" | "debts" | "metrics" | "cards"}
         initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled"}

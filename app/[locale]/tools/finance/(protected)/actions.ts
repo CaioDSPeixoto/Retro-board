@@ -72,6 +72,15 @@ function getDebtStatus(currentBalance: number, dueDate: string): FinanceDebtStat
   return "active";
 }
 
+function addMonthsToDateKey(dateKey: string, monthsToAdd: number) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1 + monthsToAdd, day || 1);
+  const nextYear = date.getFullYear();
+  const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const nextDay = String(date.getDate()).padStart(2, "0");
+  return `${nextYear}-${nextMonth}-${nextDay}`;
+}
+
 function createInviteCode() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
 }
@@ -673,6 +682,139 @@ export async function payFinanceDebt(formData: FormData) {
     debtId: debt.id,
     amount,
     nextBalance,
+  });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function renegotiateFinanceDebt(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:renegotiate-debt", {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
+
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const id = String(formData.get("id") || "").trim();
+  const currentBalance = parseMoneyInput(String(formData.get("currentBalance") || ""));
+  const dueDate = String(formData.get("dueDate") || "").trim();
+  const installmentsRaw = String(formData.get("installments") || "").trim();
+  const installments = installmentsRaw ? Number(installmentsRaw) : undefined;
+  const notes = String(formData.get("notes") || "").trim();
+
+  if (!id) return { error: "Divida nao encontrada" };
+  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: "Saldo atual invalido" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return { error: "Data invalida" };
+  if (installments !== undefined && (!Number.isInteger(installments) || installments < 1)) {
+    return { error: "Parcelas invalidas" };
+  }
+
+  const ref = adminDb.collection("finance_debts").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Divida nao encontrada" };
+
+  const debt = mapFinanceDebt(snap);
+  const board = await getBoard(debt.boardId);
+  if (!board || !isMember(board, sessionUser)) return { error: "Sem permissao" };
+
+  await ref.update({
+    currentBalance,
+    dueDate,
+    status: currentBalance <= 0 ? "paid" : "renegotiated",
+    updatedAt: new Date().toISOString(),
+    installments: installments !== undefined ? installments : FieldValue.delete(),
+    notes: notes || FieldValue.delete(),
+  });
+
+  logFinanceAction("debt_renegotiated", {
+    userId: sessionUser,
+    boardId: debt.boardId,
+    debtId: debt.id,
+    currentBalance,
+    installments: installments ?? null,
+  });
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function createDebtInstallmentItems(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:debt-installments", {
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
+
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const id = String(formData.get("id") || "").trim();
+  const installments = Number(String(formData.get("installments") || ""));
+  const firstDueDate = String(formData.get("firstDueDate") || "").trim();
+
+  if (!id) return { error: "Divida nao encontrada" };
+  if (!Number.isInteger(installments) || installments < 1 || installments > 60) {
+    return { error: "Parcelas invalidas" };
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(firstDueDate)) return { error: "Data invalida" };
+
+  const ref = adminDb.collection("finance_debts").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Divida nao encontrada" };
+
+  const debt = mapFinanceDebt(snap);
+  const board = await getBoard(debt.boardId);
+  if (!board || !isMember(board, sessionUser)) return { error: "Sem permissao" };
+  if (debt.status === "paid" || debt.currentBalance <= 0) return { error: "Divida ja quitada" };
+  if (debt.linkedInstallmentGroupId) return { error: "Divida ja possui parcelas geradas" };
+
+  const totalCents = Math.round(debt.currentBalance * 100);
+  const baseCents = Math.floor(totalCents / installments);
+  const remainder = totalCents - baseCents * installments;
+  const installmentGroupId = adminDb.collection("finance_items").doc().id;
+  const now = new Date().toISOString();
+  const batch = adminDb.batch();
+
+  for (let index = 0; index < installments; index++) {
+    const amount = (baseCents + (index < remainder ? 1 : 0)) / 100;
+    const itemRef = adminDb.collection("finance_items").doc();
+    batch.create(itemRef, {
+      userId: sessionUser,
+      boardId: debt.boardId,
+      title: `${debt.name} (${index + 1}/${installments})`,
+      amount,
+      date: addMonthsToDateKey(firstDueDate, index),
+      type: "expense",
+      status: "pending" as FinanceStatus,
+      category: debt.category || "Dividas",
+      createdAt: now,
+      createdBy: sessionUser,
+      paidAmount: 0,
+      openAmount: amount,
+      installmentGroupId,
+      installmentIndex: index + 1,
+      installmentTotal: installments,
+      originalAmount: debt.currentBalance,
+    });
+  }
+
+  batch.update(ref, {
+    installments,
+    linkedInstallmentGroupId: installmentGroupId,
+    status: "renegotiated",
+    updatedAt: now,
+  });
+  await batch.commit();
+
+  logFinanceAction("debt_installments_created", {
+    userId: sessionUser,
+    boardId: debt.boardId,
+    debtId: debt.id,
+    installments,
+    amount: debt.currentBalance,
   });
 
   revalidatePath(`/${locale}/tools/finance`);

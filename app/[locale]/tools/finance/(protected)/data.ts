@@ -1,7 +1,7 @@
 ﻿// app/[locale]/tools/finance/(protected)/data.ts
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
-import type { FinanceBoard, FinanceItem, FinanceBoardInvite, FinanceCard, FinanceDebt } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceBoardInvite, FinanceCard, FinanceDebt, FinanceDebtPayment } from "@/types/finance";
 import type { DocumentData, Query, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange, getPreviousMonthKey } from "@/lib/finance/utils";
@@ -13,6 +13,7 @@ import {
   mapFinanceCard,
   mapFinanceCategory,
   mapFinanceDebt,
+  mapFinanceDebtPayment,
   mapFinanceFixedTemplate,
   type FinanceFixedTemplateDocument,
 } from "@/lib/finance/schema";
@@ -237,6 +238,26 @@ export async function getFinanceDebtsData(boardId?: string | null): Promise<Fina
     if (a.status !== b.status) return a.status.localeCompare(b.status);
     return a.dueDate.localeCompare(b.dueDate);
   });
+}
+
+export async function getFinanceDebtPaymentsData(boardId?: string | null): Promise<FinanceDebtPayment[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId || !boardId) return [];
+
+  const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
+  if (!allowed) return [];
+
+  const snap = await adminDb
+    .collection("finance_debt_payments")
+    .where("boardId", "==", boardId)
+    .get();
+
+  const payments: FinanceDebtPayment[] = [];
+  snap.forEach((doc: FirestoreDoc) => {
+    payments.push(mapFinanceDebtPayment(doc));
+  });
+
+  return payments.sort((a, b) => a.paidAt.localeCompare(b.paidAt));
 }
 
 export async function getFinanceCardsData(

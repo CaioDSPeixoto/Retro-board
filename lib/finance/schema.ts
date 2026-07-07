@@ -143,6 +143,7 @@ export function mapFinanceDebt(doc: FirestoreDocumentLike): FinanceDebt {
     interestRate: readOptionalNumber(data, "interestRate"),
     penaltyAmount: readOptionalNumber(data, "penaltyAmount"),
     installments: readOptionalNumber(data, "installments"),
+    linkedInstallmentGroupId: readOptionalString(data, "linkedInstallmentGroupId"),
     notes: readOptionalString(data, "notes"),
     createdAt: readDateString(data, "createdAt"),
     updatedAt: readDateString(data, "updatedAt") || undefined,
