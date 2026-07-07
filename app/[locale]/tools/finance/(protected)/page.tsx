@@ -11,10 +11,12 @@ import {
   getCashBalanceBeforeMonth,
   getPreviousMonthCashBalance,
   getFinanceCardsData,
+  getFinanceFixedTemplatesData,
 } from "./data";
 import type { FinanceBoard, FinanceItem, FinanceCard } from "@/types/finance";
 import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
+import { createProjectedFixedItems } from "@/lib/finance/fixed-projection";
 import { redirect } from "next/navigation";
 
 type SearchParams = {
@@ -139,6 +141,7 @@ export default async function FinancePage({
   const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
   const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
   const cards: FinanceCard[] = await getFinanceCardsData(boardId);
+  const fixedTemplates = await getFinanceFixedTemplatesData(boardId);
   const projectionMonths = getProjectionMonthList(currentMonth, 6);
   const projectionResults = await Promise.all(
     projectionMonths.map((projectionMonth) =>
@@ -147,7 +150,14 @@ export default async function FinancePage({
         : getFinanceItemsData(projectionMonth, boardId),
     ),
   );
-  const projectionItems = projectionResults.flat();
+  const existingProjectionItems = projectionResults.flat();
+  const projectedFixedItems = createProjectedFixedItems(
+    fixedTemplates,
+    projectionMonths,
+    existingProjectionItems,
+    safeSessionUserId,
+  );
+  const projectionItems = [...existingProjectionItems, ...projectedFixedItems];
 
   return (
     <div className="max-w-5xl mx-auto px-6 pb-10 pt-4">

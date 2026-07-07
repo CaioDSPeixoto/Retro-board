@@ -51,12 +51,17 @@ Primeira entrega de valor. Usa os lancamentos atuais, sem criar entidade nova de
 - [x] Calcular gasto semanal recomendado.
 - [x] Exibir risco do mes: baixo, medio ou alto.
 - [x] Listar principais alertas do mes.
+- [x] Comparar gasto diario realizado com limite recomendado.
+- [x] Mostrar categorias que mais comprometem o mes.
+- [x] Gerar recomendacoes praticas com base no saldo, vencidos, ritmo e categoria dominante.
 
 ### Implementacao inicial
 
 - `lib/finance/planning.ts` concentra as regras de calculo.
 - `components/finance/FinancePlanningPanel.tsx` exibe a primeira versao da aba Planejamento.
 - A regra inicial usa apenas lancamentos atuais, valores pagos e saldos em aberto.
+- A segunda iteracao inclui ritmo de gasto e impacto por categoria.
+- A terceira iteracao adiciona recomendacoes textuais explicaveis.
 
 ### Indicadores iniciais
 
@@ -96,7 +101,7 @@ Expandir a visao para 3 e 6 meses usando fixos, parcelas e lancamentos futuros.
 - [x] Receitas previstas por mes.
 - [x] Despesas previstas por mes.
 - [ ] Parcelas futuras.
-- [ ] Fixos futuros.
+- [x] Fixos futuros.
 - [ ] Faturas/cartoes estimados.
 - [ ] Saldo projetado por mes.
 - [ ] Destaque de meses negativos.
@@ -106,7 +111,7 @@ Expandir a visao para 3 e 6 meses usando fixos, parcelas e lancamentos futuros.
 
 - A aba Planejamento carrega os proximos 6 meses do board atual.
 - A projecao usa lancamentos futuros ja cadastrados.
-- Fixos futuros ainda dependem de geracao/cadastro previo e serao refinados depois.
+- Fixos futuros sao simulados para a projecao sem criar dados reais antecipadamente.
 
 ### Perguntas que essa fase deve responder
 

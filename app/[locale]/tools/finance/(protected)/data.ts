@@ -12,6 +12,8 @@ import {
   mapFinanceBoardInvite,
   mapFinanceCard,
   mapFinanceCategory,
+  mapFinanceFixedTemplate,
+  type FinanceFixedTemplateDocument,
 } from "@/lib/finance/schema";
 
 /* ================= utils ================= */
@@ -178,6 +180,39 @@ export async function getPreviousMonthCashBalance(
   const previousMonth = getPreviousMonthKey(month);
   const items = await getFinanceItemsData(previousMonth, boardId);
   return getRealizedBalance(items);
+}
+
+export async function getFinanceFixedTemplatesData(
+  boardId?: string | null,
+): Promise<FinanceFixedTemplateDocument[]> {
+  const sessionUserId = await getSession();
+  if (!sessionUserId) return [];
+
+  if (boardId) {
+    const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
+    if (!allowed) return [];
+  }
+
+  let queryRef: FirestoreQuery = adminDb
+    .collection("finance_fixed_templates")
+    .where("active", "==", true);
+
+  if (boardId) {
+    queryRef = queryRef.where("boardId", "==", boardId);
+  } else {
+    queryRef = queryRef.where("userId", "==", sessionUserId);
+  }
+
+  const snap = await queryRef.get();
+  const templates: FinanceFixedTemplateDocument[] = [];
+
+  snap.forEach((doc: FirestoreDoc) => {
+    const template = mapFinanceFixedTemplate(doc);
+    if (boardId ? template.boardId !== boardId : template.boardId) return;
+    templates.push(template);
+  });
+
+  return templates.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export async function getFinanceCardsData(

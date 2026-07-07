@@ -35,8 +35,11 @@ describe("finance planning", () => {
     expect(summary.pendingExpense).toBe(700);
     expect(summary.forecastBalance).toBe(2400);
     expect(summary.daysRemaining).toBe(10);
+    expect(summary.elapsedDays).toBe(22);
     expect(summary.dailyRecommendation).toBe(240);
     expect(summary.weeklyRecommendation).toBe(1680);
+    expect(summary.realizedDailyExpense).toBe(40.91);
+    expect(summary.spendingPaceStatus).toBe("under");
     expect(summary.riskLevel).toBe("low");
   });
 
@@ -93,5 +96,49 @@ describe("finance planning", () => {
     expect(projection[0].summary.forecastBalance).toBe(2000);
     expect(projection[1].summary.forecastBalance).toBe(-800);
     expect(projection[2].summary.forecastBalance).toBe(0);
+  });
+
+  it("calcula categorias que mais comprometem o mes", () => {
+    const summary = calculateFinancePlanning(
+      [
+        item({ id: "rent", category: "Casa", amount: 1200, status: "paid", paidAmount: 1200 }),
+        item({ id: "market", category: "Mercado", amount: 700, status: "partial", paidAmount: 200, openAmount: 500 }),
+        item({ id: "card", category: "Cartao", amount: 300, status: "pending" }),
+      ],
+      "2026-07",
+      "2026-07-10",
+    );
+
+    expect(summary.topExpenseCategories).toEqual([
+      { category: "Casa", amount: 1200, percentage: 54.55 },
+      { category: "Mercado", amount: 700, percentage: 31.82 },
+      { category: "Cartao", amount: 300, percentage: 13.64 },
+    ]);
+    expect(summary.recommendations).toContainEqual({
+      code: "top_category",
+      priority: "info",
+      amount: 1200,
+      category: "Casa",
+      percentage: 54.55,
+    });
+  });
+
+  it("gera recomendacoes para saldo negativo e contas vencidas", () => {
+    const summary = calculateFinancePlanning(
+      [
+        item({ id: "income", type: "income", status: "paid", amount: 500, paidAmount: 500 }),
+        item({ id: "paid-expense", type: "expense", status: "paid", amount: 200, paidAmount: 200, date: "2026-07-02" }),
+        item({ id: "overdue", type: "expense", status: "pending", amount: 900, date: "2026-07-05" }),
+      ],
+      "2026-07",
+      "2026-07-10",
+    );
+
+    expect(summary.recommendations.map((recommendation) => recommendation.code)).toEqual([
+      "negative_balance",
+      "overdue",
+      "pace_over",
+      "top_category",
+    ]);
   });
 });

@@ -8,6 +8,7 @@ import { getOpenAmount } from "@/lib/finance/calculations";
 import {
   calculateFinancePlanning,
   calculateFinanceProjection,
+  type FinancePlanningRecommendation,
   type PlanningRiskLevel,
 } from "@/lib/finance/planning";
 
@@ -21,6 +22,13 @@ function riskClassName(riskLevel: PlanningRiskLevel) {
   if (riskLevel === "high") return "finance-danger-soft";
   if (riskLevel === "medium") return "finance-warning-soft";
   return "finance-success-soft";
+}
+
+function recommendationClassName(priority: FinancePlanningRecommendation["priority"]) {
+  if (priority === "danger") return "finance-danger-soft";
+  if (priority === "warning") return "finance-warning-soft";
+  if (priority === "success") return "finance-success-soft";
+  return "finance-info-soft";
 }
 
 export default function FinancePlanningPanel({ items, projectionItems = [], currentMonth }: Props) {
@@ -52,6 +60,43 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
       : summary.riskLevel === "medium"
         ? t("planningRiskMedium")
         : t("planningRiskLow");
+  const paceMessage =
+    summary.spendingPaceStatus === "over"
+      ? t("planningPaceOver")
+      : summary.spendingPaceStatus === "near"
+        ? t("planningPaceNear")
+        : t("planningPaceUnder");
+  const paceTone =
+    summary.spendingPaceStatus === "over"
+      ? "finance-danger-text"
+      : summary.spendingPaceStatus === "near"
+        ? "finance-warning-text"
+        : "finance-success-text";
+
+  const getRecommendationText = (recommendation: FinancePlanningRecommendation) => {
+    if (recommendation.code === "negative_balance") {
+      return t("planningRecommendationNegative", {
+        value: currency(recommendation.amount ?? 0),
+      });
+    }
+    if (recommendation.code === "overdue") {
+      return t("planningRecommendationOverdue", {
+        count: recommendation.count ?? 0,
+        value: currency(recommendation.amount ?? 0),
+      });
+    }
+    if (recommendation.code === "pace_over") {
+      return t("planningRecommendationPaceOver");
+    }
+    if (recommendation.code === "top_category") {
+      return t("planningRecommendationTopCategory", {
+        category: recommendation.category ?? "",
+        percent: String(Math.round(recommendation.percentage ?? 0)),
+        value: currency(recommendation.amount ?? 0),
+      });
+    }
+    return t("planningRecommendationHealthy");
+  };
 
   return (
     <div className="space-y-4">
@@ -97,6 +142,74 @@ export default function FinancePlanningPanel({ items, projectionItems = [], curr
           <p className="mt-1 text-xs">
             {t("planningForecastBalance", { value: currency(summary.forecastBalance) })}
           </p>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <h2 className="mb-3 text-sm font-bold text-[var(--color-text-primary)]">
+          {t("planningRecommendationsTitle")}
+        </h2>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          {summary.recommendations.map((recommendation) => (
+            <p
+              key={recommendation.code}
+              className={`rounded-xl border px-3 py-2 text-xs font-semibold ${recommendationClassName(recommendation.priority)}`}
+            >
+              {getRecommendationText(recommendation)}
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <h2 className="mb-3 text-sm font-bold text-[var(--color-text-primary)]">
+            {t("planningPaceTitle")}
+          </h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[var(--color-text-muted)]">{t("planningRealizedDailyExpense")}</span>
+              <span className="font-bold finance-danger-text">
+                {currency(summary.realizedDailyExpense)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[var(--color-text-muted)]">{t("planningDailyAvailable")}</span>
+              <span className={`font-bold ${recommendationTone}`}>
+                {currency(summary.dailyRecommendation)}
+              </span>
+            </div>
+            <p className={`rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2 text-xs font-semibold ${paceTone}`}>
+              {paceMessage}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+          <h2 className="mb-3 text-sm font-bold text-[var(--color-text-primary)]">
+            {t("planningTopCategoriesTitle")}
+          </h2>
+          {summary.topExpenseCategories.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-[var(--color-border)] px-3 py-6 text-center text-sm text-[var(--color-text-muted)]">
+              {t("planningTopCategoriesEmpty")}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {summary.topExpenseCategories.map((entry) => (
+                <div key={entry.category} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="min-w-0 truncate font-semibold text-[var(--color-text-primary)]">
+                      {entry.category}
+                    </span>
+                    <span className="font-bold finance-danger-text">{currency(entry.amount)}</span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                    {t("planningCategoryShare", { percent: entry.percentage.toFixed(0) })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

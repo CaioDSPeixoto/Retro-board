@@ -2,21 +2,50 @@ import type { FinanceItem } from "@/types/finance";
 import { getOpenAmount, getPaidAmount, roundMoney } from "@/lib/finance/calculations";
 
 export type PlanningRiskLevel = "low" | "medium" | "high";
+export type PlanningPaceStatus = "under" | "near" | "over";
+
+export type FinanceCategoryImpact = {
+  category: string;
+  amount: number;
+  percentage: number;
+};
+
+export type PlanningRecommendationCode =
+  | "negative_balance"
+  | "overdue"
+  | "pace_over"
+  | "top_category"
+  | "healthy";
+
+export type FinancePlanningRecommendation = {
+  code: PlanningRecommendationCode;
+  priority: "info" | "warning" | "danger" | "success";
+  amount?: number;
+  count?: number;
+  category?: string;
+  percentage?: number;
+};
 
 export type FinancePlanningSummary = {
   realizedBalance: number;
+  realizedExpense: number;
   pendingIncome: number;
   pendingExpense: number;
   forecastBalance: number;
   dailyRecommendation: number;
   weeklyRecommendation: number;
   daysRemaining: number;
+  elapsedDays: number;
+  realizedDailyExpense: number;
+  spendingPaceStatus: PlanningPaceStatus;
   riskLevel: PlanningRiskLevel;
   overdueCount: number;
   overdueAmount: number;
   dueSoonCount: number;
   dueSoonAmount: number;
   largestOpenExpenses: FinanceItem[];
+  topExpenseCategories: FinanceCategoryImpact[];
+  recommendations: FinancePlanningRecommendation[];
 };
 
 export type FinanceMonthlyProjection = {
@@ -69,6 +98,16 @@ export function getPlanningDaysRemaining(monthKey: string, currentDateKey: strin
   return getDaysBetweenInclusive(currentDate, monthEnd);
 }
 
+export function getPlanningElapsedDays(monthKey: string, currentDateKey: string): number {
+  const monthStart = getMonthStart(monthKey);
+  const monthEnd = getMonthEnd(monthKey);
+  const currentDate = parseDateKey(currentDateKey);
+
+  if (currentDate < monthStart) return 0;
+  if (currentDate > monthEnd) return getDaysBetweenInclusive(monthStart, monthEnd);
+  return getDaysBetweenInclusive(monthStart, currentDate);
+}
+
 function addDaysKey(dateKey: string, days: number): string {
   const date = parseDateKey(dateKey);
   date.setDate(date.getDate() + days);
@@ -87,6 +126,80 @@ function getRiskLevel(params: {
   return "low";
 }
 
+function getSpendingPaceStatus(realizedDailyExpense: number, dailyRecommendation: number): PlanningPaceStatus {
+  if (dailyRecommendation <= 0) return realizedDailyExpense > 0 ? "over" : "near";
+  if (realizedDailyExpense > dailyRecommendation * 1.1) return "over";
+  if (realizedDailyExpense >= dailyRecommendation * 0.8) return "near";
+  return "under";
+}
+
+function getTopExpenseCategories(categoryTotals: Map<string, number>, totalExpenseCommitment: number) {
+  if (totalExpenseCommitment <= 0) return [];
+
+  return Array.from(categoryTotals.entries())
+    .map(([category, amount]) => ({
+      category,
+      amount: roundMoney(amount),
+      percentage: roundMoney((amount / totalExpenseCommitment) * 100),
+    }))
+    .toSorted((left, right) => right.amount - left.amount)
+    .slice(0, 3);
+}
+
+function getPlanningRecommendations(params: {
+  forecastBalance: number;
+  overdueCount: number;
+  overdueAmount: number;
+  spendingPaceStatus: PlanningPaceStatus;
+  topExpenseCategories: FinanceCategoryImpact[];
+}): FinancePlanningRecommendation[] {
+  const recommendations: FinancePlanningRecommendation[] = [];
+
+  if (params.forecastBalance < 0) {
+    recommendations.push({
+      code: "negative_balance",
+      priority: "danger",
+      amount: Math.abs(params.forecastBalance),
+    });
+  }
+
+  if (params.overdueCount > 0) {
+    recommendations.push({
+      code: "overdue",
+      priority: "warning",
+      amount: params.overdueAmount,
+      count: params.overdueCount,
+    });
+  }
+
+  if (params.spendingPaceStatus === "over") {
+    recommendations.push({
+      code: "pace_over",
+      priority: "warning",
+    });
+  }
+
+  const topCategory = params.topExpenseCategories[0];
+  if (topCategory && topCategory.percentage >= 40) {
+    recommendations.push({
+      code: "top_category",
+      priority: "info",
+      amount: topCategory.amount,
+      category: topCategory.category,
+      percentage: topCategory.percentage,
+    });
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push({
+      code: "healthy",
+      priority: "success",
+    });
+  }
+
+  return recommendations.slice(0, 4);
+}
+
 export function calculateFinancePlanning(
   items: FinanceItem[],
   monthKey: string,
@@ -94,6 +207,7 @@ export function calculateFinancePlanning(
 ): FinancePlanningSummary {
   const dueSoonLimit = addDaysKey(currentDateKey, 3);
   const daysRemaining = getPlanningDaysRemaining(monthKey, currentDateKey);
+  const elapsedDays = getPlanningElapsedDays(monthKey, currentDateKey);
 
   let realizedIncome = 0;
   let realizedExpense = 0;
@@ -104,6 +218,7 @@ export function calculateFinancePlanning(
   let dueSoonAmount = 0;
   let dueSoonCount = 0;
   const openExpenses: FinanceItem[] = [];
+  const categoryTotals = new Map<string, number>();
 
   for (const item of items) {
     if (item.isSynthetic || item.status === "moved") continue;
@@ -118,6 +233,13 @@ export function calculateFinancePlanning(
       realizedExpense += paidAmount;
       pendingExpense += openAmount;
       if (openAmount > 0) openExpenses.push(item);
+      const categoryImpact = paidAmount + openAmount;
+      if (categoryImpact > 0) {
+        categoryTotals.set(
+          item.category,
+          (categoryTotals.get(item.category) ?? 0) + categoryImpact,
+        );
+      }
     }
 
     if (openAmount <= 0) continue;
@@ -137,15 +259,25 @@ export function calculateFinancePlanning(
     ? roundMoney(forecastBalance / daysRemaining)
     : forecastBalance;
   const weeklyRecommendation = roundMoney(dailyRecommendation * 7);
+  const realizedDailyExpense = elapsedDays > 0
+    ? roundMoney(realizedExpense / elapsedDays)
+    : 0;
+  const totalExpenseCommitment = realizedExpense + pendingExpense;
+  const spendingPaceStatus = getSpendingPaceStatus(realizedDailyExpense, dailyRecommendation);
+  const topExpenseCategories = getTopExpenseCategories(categoryTotals, totalExpenseCommitment);
 
   return {
     realizedBalance,
+    realizedExpense: roundMoney(realizedExpense),
     pendingIncome: roundMoney(pendingIncome),
     pendingExpense: roundMoney(pendingExpense),
     forecastBalance,
     dailyRecommendation,
     weeklyRecommendation,
     daysRemaining,
+    elapsedDays,
+    realizedDailyExpense,
+    spendingPaceStatus,
     riskLevel: getRiskLevel({
       forecastBalance,
       overdueAmount,
@@ -159,6 +291,14 @@ export function calculateFinancePlanning(
     largestOpenExpenses: openExpenses
       .toSorted((left, right) => getOpenAmount(right) - getOpenAmount(left))
       .slice(0, 3),
+    topExpenseCategories,
+    recommendations: getPlanningRecommendations({
+      forecastBalance,
+      overdueCount,
+      overdueAmount: roundMoney(overdueAmount),
+      spendingPaceStatus,
+      topExpenseCategories,
+    }),
   };
 }
 
