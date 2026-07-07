@@ -11,9 +11,10 @@ import {
   getCashBalanceBeforeMonth,
   getPreviousMonthCashBalance,
   getFinanceCardsData,
+  getFinanceDebtsData,
   getFinanceFixedTemplatesData,
 } from "./data";
-import type { FinanceBoard, FinanceItem, FinanceCard } from "@/types/finance";
+import type { FinanceBoard, FinanceItem, FinanceCard, FinanceDebt } from "@/types/finance";
 import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { createProjectedFixedItems } from "@/lib/finance/fixed-projection";
@@ -31,7 +32,7 @@ type SearchParams = {
   accountsStatus?: string;
 };
 
-const FINANCE_VIEWS = new Set(["list", "planning", "metrics", "cards"]);
+const FINANCE_VIEWS = new Set(["list", "planning", "debts", "metrics", "cards"]);
 const LIST_DUE_FILTERS = new Set(["all", "overdue", "today", "tomorrow", "next7", "next30", "open", "settled"]);
 const LIST_STATUS_FILTERS = new Set(["all", "paid", "pending", "partial", "moved"]);
 
@@ -141,6 +142,7 @@ export default async function FinancePage({
   const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
   const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
   const cards: FinanceCard[] = await getFinanceCardsData(boardId);
+  const debts: FinanceDebt[] = await getFinanceDebtsData(boardId);
   const fixedTemplates = await getFinanceFixedTemplatesData(boardId);
   const projectionMonths = getProjectionMonthList(currentMonth, 6);
   const projectionResults = await Promise.all(
@@ -172,8 +174,9 @@ export default async function FinancePage({
         previousCashBalance={previousCashBalance}
         previousMonthCashBalance={previousMonthCashBalance}
         initialCards={cards}
+        initialDebts={debts}
         initialProjectionItems={projectionItems}
-        initialView={initialView as "list" | "planning" | "metrics" | "cards"}
+        initialView={initialView as "list" | "planning" | "debts" | "metrics" | "cards"}
         initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled"}
         initialStatusFilter={initialStatusFilter as "all" | FinanceStatus}
       />

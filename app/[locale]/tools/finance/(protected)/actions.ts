@@ -4,7 +4,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import type { FinanceBoard, FinanceItem, FinanceStatus } from "@/types/finance";
+import type { FinanceBoard, FinanceDebtStatus, FinanceDebtType, FinanceItem, FinanceStatus } from "@/types/finance";
 import { ACCOUNT_FIXED_CATEGORY, BUILTIN_CATEGORIES } from "@/lib/finance/constants";
 import { getMonthRange } from "@/lib/finance/utils";
 import { getTranslations } from "next-intl/server";
@@ -20,6 +20,7 @@ import {
   mapFinanceBoard,
   mapFinanceCard,
   mapFinanceCategory,
+  mapFinanceDebt,
   mapFinanceFixedTemplate,
   mapFinanceItem,
 } from "@/lib/finance/schema";
@@ -59,6 +60,16 @@ function parseMoneyInput(value: string): number {
   }
 
   return parseFloat(trimmed);
+}
+
+function todayKey() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function getDebtStatus(currentBalance: number, dueDate: string): FinanceDebtStatus {
+  if (currentBalance <= 0) return "paid";
+  if (dueDate < todayKey()) return "overdue";
+  return "active";
 }
 
 function createInviteCode() {
@@ -524,6 +535,145 @@ export async function deleteFinanceCard(formData: FormData) {
   }
 
   await ref.delete();
+
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+/* ================= dividas ================= */
+
+export async function createFinanceDebt(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:create-debt", {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
+
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const boardId = String(formData.get("boardId") || "").trim();
+  const name = String(formData.get("name") || "").trim();
+  const typeRaw = String(formData.get("type") || "other").trim();
+  const originalAmount = parseMoneyInput(String(formData.get("originalAmount") || ""));
+  const currentBalanceRaw = String(formData.get("currentBalance") || "").trim();
+  const currentBalance = currentBalanceRaw ? parseMoneyInput(currentBalanceRaw) : originalAmount;
+  const startDate = String(formData.get("startDate") || todayKey()).trim();
+  const dueDate = String(formData.get("dueDate") || startDate).trim();
+  const category = String(formData.get("category") || "").trim();
+  const notes = String(formData.get("notes") || "").trim();
+  const installmentsRaw = String(formData.get("installments") || "").trim();
+  const installments = installmentsRaw ? Number(installmentsRaw) : undefined;
+  const debtTypes: FinanceDebtType[] = [
+    "card",
+    "invoice",
+    "house_bill",
+    "loan",
+    "person",
+    "financing",
+    "other",
+  ];
+  const type = debtTypes.includes(typeRaw as FinanceDebtType)
+    ? (typeRaw as FinanceDebtType)
+    : "other";
+
+  if (!boardId) return { error: "Quadro obrigatorio" };
+  const board = await getBoard(boardId);
+  if (!board) return { error: "Quadro nao encontrado" };
+  if (!isMember(board, sessionUser)) return { error: "Sem permissao" };
+  if (!name) return { error: "Nome da divida e obrigatorio" };
+  if (Number.isNaN(originalAmount) || originalAmount <= 0) return { error: "Valor original invalido" };
+  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: "Saldo atual invalido" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    return { error: "Data invalida" };
+  }
+  if (installments !== undefined && (!Number.isInteger(installments) || installments < 1)) {
+    return { error: "Parcelas invalidas" };
+  }
+
+  const now = new Date().toISOString();
+  await adminDb.collection("finance_debts").add({
+    userId: sessionUser,
+    boardId,
+    name,
+    type,
+    originalAmount,
+    currentBalance,
+    startDate,
+    dueDate,
+    status: getDebtStatus(currentBalance, dueDate),
+    createdAt: now,
+    updatedAt: now,
+    createdBy: sessionUser,
+    ...(category ? { category } : {}),
+    ...(notes ? { notes } : {}),
+    ...(installments !== undefined ? { installments } : {}),
+  });
+
+  logFinanceAction("debt_created", {
+    userId: sessionUser,
+    boardId,
+    debtType: type,
+    originalAmount,
+  });
+  revalidatePath(`/${locale}/tools/finance`);
+  return { success: true };
+}
+
+export async function payFinanceDebt(formData: FormData) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:pay-debt", {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
+
+  const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const id = String(formData.get("id") || "").trim();
+  const amount = parseMoneyInput(String(formData.get("amount") || ""));
+  const paidAt = String(formData.get("paidAt") || todayKey()).trim();
+  const note = String(formData.get("note") || "").trim();
+
+  if (!id) return { error: "Divida nao encontrada" };
+  if (Number.isNaN(amount) || amount <= 0) return { error: "Valor invalido" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(paidAt)) return { error: "Data invalida" };
+
+  const ref = adminDb.collection("finance_debts").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { error: "Divida nao encontrada" };
+
+  const debt = mapFinanceDebt(snap);
+  const board = await getBoard(debt.boardId);
+  if (!board || !isMember(board, sessionUser)) return { error: "Sem permissao" };
+  if (debt.status === "paid" || debt.currentBalance <= 0) return { error: "Divida ja quitada" };
+
+  const nextBalance = Math.max(Number(debt.currentBalance || 0) - amount, 0);
+  const now = new Date().toISOString();
+  const batch = adminDb.batch();
+  batch.update(ref, {
+    currentBalance: nextBalance,
+    status: getDebtStatus(nextBalance, debt.dueDate),
+    updatedAt: now,
+  });
+  batch.create(adminDb.collection("finance_debt_payments").doc(), {
+    debtId: debt.id,
+    boardId: debt.boardId,
+    userId: sessionUser,
+    amount,
+    paidAt,
+    createdAt: now,
+    ...(note ? { note } : {}),
+  });
+  await batch.commit();
+
+  logFinanceAction("debt_paid", {
+    userId: sessionUser,
+    boardId: debt.boardId,
+    debtId: debt.id,
+    amount,
+    nextBalance,
+  });
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };

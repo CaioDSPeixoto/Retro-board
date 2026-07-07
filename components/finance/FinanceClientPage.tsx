@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceCard, FinanceItem, FinanceStatus } from "@/types/finance";
+import type { FinanceBoard, FinanceCard, FinanceDebt, FinanceItem, FinanceStatus } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -21,6 +21,7 @@ import FinanceFormModal from "@/components/finance/FinanceFormModal";
 import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
 import FinancePlanningPanel from "@/components/finance/FinancePlanningPanel";
+import FinanceDebtsPanel from "@/components/finance/FinanceDebtsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -42,7 +43,7 @@ import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
-type FinanceView = "list" | "planning" | "metrics" | "cards";
+type FinanceView = "list" | "planning" | "debts" | "metrics" | "cards";
 type FinanceListDueFilter = "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled";
 type FinanceListSort = "dateAsc" | "dateDesc" | "amountDesc" | "amountAsc" | "status";
 
@@ -64,6 +65,7 @@ type Props = {
   previousCashBalance?: number;
   previousMonthCashBalance?: number;
   initialCards?: FinanceCard[];
+  initialDebts?: FinanceDebt[];
   initialProjectionItems?: FinanceItem[];
   initialView?: FinanceView;
   initialDueFilter?: FinanceListDueFilter;
@@ -81,6 +83,7 @@ export default function FinanceClientPage({
   previousCashBalance = 0,
   previousMonthCashBalance = 0,
   initialCards = [],
+  initialDebts = [],
   initialProjectionItems = [],
   initialView = "list",
   initialDueFilter = "all",
@@ -120,6 +123,7 @@ export default function FinanceClientPage({
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
   const showPlanning = activeView === "planning";
+  const showDebts = activeView === "debts";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -823,6 +827,7 @@ export default function FinanceClientPage({
               {[
                 ["list", t("tabListLabel")],
                 ["planning", t("tabPlanningLabel")],
+                ["debts", t("tabDebtsLabel")],
                 ["metrics", t("tabMetricsLabel")],
                 ["cards", t("tabCardsLabel")],
               ].map(([view, label]) => (
@@ -1030,6 +1035,12 @@ export default function FinanceClientPage({
           items={items}
           projectionItems={initialProjectionItems}
           currentMonth={currentMonth}
+        />
+      ) : showDebts ? (
+        <FinanceDebtsPanel
+          debts={initialDebts}
+          boardId={currentBoardId ?? ""}
+          locale={locale}
         />
       ) : showMetrics ? (
         <FinanceMetricsPanel

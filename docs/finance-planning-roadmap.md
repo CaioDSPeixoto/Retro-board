@@ -124,6 +124,16 @@ Expandir a visao para 3 e 6 meses usando fixos, parcelas e lancamentos futuros.
 
 Criar uma entidade propria para dividas, separada de lancamento comum.
 
+### Status da implementacao
+
+- [x] Modelo `FinanceDebt` e `FinanceDebtPayment` criado nos tipos da aplicacao.
+- [x] Mapeamento pelo schema central do Firebase.
+- [x] Leitura das dividas do board na tela Finance.
+- [x] Aba "Dividas" com resumo, cadastro e lista.
+- [x] Pagamento/abatimento parcial com historico em `finance_debt_payments`.
+- [x] Quitacao automatica quando o saldo chega a zero.
+- [x] Status automatico entre ativa, vencida e quitada.
+
 ### Tipos de divida
 
 - Cartao.
@@ -152,10 +162,10 @@ Criar uma entidade propria para dividas, separada de lancamento comum.
 ### Comportamentos
 
 - [ ] Divida parcelada pode gerar lancamentos futuros.
-- [ ] Conta atrasada pode aparecer como conta vencida.
+- [x] Conta atrasada pode aparecer como conta vencida.
 - [ ] Fatura de cartao pode virar conta a pagar.
-- [ ] Pagamento parcial reduz saldo atual.
-- [ ] Quitacao zera saldo e altera status.
+- [x] Pagamento parcial reduz saldo atual.
+- [x] Quitacao zera saldo e altera status.
 - [ ] Renegociacao cria nova condicao sem perder contexto.
 
 ## Fase 4: Dashboard de dividas
@@ -164,14 +174,14 @@ Depois de cadastrar dividas, criar uma visao propria para acompanhamento.
 
 ### Entregas
 
-- [ ] Total em dividas.
-- [ ] Total vencido.
+- [x] Total em dividas.
+- [x] Total vencido.
 - [ ] Total vencendo este mes.
 - [ ] Total parcelado futuro.
 - [ ] Divida mais urgente.
 - [ ] Dividas por tipo.
 - [ ] Evolucao do saldo devedor.
-- [ ] Botao para registrar pagamento.
+- [x] Botao para registrar pagamento.
 - [ ] Botao para renegociar.
 - [ ] Botao para transformar em parcelas.
 

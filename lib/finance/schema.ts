@@ -18,6 +18,10 @@ import type {
   FinanceBoardInviteStatus,
   FinanceBoardInviteType,
   FinanceCard,
+  FinanceDebt,
+  FinanceDebtPayment,
+  FinanceDebtStatus,
+  FinanceDebtType,
   FinanceItem,
   FinanceStatus,
 } from "@/types/finance";
@@ -30,6 +34,21 @@ const FINANCE_STATUSES: readonly FinanceStatus[] = [
   "moved",
 ];
 const FINANCE_CARD_MODES = ["credit", "debit"] as const;
+const FINANCE_DEBT_TYPES: readonly FinanceDebtType[] = [
+  "card",
+  "invoice",
+  "house_bill",
+  "loan",
+  "person",
+  "financing",
+  "other",
+];
+const FINANCE_DEBT_STATUSES: readonly FinanceDebtStatus[] = [
+  "active",
+  "overdue",
+  "paid",
+  "renegotiated",
+];
 const FINANCE_INVITE_STATUSES: readonly FinanceBoardInviteStatus[] = [
   "pending",
   "accepted",
@@ -102,6 +121,48 @@ export function mapFinanceCard(doc: FirestoreDocumentLike): FinanceCard {
     dueDay: readOptionalNumber(data, "dueDay"),
     createdAt: readDateString(data, "createdAt"),
     createdBy: readOptionalString(data, "createdBy"),
+  });
+}
+
+export function mapFinanceDebt(doc: FirestoreDocumentLike): FinanceDebt {
+  const data = getDocumentData(doc);
+
+  return removeUndefinedValues({
+    id: doc.id,
+    userId: readString(data, "userId"),
+    boardId: readString(data, "boardId"),
+    name: readString(data, "name", "Divida"),
+    type: readEnum(data, "type", FINANCE_DEBT_TYPES, "other"),
+    originalAmount: readNumber(data, "originalAmount"),
+    currentBalance: readNumber(data, "currentBalance"),
+    startDate: readString(data, "startDate"),
+    dueDate: readString(data, "dueDate"),
+    status: readEnum(data, "status", FINANCE_DEBT_STATUSES, "active"),
+    category: readOptionalString(data, "category"),
+    cardId: readOptionalString(data, "cardId"),
+    interestRate: readOptionalNumber(data, "interestRate"),
+    penaltyAmount: readOptionalNumber(data, "penaltyAmount"),
+    installments: readOptionalNumber(data, "installments"),
+    notes: readOptionalString(data, "notes"),
+    createdAt: readDateString(data, "createdAt"),
+    updatedAt: readDateString(data, "updatedAt") || undefined,
+    createdBy: readOptionalString(data, "createdBy"),
+  });
+}
+
+export function mapFinanceDebtPayment(doc: FirestoreDocumentLike): FinanceDebtPayment {
+  const data = getDocumentData(doc);
+
+  return removeUndefinedValues({
+    id: doc.id,
+    debtId: readString(data, "debtId"),
+    boardId: readString(data, "boardId"),
+    userId: readString(data, "userId"),
+    amount: readNumber(data, "amount"),
+    paidAt: readString(data, "paidAt"),
+    note: readOptionalString(data, "note"),
+    financeItemId: readOptionalString(data, "financeItemId"),
+    createdAt: readDateString(data, "createdAt"),
   });
 }
 

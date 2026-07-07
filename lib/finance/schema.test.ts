@@ -3,6 +3,8 @@ import {
   createMovedFinanceItemPayload,
   mapFinanceBoard,
   mapFinanceCard,
+  mapFinanceDebt,
+  mapFinanceDebtPayment,
   mapFinanceFixedTemplate,
   mapFinanceItem,
 } from "./schema";
@@ -62,6 +64,40 @@ describe("finance firestore schema", () => {
       type: "income",
       category: "Fixos",
       active: false,
+    });
+  });
+
+  it("mapeia divida e pagamento com defaults seguros", () => {
+    expect(mapFinanceDebt(doc("debt-1", {
+      userId: "user-1",
+      boardId: "board-1",
+      name: "Fatura",
+      type: "invalid",
+      status: "invalid",
+      originalAmount: "1200",
+      currentBalance: "800",
+      startDate: "2026-07-01",
+      dueDate: "2026-07-10",
+      createdAt: { toDate: () => new Date("2026-07-01T00:00:00.000Z") },
+    }))).toMatchObject({
+      id: "debt-1",
+      type: "other",
+      status: "active",
+      originalAmount: 1200,
+      currentBalance: 800,
+    });
+
+    expect(mapFinanceDebtPayment(doc("payment-1", {
+      debtId: "debt-1",
+      boardId: "board-1",
+      userId: "user-1",
+      amount: "250",
+      paidAt: "2026-07-05",
+      createdAt: { toDate: () => new Date("2026-07-05T00:00:00.000Z") },
+    }))).toMatchObject({
+      id: "payment-1",
+      debtId: "debt-1",
+      amount: 250,
     });
   });
 

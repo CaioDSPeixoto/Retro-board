@@ -1,4 +1,13 @@
 export type FinanceStatus = "paid" | "pending" | "partial" | "moved";
+export type FinanceDebtType =
+  | "card"
+  | "invoice"
+  | "house_bill"
+  | "loan"
+  | "person"
+  | "financing"
+  | "other";
+export type FinanceDebtStatus = "active" | "overdue" | "paid" | "renegotiated";
 
 export type FinanceItem = {
   id: string;
@@ -57,6 +66,40 @@ export type FinanceCard = {
   dueDay?: number;
   createdAt: string;
   createdBy?: string;
+};
+
+export type FinanceDebt = {
+  id: string;
+  userId: string;
+  boardId: string;
+  name: string;
+  type: FinanceDebtType;
+  originalAmount: number;
+  currentBalance: number;
+  startDate: string;
+  dueDate: string;
+  status: FinanceDebtStatus;
+  category?: string;
+  cardId?: string;
+  interestRate?: number;
+  penaltyAmount?: number;
+  installments?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+  createdBy?: string;
+};
+
+export type FinanceDebtPayment = {
+  id: string;
+  debtId: string;
+  boardId: string;
+  userId: string;
+  amount: number;
+  paidAt: string;
+  note?: string;
+  financeItemId?: string;
+  createdAt: string;
 };
 
 // ====== BOARDS ======
