@@ -2,6 +2,8 @@
 
 Este documento organiza a evolucao do modulo Finance para deixar de ser apenas um registro de lancamentos e se tornar uma ferramenta de decisao: entender dividas, prever os proximos meses e recomendar limites de gasto.
 
+Nota de coordenacao: para handoff entre IAs, status operacional, commits recentes e proximo passo recomendado, consulte `docs/ai-project-status.md`.
+
 ## Objetivo
 
 Construir uma visao financeira que responda perguntas praticas:
