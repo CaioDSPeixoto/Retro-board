@@ -236,6 +236,7 @@
     "noCategoryThisMonth": "Nenhum lançamento nesta categoria neste mês.",
     "launchedBy": "Lançado por {name}",
     "openAmount": "Saldo em aberto: {value}",
+    "carriedRemainder": "Saldo de {value} movido para {month}",
     "statusPending": "Pendente",
     "statusPaid": "Pago",
     "statusReceived": "Recebido",

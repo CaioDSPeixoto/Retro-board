@@ -25,6 +25,8 @@ describe("finance firestore schema", () => {
         date: "2026-07-10",
         type: "unknown",
         status: "invalid",
+        carriedToMonth: "2026-08",
+        carriedRemainderAmount: "800",
         createdAt: { toDate: () => new Date("2026-07-01T10:00:00.000Z") },
       }),
     );
@@ -37,6 +39,8 @@ describe("finance firestore schema", () => {
       type: "expense",
       status: "pending",
       category: "Outros",
+      carriedToMonth: "2026-08",
+      carriedRemainderAmount: 800,
       createdAt: "2026-07-01T10:00:00.000Z",
     });
   });

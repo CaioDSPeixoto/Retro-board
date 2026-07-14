@@ -1315,6 +1315,14 @@ export async function applyPaymentToFinanceItem(
     return { error: "Lançamento já está quitado." };
   }
 
+  if (
+    existing.status === "partial" &&
+    Number(existing.openAmount || 0) <= 0 &&
+    Number(existing.carriedRemainderAmount || 0) > 0
+  ) {
+    return { error: "O saldo restante deste lancamento ja foi movido para outro mes." };
+  }
+
   const totalAmount = existing.amount;
   if (typeof totalAmount !== "number" || Number.isNaN(totalAmount)) {
     return { error: "Valor inválido no lançamento" };
@@ -1397,6 +1405,8 @@ export async function applyPaymentToFinanceItem(
       paidAmount: totalAmount,
       openAmount: 0,
       originalAmount: existing.originalAmount ?? totalAmount,
+      carriedToMonth: FieldValue.delete(),
+      carriedRemainderAmount: FieldValue.delete(),
     });
     carriedDocs.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
@@ -1426,6 +1436,8 @@ export async function applyPaymentToFinanceItem(
       paidAmount: totalAmount,
       openAmount: 0,
       originalAmount: existing.originalAmount ?? totalAmount,
+      carriedToMonth: FieldValue.delete(),
+      carriedRemainderAmount: FieldValue.delete(),
     });
     carriedDocs.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
@@ -1439,8 +1451,10 @@ export async function applyPaymentToFinanceItem(
   batch.update(ref, {
     status: "partial" as FinanceStatus,
     paidAmount: newPaidAmount,
-    openAmount: remaining,
+    openAmount: 0,
     originalAmount: existing.originalAmount ?? totalAmount,
+    carriedToMonth: newDateStr.slice(0, 7),
+    carriedRemainderAmount: remaining,
   });
   if (carriedDocs.length > 0) {
     const [first, ...duplicated] = carriedDocs;
@@ -1488,6 +1502,71 @@ export async function applyPaymentToFinanceItem(
 
   revalidatePath(`/${locale}/tools/finance`);
   return { success: true };
+}
+
+export async function normalizeCarriedPartialItemsForMonth(
+  month: string,
+  locale: string,
+  boardId?: string | null,
+) {
+  const sessionUser = await getSession();
+  if (!sessionUser) return { error: "Unauthorized", normalized: 0 };
+
+  if (!/^\d{4}-\d{2}$/.test(month)) {
+    return { error: "Mes invalido", normalized: 0 };
+  }
+
+  if (boardId) {
+    const board = await getBoard(boardId);
+    if (!board || !isMember(board, sessionUser)) {
+      return { error: "Unauthorized", normalized: 0 };
+    }
+  }
+
+  const { start, end } = getMonthRange(month);
+  let queryRef: FirestoreQuery = adminDb
+    .collection("finance_items")
+    .where("date", ">=", start)
+    .where("date", "<=", end)
+    .where("status", "==", "partial");
+
+  queryRef = boardId
+    ? queryRef.where("boardId", "==", boardId)
+    : queryRef.where("userId", "==", sessionUser);
+
+  const snap = await queryRef.get();
+  const batch = adminDb.batch();
+  let normalized = 0;
+
+  for (const doc of snap.docs) {
+    const item = mapFinanceItem(doc);
+    if (Number(item.openAmount || 0) <= 0) continue;
+    if (Number(item.carriedRemainderAmount || 0) > 0) continue;
+
+    const carriedDocs = await findCarriedItems(item.id);
+    const carried = carriedDocs
+      .map((carriedDoc) => mapFinanceItem(carriedDoc))
+      .find((carriedItem) => {
+        if (item.boardId) return carriedItem.boardId === item.boardId;
+        return !carriedItem.boardId && carriedItem.userId === sessionUser;
+      });
+
+    if (!carried) continue;
+
+    batch.update(doc.ref, {
+      openAmount: 0,
+      carriedToMonth: carried.date.slice(0, 7),
+      carriedRemainderAmount: carried.amount,
+    });
+    normalized += 1;
+  }
+
+  if (normalized > 0) {
+    await batch.commit();
+    revalidatePath(`/${locale}/tools/finance`);
+  }
+
+  return { success: true, normalized };
 }
 
 export async function getInstallmentGroupItems(id: string, locale: string) {

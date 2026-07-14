@@ -75,8 +75,12 @@ export default function FinanceItemCard({
   const openAmount = isMoved
     ? 0
     : item.openAmount ?? Math.max(item.amount - paidAmount, 0);
+  const carriedRemainderAmount = Number(item.carriedRemainderAmount || 0);
+  const hasCarriedRemainder = isPartial && carriedRemainderAmount > 0;
   const displayAmount =
-    amountMode === "open" && openAmount > 0 && item.status !== "paid" && !isMoved
+    hasCarriedRemainder
+      ? paidAmount
+      : amountMode === "open" && openAmount > 0 && item.status !== "paid" && !isMoved
       ? openAmount
       : item.amount;
   const paymentTargetAmount = isPartial && openAmount > 0 ? openAmount : item.amount;
@@ -245,11 +249,11 @@ export default function FinanceItemCard({
   };
 
   const canToggle = !isSynthetic && !isMoved;
-  const canBulkSelect = !isSynthetic && !isMoved;
+  const canBulkSelect = !isSynthetic && !isMoved && !(hasCarriedRemainder && openAmount <= 0);
   const canShowToggleButton =
     canToggle &&
     (item.status === "pending" ||
-      item.status === "partial" ||
+      (item.status === "partial" && openAmount > 0 && !hasCarriedRemainder) ||
       (item.status === "paid" &&
         paidAmount >= item.amount &&
         originalAmount <= item.amount));
@@ -340,6 +344,14 @@ export default function FinanceItemCard({
             <p className="text-[11px] finance-warning-text">
               {t("openAmount", {
                 value: formatCurrency(openAmount),
+              })}
+            </p>
+          )}
+          {hasCarriedRemainder && (
+            <p className="text-[11px] finance-warning-text">
+              {t("carriedRemainder", {
+                value: formatCurrency(carriedRemainderAmount),
+                month: item.carriedToMonth || "",
               })}
             </p>
           )}

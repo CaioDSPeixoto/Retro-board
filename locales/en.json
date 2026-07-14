@@ -236,6 +236,7 @@
     "noCategoryThisMonth": "No entries in this category this month.",
     "launchedBy": "Added by {name}",
     "openAmount": "Outstanding balance: {value}",
+    "carriedRemainder": "Balance of {value} moved to {month}",
     "statusPending": "Pending",
     "statusPaid": "Paid",
     "statusReceived": "Received",

@@ -1,6 +1,6 @@
 # Status do projeto para handoff entre IAs
 
-Ultima atualizacao: 2026-07-08
+Ultima atualizacao: 2026-07-14
 
 Este arquivo e a fonte de verdade operacional para qualquer IA que continuar o trabalho no projeto. Antes de alterar codigo, leia este arquivo. Depois de concluir uma leva de trabalho, atualize este arquivo com o que mudou, validacoes executadas, pendencias e proximo passo recomendado.
 
@@ -289,6 +289,17 @@ Aviso recorrente do build:
 - Evolucao do saldo devedor deve continuar estimada ou exigir eventos completos?
   - Estado atual: estimada com pagamentos registrados.
 
+## Correcoes em andamento
+
+- Pagamento parcial de lancamento com restante movido:
+  - Problema observado: uma conta de R$ 900 com pagamento parcial de R$ 100 criava R$ 800 no mes seguinte, mas tambem mantinha R$ 800 como saldo em aberto no mes atual.
+  - Regra correta: se o restante foi carregado para o proximo mes, o mes atual deve manter apenas o valor pago como realizado e `openAmount=0`.
+  - Implementacao atual: `applyPaymentToFinanceItem` grava `carriedToMonth` e `carriedRemainderAmount`, zera `openAmount` no item original e mantem o restante apenas no item carregado.
+  - Compatibilidade: `normalizeCarriedPartialItemsForMonth` normaliza dados antigos ao abrir o board.
+  - UI: o card mostra "saldo movido" em vez de "saldo em aberto" no mes original.
+  - Refinamento de uso diario: o card e o total da lista passam a destacar o valor pago no mes original, nao o valor total original, quando o restante ja foi movido.
+  - Notificacoes: parciais com saldo ja movido nao entram mais como alerta de pagamento parcial pendente.
+
 ## Proximo passo recomendado
 
 Implementar filtros e detalhe por divida.
@@ -313,4 +324,3 @@ Ao concluir uma leva:
 4. Marque pendencias concluidas.
 5. Adicione novas decisoes abertas, se houver.
 6. Registre commit/push, se tiver acontecido.
-

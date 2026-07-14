@@ -40,6 +40,8 @@ export type FinanceItem = {
   // contas carregadas de outro mês
   carriedFromMonth?: string; // ex: "2025-12"
   carriedFromItemId?: string; // id do item de origem
+  carriedToMonth?: string;
+  carriedRemainderAmount?: number;
 
   fixedTemplateId?: string;
   installmentGroupId?: string;

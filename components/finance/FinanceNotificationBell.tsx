@@ -17,10 +17,11 @@ import {
 import { useTranslations } from "next-intl";
 import { auth, db } from "@/lib/firebase";
 import type { FinanceItem } from "@/types/finance";
+import { getOpenAmount } from "@/lib/finance/calculations";
 import { mapFinanceItem } from "@/lib/finance/schema";
 
 function isOpenItem(item: FinanceItem) {
-  return !item.isSynthetic && item.status !== "paid" && item.status !== "moved";
+  return !item.isSynthetic && item.status !== "paid" && item.status !== "moved" && getOpenAmount(item) > 0;
 }
 
 type Props = {
@@ -158,7 +159,7 @@ export default function FinanceNotificationBell({ locale }: Props) {
       item.date !== tomorrow,
   );
   const partialItems = items.filter(
-    (item) => !item.isSynthetic && item.status === "partial",
+    (item) => !item.isSynthetic && item.status === "partial" && getOpenAmount(item) > 0,
   );
   const notificationCount = new Set(
     [...overdueItems, ...dueTomorrowItems, ...dueSoonItems, ...partialItems].map((item) => item.id),

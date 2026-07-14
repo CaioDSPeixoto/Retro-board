@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getFinanceTotals,
   getBulkSelectionTotal,
+  getForecastAmount,
   getOpenAmount,
   getPaidAmount,
   getRealizedBalance,
@@ -35,6 +36,22 @@ describe("finance calculations", () => {
 
     expect(getPaidAmount(partial)).toBe(125);
     expect(getOpenAmount(partial)).toBe(175);
+  });
+
+  it("nao projeta no mes atual saldo parcial movido para o proximo mes", () => {
+    const partialMoved = item({
+      amount: 900,
+      status: "partial",
+      paidAmount: 100,
+      openAmount: 0,
+      carriedToMonth: "2026-07",
+      carriedRemainderAmount: 800,
+    });
+
+    expect(getPaidAmount(partialMoved)).toBe(100);
+    expect(getOpenAmount(partialMoved)).toBe(0);
+    expect(getForecastAmount(partialMoved)).toBe(0);
+    expect(isBulkActionEligible(partialMoved, "pay")).toBe(false);
   });
 
   it("ignora lançamentos movidos e sintéticos nos totais", () => {

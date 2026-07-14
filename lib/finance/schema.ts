@@ -94,6 +94,8 @@ export function mapFinanceItem(doc: FirestoreDocumentLike): FinanceItem {
     openAmount: readOptionalNumber(data, "openAmount"),
     carriedFromMonth: readOptionalString(data, "carriedFromMonth"),
     carriedFromItemId: readOptionalString(data, "carriedFromItemId"),
+    carriedToMonth: readOptionalString(data, "carriedToMonth"),
+    carriedRemainderAmount: readOptionalNumber(data, "carriedRemainderAmount"),
     fixedTemplateId: readOptionalString(data, "fixedTemplateId"),
     installmentGroupId: readOptionalString(data, "installmentGroupId"),
     installmentIndex: readOptionalNumber(data, "installmentIndex"),

@@ -91,7 +91,11 @@ export function getBulkSelectionTotal(items: FinanceItem[], selectedIds: Set<str
 export function isBulkActionEligible(item: FinanceItem, action: BulkFinanceAction): boolean {
   if (item.isSynthetic || item.status === "moved") return false;
 
-  if (action === "pay") return item.status !== "paid";
+  if (action === "pay") {
+    if (item.status === "paid") return false;
+    if (item.status === "partial" && getOpenAmount(item) <= 0) return false;
+    return true;
+  }
   if (action === "move") return item.status !== "paid" && item.status !== "partial";
   return item.status !== "paid" && item.status !== "partial";
 }

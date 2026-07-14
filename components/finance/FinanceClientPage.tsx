@@ -25,6 +25,7 @@ import FinanceDebtsPanel from "@/components/finance/FinanceDebtsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
+  normalizeCarriedPartialItemsForMonth,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
@@ -36,6 +37,7 @@ import {
   getBulkSelectionTotal,
   getFinanceTotals,
   getOpenAmount,
+  getPaidAmount,
   isBulkActionEligible,
   type BulkFinanceAction,
 } from "@/lib/finance/calculations";
@@ -156,6 +158,15 @@ export default function FinanceClientPage({
       .then((res) => {
         if (cancelled) return;
         if (res && "created" in res && Number(res.created || 0) > 0) {
+          router.refresh();
+        }
+      })
+      .catch(() => undefined);
+
+    normalizeCarriedPartialItemsForMonth(currentMonth, locale, currentBoardId ?? null)
+      .then((res) => {
+        if (cancelled) return;
+        if (res && "normalized" in res && Number(res.normalized || 0) > 0) {
           router.refresh();
         }
       })
@@ -562,12 +573,20 @@ export default function FinanceClientPage({
     (dueFilter !== "all" && dueFilter !== "settled") ||
     statusFilter === "pending" ||
     statusFilter === "partial";
+  const getListDisplayAmount = (item: FinanceItem) => {
+    const hasMovedRemainder =
+      item.status === "partial" &&
+      getOpenAmount(item) <= 0 &&
+      Number(item.carriedRemainderAmount || 0) > 0;
+    if (hasMovedRemainder) return getPaidAmount(item);
+    return isOpenMoneyView ? getOpenAmount(item) : item.amount;
+  };
   const visibleExpensesTotal = visibleExpenses.reduce(
-    (sum, item) => sum + (isOpenMoneyView ? getOpenAmount(item) : item.amount),
+    (sum, item) => sum + getListDisplayAmount(item),
     0,
   );
   const visibleIncomesTotal = visibleIncomes.reduce(
-    (sum, item) => sum + (isOpenMoneyView ? getOpenAmount(item) : item.amount),
+    (sum, item) => sum + getListDisplayAmount(item),
     0,
   );
   const expenseSectionTitle = isOpenMoneyView ? t("listPayableTitle") : t("listExpensesTitle");

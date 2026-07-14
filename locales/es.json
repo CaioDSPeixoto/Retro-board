@@ -236,6 +236,7 @@
     "noCategoryThisMonth": "No hay registros en esta categoría este mes.",
     "launchedBy": "Registrado por {name}",
     "openAmount": "Saldo pendiente: {value}",
+    "carriedRemainder": "Saldo de {value} movido a {month}",
     "statusPending": "Pendiente",
     "statusPaid": "Pagado",
     "statusReceived": "Recibido",
