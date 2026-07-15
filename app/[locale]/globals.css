@@ -197,3 +197,12 @@ body {
   filter: blur(0);
   opacity: 1;
 }
+
+/* ─── Scrollbar Hide (tabs mobile) ─────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
