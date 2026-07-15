@@ -101,7 +101,7 @@ export default async function FinancePage({
   const sessionUserId = await getSession();
   const safeSessionUserId = sessionUserId ?? "";
 
-  const boards: FinanceBoard[] = await getBoardsData();
+  const boards: FinanceBoard[] = await getBoardsData(safeSessionUserId);
 
   if (boardId) {
     const boardExists = boards.some((b) => b.id === boardId);
@@ -132,26 +132,30 @@ export default async function FinancePage({
   if (rangeFrom && rangeTo) {
     const months = getMonthList(rangeFrom, rangeTo);
     const results = await Promise.all(
-      months.map((m) => getFinanceItemsData(m, boardId)),
+      months.map((m) => getFinanceItemsData(m, boardId, safeSessionUserId)),
     );
     items = results.flat();
   } else {
-    items = await getFinanceItemsData(currentMonth, boardId);
+    items = await getFinanceItemsData(currentMonth, boardId, safeSessionUserId);
   }
 
-  const categories = await getCategoriesData(boardId);
-  const previousCashBalance = await getCashBalanceBeforeMonth(currentMonth, boardId);
-  const previousMonthCashBalance = await getPreviousMonthCashBalance(currentMonth, boardId);
-  const cards: FinanceCard[] = await getFinanceCardsData(boardId);
-  const debts: FinanceDebt[] = await getFinanceDebtsData(boardId);
-  const debtPayments: FinanceDebtPayment[] = await getFinanceDebtPaymentsData(boardId);
-  const fixedTemplates = await getFinanceFixedTemplatesData(boardId);
+  // Paralleliza queries independentes
+  const [categories, previousCashBalance, previousMonthCashBalance, cards, debts, debtPayments, fixedTemplates] = await Promise.all([
+    getCategoriesData(boardId, safeSessionUserId),
+    getCashBalanceBeforeMonth(currentMonth, boardId, safeSessionUserId),
+    getPreviousMonthCashBalance(currentMonth, boardId, safeSessionUserId),
+    getFinanceCardsData(boardId, safeSessionUserId),
+    getFinanceDebtsData(boardId, safeSessionUserId),
+    getFinanceDebtPaymentsData(boardId, safeSessionUserId),
+    getFinanceFixedTemplatesData(boardId, safeSessionUserId),
+  ]);
+
   const projectionMonths = getProjectionMonthList(currentMonth, 6);
   const projectionResults = await Promise.all(
     projectionMonths.map((projectionMonth) =>
       projectionMonth === currentMonth
         ? Promise.resolve(items.filter((item) => item.date.slice(0, 7) === currentMonth))
-        : getFinanceItemsData(projectionMonth, boardId),
+        : getFinanceItemsData(projectionMonth, boardId, safeSessionUserId),
     ),
   );
   const existingProjectionItems = projectionResults.flat();

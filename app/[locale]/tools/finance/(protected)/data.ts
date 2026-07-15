@@ -23,12 +23,16 @@ import {
 type FirestoreQuery = Query<DocumentData, DocumentData>;
 type FirestoreDoc = QueryDocumentSnapshot<DocumentData, DocumentData>;
 
+async function resolveUserId(providedUserId?: string | null): Promise<string | null> {
+  if (providedUserId) return providedUserId;
+  return getSession();
+}
+
 /* ================= invites ================= */
 
 export async function getInvitesData(userId: string): Promise<FinanceBoardInvite[]> {
   if (!userId) return [];
 
-  // Ajuste os filtros conforme está seu modelo de convites hoje.
   const snap = await adminDb
     .collection("finance_board_invites")
     .where("status", "==", "pending")
@@ -42,47 +46,37 @@ export async function getInvitesData(userId: string): Promise<FinanceBoardInvite
 
 /* ================= boards ================= */
 
-export async function getBoardsData(): Promise<FinanceBoard[]> {
-  const sessionUserId = await getSession();
+export async function getBoardsData(providedUserId?: string | null): Promise<FinanceBoard[]> {
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return [];
 
   const memberSnap = await adminDb
     .collection("finance_boards")
     .where("memberIds", "array-contains", sessionUserId)
     .get();
-  const ownerSnap = await adminDb
-    .collection("finance_boards")
-    .where("ownerId", "==", sessionUserId)
-    .get();
 
   const boardsById = new Map<string, FinanceBoard>();
-  const addBoard = (doc: FirestoreDoc) => {
+  memberSnap.forEach((doc: FirestoreDoc) => {
     boardsById.set(doc.id, mapFinanceBoard(doc));
-  };
-
-  memberSnap.forEach(addBoard);
-  ownerSnap.forEach(addBoard);
+  });
 
   return Array.from(boardsById.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /* ================= categories ================= */
 
-export async function getCategoriesData(boardId?: string | null): Promise<string[]> {
-  const sessionUserId = await getSession();
+export async function getCategoriesData(boardId?: string | null, providedUserId?: string | null): Promise<string[]> {
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return BUILTIN_CATEGORIES;
 
   let query: FirestoreQuery = adminDb.collection("finance_categories");
 
-  // Se tiver boardId, filtra por ele.
-  // Se não tiver boardId, queremos apenas as categorias pessoais.
   if (boardId) {
     const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
     if (!allowed) return BUILTIN_CATEGORIES;
     query = query.where("boardId", "==", boardId);
   } else {
     query = query.where("userId", "==", sessionUserId);
-    // Para não quebrar legados sem boardId, trazemos tudo do usuário e filtramos em memória.
   }
 
   const snap = await query.get();
@@ -90,8 +84,6 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
   const userCats = new Set<string>();
   snap.forEach((doc: FirestoreDoc) => {
     const category = mapFinanceCategory(doc);
-    // Se pedimos boardId, o filtro do banco já garantiu.
-    // Se não pedimos boardId, só queremos as que não têm boardId.
     if (!boardId) {
       if (category.boardId) return;
     }
@@ -108,8 +100,9 @@ export async function getCategoriesData(boardId?: string | null): Promise<string
 export async function getFinanceItemsData(
   month: string,
   boardId?: string | null,
+  providedUserId?: string | null,
 ): Promise<FinanceItem[]> {
-  const sessionUserId = await getSession();
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return [];
 
   const { start, end } = getMonthRange(month);
@@ -145,8 +138,9 @@ export async function getFinanceItemsData(
 export async function getCashBalanceBeforeMonth(
   month: string,
   boardId?: string | null,
+  providedUserId?: string | null,
 ): Promise<number> {
-  const sessionUserId = await getSession();
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return 0;
 
   const { start } = getMonthRange(month);
@@ -178,16 +172,18 @@ export async function getCashBalanceBeforeMonth(
 export async function getPreviousMonthCashBalance(
   month: string,
   boardId?: string | null,
+  providedUserId?: string | null,
 ): Promise<number> {
   const previousMonth = getPreviousMonthKey(month);
-  const items = await getFinanceItemsData(previousMonth, boardId);
+  const items = await getFinanceItemsData(previousMonth, boardId, providedUserId);
   return getRealizedBalance(items);
 }
 
 export async function getFinanceFixedTemplatesData(
   boardId?: string | null,
+  providedUserId?: string | null,
 ): Promise<FinanceFixedTemplateDocument[]> {
-  const sessionUserId = await getSession();
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return [];
 
   if (boardId) {
@@ -217,8 +213,8 @@ export async function getFinanceFixedTemplatesData(
   return templates.sort((a, b) => a.title.localeCompare(b.title));
 }
 
-export async function getFinanceDebtsData(boardId?: string | null): Promise<FinanceDebt[]> {
-  const sessionUserId = await getSession();
+export async function getFinanceDebtsData(boardId?: string | null, providedUserId?: string | null): Promise<FinanceDebt[]> {
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId || !boardId) return [];
 
   const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
@@ -240,8 +236,8 @@ export async function getFinanceDebtsData(boardId?: string | null): Promise<Fina
   });
 }
 
-export async function getFinanceDebtPaymentsData(boardId?: string | null): Promise<FinanceDebtPayment[]> {
-  const sessionUserId = await getSession();
+export async function getFinanceDebtPaymentsData(boardId?: string | null, providedUserId?: string | null): Promise<FinanceDebtPayment[]> {
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId || !boardId) return [];
 
   const allowed = await canAccessFinanceBoard(boardId, sessionUserId);
@@ -262,8 +258,9 @@ export async function getFinanceDebtPaymentsData(boardId?: string | null): Promi
 
 export async function getFinanceCardsData(
   boardId?: string | null,
+  providedUserId?: string | null,
 ): Promise<FinanceCard[]> {
-  const sessionUserId = await getSession();
+  const sessionUserId = await resolveUserId(providedUserId);
   if (!sessionUserId) return [];
 
   if (boardId) {
@@ -277,7 +274,6 @@ export async function getFinanceCardsData(
 
   const snap = await queryRef.get();
   const cards: FinanceCard[] = [];
-
   snap.forEach((doc: FirestoreDoc) => {
     cards.push(mapFinanceCard(doc));
   });

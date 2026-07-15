@@ -62,6 +62,11 @@ function parseMoneyInput(value: string): number {
   return parseFloat(trimmed);
 }
 
+/** Limita strings de entrada para evitar payloads excessivos */
+function sanitizeText(value: string, maxLength = 200): string {
+  return value.trim().slice(0, maxLength);
+}
+
 function todayKey() {
   return new Date().toISOString().split("T")[0];
 }
@@ -91,7 +96,7 @@ function isAlreadyExistsError(error: unknown) {
   return code === 6 || code === "already-exists";
 }
 
-async function findCarriedItems(itemId: string) {
+async function findCarriedItems(itemId: string): Promise<FirestoreDoc[]> {
   const snap = await adminDb
     .collection("finance_items")
     .where("carriedFromItemId", "==", itemId)
@@ -105,14 +110,14 @@ async function deleteCarriedItems(itemId: string) {
   if (docs.length === 0) return;
 
   const batch = adminDb.batch();
-  docs.forEach((doc) => batch.delete(doc.ref));
+  docs.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
   await batch.commit();
 }
 
 async function deleteDocsInChunks(docs: FirestoreDoc[]) {
   for (let index = 0; index < docs.length; index += 450) {
     const batch = adminDb.batch();
-    docs.slice(index, index + 450).forEach((doc) => batch.delete(doc.ref));
+    docs.slice(index, index + 450).forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
     await batch.commit();
   }
 }
@@ -129,7 +134,7 @@ export async function createCategory(name: string, locale: string, boardId?: str
   });
   if (rateLimitError) return { error: rateLimitError };
 
-  const trimmed = name.trim();
+  const trimmed = sanitizeText(name, 100);
   if (!trimmed) return { error: t("errors.invalidCategoryName") };
 
   if (BUILTIN_CATEGORIES.includes(trimmed))
@@ -191,16 +196,17 @@ export async function createCategory(name: string, locale: string, boardId?: str
 /* ================= boards ================= */
 
 export async function createFinanceBoard(name: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
   const rateLimitError = checkActionRateLimit(sessionUser, "finance:create-board", {
     limit: 10,
     windowMs: 60_000,
   });
   if (rateLimitError) return { error: rateLimitError };
 
-  const trimmed = name.trim();
-  if (!trimmed) return { error: "Nome inválido" };
+  const trimmed = sanitizeText(name, 120);
+  if (!trimmed) return { error: t("errors.invalidName") };
 
   const ref = await adminDb.collection("finance_boards").add({
     name: trimmed,
@@ -224,19 +230,20 @@ export async function renameFinanceBoard(
   newName: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
-  const trimmed = newName.trim();
-  if (!trimmed) return { error: "Nome inválido" };
+  const trimmed = sanitizeText(newName, 120);
+  if (!trimmed) return { error: t("errors.invalidName") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode renomear" };
+    return { error: t("errors.onlyOwnerCanRename") };
 
   await ref.update({ name: trimmed });
 
@@ -249,42 +256,32 @@ export async function deleteFinanceBoard(
   confirmName: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode excluir" };
+    return { error: t("errors.onlyOwnerCanDelete") };
 
   if (board.name.trim().toLowerCase() !== confirmName.trim().toLowerCase()) {
-    return { error: "Nome do quadro não confere" };
+    return { error: t("errors.boardNameMismatch") };
   }
 
   // apaga items do quadro
-  const itemsSnap = await adminDb
-    .collection("finance_items")
-    .where("boardId", "==", boardId)
-    .get();
-  const categoriesSnap = await adminDb
-    .collection("finance_categories")
-    .where("boardId", "==", boardId)
-    .get();
-  const cardsSnap = await adminDb
-    .collection("finance_cards")
-    .where("boardId", "==", boardId)
-    .get();
-  const templatesSnap = await adminDb
-    .collection("finance_fixed_templates")
-    .where("boardId", "==", boardId)
-    .get();
-  const invitesSnap = await adminDb
-    .collection("finance_board_invites")
-    .where("boardId", "==", boardId)
-    .get();
+  const [itemsSnap, categoriesSnap, cardsSnap, templatesSnap, invitesSnap, debtsSnap, debtPaymentsSnap] = await Promise.all([
+    adminDb.collection("finance_items").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_categories").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_cards").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_fixed_templates").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_board_invites").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_debts").where("boardId", "==", boardId).get(),
+    adminDb.collection("finance_debt_payments").where("boardId", "==", boardId).get(),
+  ]);
 
   await deleteDocsInChunks([
     ...itemsSnap.docs,
@@ -292,6 +289,8 @@ export async function deleteFinanceBoard(
     ...cardsSnap.docs,
     ...templatesSnap.docs,
     ...invitesSnap.docs,
+    ...debtsSnap.docs,
+    ...debtPaymentsSnap.docs,
   ]);
   await ref.delete();
 
@@ -304,21 +303,22 @@ export async function removeMemberFromBoard(
   memberId: string,
   locale: string,
 ) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
 
   const ref = adminDb.collection("finance_boards").doc(boardId);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Quadro não encontrado" };
+  if (!snap.exists) return { error: t("errors.boardNotFound") };
 
   const board = mapFinanceBoard(snap);
   if (board.ownerId !== sessionUser)
-    return { error: "Somente o dono pode remover membros" };
+    return { error: t("errors.onlyOwnerCanRemoveMembers") };
 
   const members = Array.isArray(board.memberIds) ? board.memberIds : [];
   const newMembers = members.filter((id) => id !== memberId);
   if (newMembers.length === 0) {
-    return { error: "Quadro precisa ter pelo menos 1 membro" };
+    return { error: t("errors.boardNeedsOneMember") };
   }
 
   await ref.update({ memberIds: newMembers });
@@ -332,17 +332,18 @@ export async function ensureFixedItemsForCurrentMonth(
   locale: string,
   boardId?: string | null,
 ) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
-  if (!/^\d{4}-\d{2}$/.test(month)) return { error: "Mês inválido" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+  if (!/^\d{4}-\d{2}$/.test(month)) return { error: t("errors.invalidMonth") };
 
   const { start, end } = getMonthRange(month);
-  if (!start || !end) return { error: "Mês inválido" };
+  if (!start || !end) return { error: t("errors.invalidMonth") };
 
   if (boardId) {
     const board = await getBoard(boardId);
-    if (!board) return { error: "Quadro não encontrado" };
-    if (!isMember(board, sessionUser)) return { error: "Sem permissão" };
+    if (!board) return { error: t("errors.boardNotFound") };
+    if (!isMember(board, sessionUser)) return { error: t("errors.noPermission") };
   }
 
   let templatesQuery: FirestoreQuery = adminDb
@@ -423,16 +424,17 @@ export async function createFinanceCard(formData: FormData) {
   if (rateLimitError) return { error: rateLimitError };
 
   const locale = String(formData.get("locale") || "pt").toLowerCase();
-  const name = String(formData.get("name") || "").trim();
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
+  const name = sanitizeText(String(formData.get("name") || ""), 120);
   const modeRaw = String(formData.get("mode") || "credit");
-  const lastDigits = String(formData.get("lastDigits") || "").trim();
+  const lastDigits = String(formData.get("lastDigits") || "").trim().slice(0, 4);
   const limitRaw = String(formData.get("limit") || "").trim();
   const closingDayRaw = String(formData.get("closingDay") || "").trim();
   const dueDayRaw = String(formData.get("dueDay") || "").trim();
 
-  if (!name) return { error: "Nome do cartão é obrigatório" };
+  if (!name) return { error: t("errors.cardNameRequired") };
   if (lastDigits && !/^\d{1,4}$/.test(lastDigits)) {
-    return { error: "Informe apenas números no final do cartão" };
+    return { error: t("errors.cardLastDigitsInvalid") };
   }
   const mode = modeRaw === "debit" ? "debit" : "credit";
   const limit = limitRaw ? parseMoneyInput(limitRaw) : undefined;
@@ -440,13 +442,13 @@ export async function createFinanceCard(formData: FormData) {
   const dueDay = dueDayRaw ? Number(dueDayRaw) : undefined;
 
   if (limit !== undefined && (Number.isNaN(limit) || limit < 0)) {
-    return { error: "Limite inválido" };
+    return { error: t("errors.cardLimitInvalid") };
   }
   if (closingDay !== undefined && (!Number.isInteger(closingDay) || closingDay < 1 || closingDay > 31)) {
-    return { error: "Dia de fechamento inválido" };
+    return { error: t("errors.cardClosingDayInvalid") };
   }
   if (dueDay !== undefined && (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31)) {
-    return { error: "Dia de vencimento inválido" };
+    return { error: t("errors.cardDueDayInvalid") };
   }
 
   await adminDb.collection("finance_cards").add({
@@ -476,17 +478,18 @@ export async function updateFinanceCard(formData: FormData) {
 
   const id = String(formData.get("id") || "").trim();
   const locale = String(formData.get("locale") || "pt").toLowerCase();
-  const name = String(formData.get("name") || "").trim();
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
+  const name = sanitizeText(String(formData.get("name") || ""), 120);
   const modeRaw = String(formData.get("mode") || "credit");
-  const lastDigits = String(formData.get("lastDigits") || "").trim();
+  const lastDigits = String(formData.get("lastDigits") || "").trim().slice(0, 4);
   const limitRaw = String(formData.get("limit") || "").trim();
   const closingDayRaw = String(formData.get("closingDay") || "").trim();
   const dueDayRaw = String(formData.get("dueDay") || "").trim();
 
-  if (!id) return { error: "Cartão não encontrado" };
-  if (!name) return { error: "Nome do cartão é obrigatório" };
+  if (!id) return { error: t("errors.cardNotFound") };
+  if (!name) return { error: t("errors.cardNameRequired") };
   if (lastDigits && !/^\d{1,4}$/.test(lastDigits)) {
-    return { error: "Informe apenas números no final do cartão" };
+    return { error: t("errors.cardLastDigitsInvalid") };
   }
 
   const mode = modeRaw === "debit" ? "debit" : "credit";
@@ -495,22 +498,22 @@ export async function updateFinanceCard(formData: FormData) {
   const dueDay = dueDayRaw ? Number(dueDayRaw) : undefined;
 
   if (limit !== undefined && (Number.isNaN(limit) || limit < 0)) {
-    return { error: "Limite inválido" };
+    return { error: t("errors.cardLimitInvalid") };
   }
   if (closingDay !== undefined && (!Number.isInteger(closingDay) || closingDay < 1 || closingDay > 31)) {
-    return { error: "Dia de fechamento inválido" };
+    return { error: t("errors.cardClosingDayInvalid") };
   }
   if (dueDay !== undefined && (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31)) {
-    return { error: "Dia de vencimento inválido" };
+    return { error: t("errors.cardDueDayInvalid") };
   }
 
   const ref = adminDb.collection("finance_cards").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Cartão não encontrado" };
+  if (!snap.exists) return { error: t("errors.cardNotFound") };
 
   const existing = mapFinanceCard(snap);
   if (existing.userId !== sessionUser) {
-    return { error: "Sem permissão" };
+    return { error: t("errors.noPermission") };
   }
 
   await ref.update({
@@ -532,15 +535,16 @@ export async function deleteFinanceCard(formData: FormData) {
 
   const id = String(formData.get("id") || "").trim();
   const locale = String(formData.get("locale") || "pt").toLowerCase();
-  if (!id) return { error: "Cartão não encontrado" };
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
+  if (!id) return { error: t("errors.cardNotFound") };
 
   const ref = adminDb.collection("finance_cards").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Cartão não encontrado" };
+  if (!snap.exists) return { error: t("errors.cardNotFound") };
 
   const existing = mapFinanceCard(snap);
   if (existing.userId !== sessionUser) {
-    return { error: "Sem permissão" };
+    return { error: t("errors.noPermission") };
   }
 
   await ref.delete();
@@ -561,16 +565,17 @@ export async function createFinanceDebt(formData: FormData) {
   if (rateLimitError) return { error: rateLimitError };
 
   const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const boardId = String(formData.get("boardId") || "").trim();
-  const name = String(formData.get("name") || "").trim();
+  const name = sanitizeText(String(formData.get("name") || ""), 200);
   const typeRaw = String(formData.get("type") || "other").trim();
   const originalAmount = parseMoneyInput(String(formData.get("originalAmount") || ""));
   const currentBalanceRaw = String(formData.get("currentBalance") || "").trim();
   const currentBalance = currentBalanceRaw ? parseMoneyInput(currentBalanceRaw) : originalAmount;
   const startDate = String(formData.get("startDate") || todayKey()).trim();
   const dueDate = String(formData.get("dueDate") || startDate).trim();
-  const category = String(formData.get("category") || "").trim();
-  const notes = String(formData.get("notes") || "").trim();
+  const category = sanitizeText(String(formData.get("category") || ""), 100);
+  const notes = sanitizeText(String(formData.get("notes") || ""), 500);
   const installmentsRaw = String(formData.get("installments") || "").trim();
   const installments = installmentsRaw ? Number(installmentsRaw) : undefined;
   const debtTypes: FinanceDebtType[] = [
@@ -586,18 +591,18 @@ export async function createFinanceDebt(formData: FormData) {
     ? (typeRaw as FinanceDebtType)
     : "other";
 
-  if (!boardId) return { error: "Quadro obrigatorio" };
+  if (!boardId) return { error: t("errors.debtBoardRequired") };
   const board = await getBoard(boardId);
-  if (!board) return { error: "Quadro nao encontrado" };
-  if (!isMember(board, sessionUser)) return { error: "Sem permissao" };
-  if (!name) return { error: "Nome da divida e obrigatorio" };
-  if (Number.isNaN(originalAmount) || originalAmount <= 0) return { error: "Valor original invalido" };
-  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: "Saldo atual invalido" };
+  if (!board) return { error: t("errors.boardNotFound") };
+  if (!isMember(board, sessionUser)) return { error: t("errors.noPermission") };
+  if (!name) return { error: t("errors.debtNameRequired") };
+  if (Number.isNaN(originalAmount) || originalAmount <= 0) return { error: t("errors.debtOriginalAmountInvalid") };
+  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: t("errors.debtCurrentBalanceInvalid") };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
-    return { error: "Data invalida" };
+    return { error: t("errors.debtDateInvalid") };
   }
   if (installments !== undefined && (!Number.isInteger(installments) || installments < 1)) {
-    return { error: "Parcelas invalidas" };
+    return { error: t("errors.debtInstallmentsInvalid") };
   }
 
   const now = new Date().toISOString();
@@ -639,23 +644,24 @@ export async function payFinanceDebt(formData: FormData) {
   if (rateLimitError) return { error: rateLimitError };
 
   const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const id = String(formData.get("id") || "").trim();
   const amount = parseMoneyInput(String(formData.get("amount") || ""));
   const paidAt = String(formData.get("paidAt") || todayKey()).trim();
-  const note = String(formData.get("note") || "").trim();
+  const note = sanitizeText(String(formData.get("note") || ""), 500);
 
-  if (!id) return { error: "Divida nao encontrada" };
-  if (Number.isNaN(amount) || amount <= 0) return { error: "Valor invalido" };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(paidAt)) return { error: "Data invalida" };
+  if (!id) return { error: t("errors.debtNotFound") };
+  if (Number.isNaN(amount) || amount <= 0) return { error: t("errors.debtPaymentAmountInvalid") };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(paidAt)) return { error: t("errors.debtDateInvalid") };
 
   const ref = adminDb.collection("finance_debts").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Divida nao encontrada" };
+  if (!snap.exists) return { error: t("errors.debtNotFound") };
 
   const debt = mapFinanceDebt(snap);
   const board = await getBoard(debt.boardId);
-  if (!board || !isMember(board, sessionUser)) return { error: "Sem permissao" };
-  if (debt.status === "paid" || debt.currentBalance <= 0) return { error: "Divida ja quitada" };
+  if (!board || !isMember(board, sessionUser)) return { error: t("errors.noPermission") };
+  if (debt.status === "paid" || debt.currentBalance <= 0) return { error: t("errors.debtAlreadyPaid") };
 
   const nextBalance = Math.max(Number(debt.currentBalance || 0) - amount, 0);
   const now = new Date().toISOString();
@@ -698,27 +704,28 @@ export async function renegotiateFinanceDebt(formData: FormData) {
   if (rateLimitError) return { error: rateLimitError };
 
   const locale = String(formData.get("locale") || "pt").toLowerCase();
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const id = String(formData.get("id") || "").trim();
   const currentBalance = parseMoneyInput(String(formData.get("currentBalance") || ""));
   const dueDate = String(formData.get("dueDate") || "").trim();
   const installmentsRaw = String(formData.get("installments") || "").trim();
   const installments = installmentsRaw ? Number(installmentsRaw) : undefined;
-  const notes = String(formData.get("notes") || "").trim();
+  const notes = sanitizeText(String(formData.get("notes") || ""), 500);
 
-  if (!id) return { error: "Divida nao encontrada" };
-  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: "Saldo atual invalido" };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return { error: "Data invalida" };
+  if (!id) return { error: t("errors.debtNotFound") };
+  if (Number.isNaN(currentBalance) || currentBalance < 0) return { error: t("errors.debtCurrentBalanceInvalid") };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return { error: t("errors.debtDateInvalid") };
   if (installments !== undefined && (!Number.isInteger(installments) || installments < 1)) {
-    return { error: "Parcelas invalidas" };
+    return { error: t("errors.debtInstallmentsInvalid") };
   }
 
   const ref = adminDb.collection("finance_debts").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Divida nao encontrada" };
+  if (!snap.exists) return { error: t("errors.debtNotFound") };
 
   const debt = mapFinanceDebt(snap);
   const board = await getBoard(debt.boardId);
-  if (!board || !isMember(board, sessionUser)) return { error: "Sem permissao" };
+  if (!board || !isMember(board, sessionUser)) return { error: t("errors.noPermission") };
 
   await ref.update({
     currentBalance,
@@ -861,17 +868,17 @@ export async function addFinanceItem(formData: FormData) {
   const cardModeRaw = String(formData.get("cardMode") || "");
   const cardIdRaw = String(formData.get("cardId") || "");
   const cardLastDigitsRaw = String(formData.get("cardLastDigits") || "");
-  const cardName = cardNameRaw.trim();
+  const cardName = sanitizeText(cardNameRaw, 100);
   const cardId = cardIdRaw.trim();
-  const cardLastDigits = cardLastDigitsRaw.trim();
+  const cardLastDigits = cardLastDigitsRaw.trim().slice(0, 4);
   const cardMode =
     cardModeRaw === "credit" || cardModeRaw === "debit"
       ? (cardModeRaw as "credit" | "debit")
       : undefined;
 
   const amount = parseFloat(amountStr);
-  const title = titleRaw.trim();
-  const category = categoryRaw.trim();
+  const title = sanitizeText(titleRaw, 200);
+  const category = sanitizeText(categoryRaw, 100);
 
   if (!title || Number.isNaN(amount) || !date || !type) {
     return { error: t("errors.incompleteData") };
@@ -972,6 +979,7 @@ export async function addFinanceItem(formData: FormData) {
   // group id para todas as parcelas
   const installmentGroupId = adminDb.collection("finance_items").doc().id;
 
+  const installmentBatch = adminDb.batch();
   for (let i = 0; i < installments; i++) {
     const d = new Date(baseYear, baseMonthIndex + i, baseDay);
     const y = d.getFullYear();
@@ -1002,8 +1010,10 @@ export async function addFinanceItem(formData: FormData) {
       originalAmount: amount,
     };
 
-    await adminDb.collection("finance_items").add(item);
+    const itemRef = adminDb.collection("finance_items").doc();
+    installmentBatch.set(itemRef, item);
   }
+  await installmentBatch.commit();
 
   // Para lançamentos parcelados, não criamos template de "Contas Fixas".
   logFinanceAction("installment_items_created", {
@@ -1022,12 +1032,17 @@ export async function updateFinanceItem(formData: FormData) {
   const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:update-item", {
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const id = String(formData.get("id") || "");
-  const title = String(formData.get("title") || "");
+  const title = sanitizeText(String(formData.get("title") || ""), 200);
   const amountStr = String(formData.get("amount") || "");
   const date = String(formData.get("date") || "");
-  const category = String(formData.get("category") || "");
+  const category = sanitizeText(String(formData.get("category") || ""), 100);
   const type = formData.get("type") as "income" | "expense" | null;
   const paidAmountStr = String(formData.get("paidAmount") || "");
 
@@ -1035,9 +1050,9 @@ export async function updateFinanceItem(formData: FormData) {
   const cardModeRaw = String(formData.get("cardMode") || "");
   const cardIdRaw = String(formData.get("cardId") || "");
   const cardLastDigitsRaw = String(formData.get("cardLastDigits") || "");
-  const cardName = cardNameRaw.trim();
+  const cardName = sanitizeText(cardNameRaw, 100);
   const cardId = cardIdRaw.trim();
-  const cardLastDigits = cardLastDigitsRaw.trim();
+  const cardLastDigits = cardLastDigitsRaw.trim().slice(0, 4);
   const cardMode =
     cardModeRaw === "credit" || cardModeRaw === "debit"
       ? (cardModeRaw as "credit" | "debit")
@@ -1048,10 +1063,10 @@ export async function updateFinanceItem(formData: FormData) {
 
   if (
     !id ||
-    !title.trim() ||
+    !title ||
     Number.isNaN(amount) ||
     !date ||
-    !category.trim() ||
+    !category ||
     !type
   ) {
     return { error: "Dados incompletos" };
@@ -1099,19 +1114,25 @@ export async function updateFinanceItem(formData: FormData) {
 }
 
 export async function deleteFinanceItem(id: string, locale: string) {
+  const t = await getTranslations({ locale, namespace: "FinancePage" });
   const sessionUser = await getSession();
-  if (!sessionUser) return { error: "Unauthorized" };
+  if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:delete-item", {
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
-  if (!snap.exists) return { error: "Item não encontrado" };
+  if (!snap.exists) return { error: t("errors.itemNotFound") };
 
   const existing = mapFinanceItem(snap);
   const allowed = await canEditItem(existing, sessionUser);
-  if (!allowed) return { error: "Unauthorized" };
+  if (!allowed) return { error: t("errors.unauthorized") };
 
   if (existing.status === "paid" || existing.status === "partial") {
-    return { error: "Não é possível excluir lançamentos pagos/recebidos." };
+    return { error: t("errors.cannotDeletePaid") };
   }
 
   await deleteCarriedItems(existing.id);
@@ -1170,7 +1191,7 @@ export async function bulkFinanceItemsAction(
       }
       const carriedDocs = await findCarriedItems(existing.id);
       await commitIfNeeded(carriedDocs.length + 1);
-      carriedDocs.forEach((doc) => batch.delete(doc.ref));
+      carriedDocs.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
       batch.delete(ref);
       registerWrite(carriedDocs.length + 1);
       changed++;
@@ -1190,7 +1211,7 @@ export async function bulkFinanceItemsAction(
         openAmount: 0,
         originalAmount: existing.originalAmount ?? existing.amount,
       });
-      carriedDocs.forEach((doc) => batch.delete(doc.ref));
+      carriedDocs.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
       registerWrite(carriedDocs.length + 1);
       changed++;
       continue;
@@ -1232,6 +1253,11 @@ export async function toggleStatus(
 ) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:toggle-status", {
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
@@ -1256,6 +1282,11 @@ export async function revertFinanceItemPayment(id: string, locale: string) {
   const t = await getTranslations({ locale, namespace: "Finance" });
   const sessionUser = await getSession();
   if (!sessionUser) return { error: t("errors.unauthorized") };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:revert-payment", {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
@@ -1296,6 +1327,11 @@ export async function applyPaymentToFinanceItem(
 ) {
   const sessionUser = await getSession();
   if (!sessionUser) return { error: "Unauthorized" };
+  const rateLimitError = checkActionRateLimit(sessionUser, "finance:apply-payment", {
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (rateLimitError) return { error: rateLimitError };
 
   const ref = adminDb.collection("finance_items").doc(id);
   const snap = await ref.get();
@@ -1408,7 +1444,7 @@ export async function applyPaymentToFinanceItem(
       carriedToMonth: FieldValue.delete(),
       carriedRemainderAmount: FieldValue.delete(),
     });
-    carriedDocs.forEach((doc) => batch.delete(doc.ref));
+    carriedDocs.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
     await batch.commit();
 
     revalidatePath(`/${locale}/tools/finance`);
@@ -1439,7 +1475,7 @@ export async function applyPaymentToFinanceItem(
       carriedToMonth: FieldValue.delete(),
       carriedRemainderAmount: FieldValue.delete(),
     });
-    carriedDocs.forEach((doc) => batch.delete(doc.ref));
+    carriedDocs.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
     await batch.commit();
 
     revalidatePath(`/${locale}/tools/finance`);
@@ -1466,7 +1502,7 @@ export async function applyPaymentToFinanceItem(
       openAmount: remaining,
       fixedTemplateId: FieldValue.delete(),
     });
-    duplicated.forEach((doc) => batch.delete(doc.ref));
+    duplicated.forEach((doc: FirestoreDoc) => batch.delete(doc.ref));
   } else {
     const newItemData: Omit<FinanceItem, "id"> = {
       userId: existing.userId,
