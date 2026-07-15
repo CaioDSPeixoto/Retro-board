@@ -13,6 +13,7 @@ import {
   FiEdit2,
   FiLayers,
   FiX,
+  FiCopy,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -30,6 +31,7 @@ type Props = {
   item: FinanceItem;
   locale: string;
   onEdit?: (item: FinanceItem) => void;
+  onDuplicate?: (item: FinanceItem) => void;
   selectionMode?: boolean;
   selected?: boolean;
   onToggleSelection?: (itemId: string) => void;
@@ -41,6 +43,7 @@ export default function FinanceItemCard({
   item,
   locale,
   onEdit,
+  onDuplicate,
   selectionMode,
   selected,
   onToggleSelection,
@@ -332,6 +335,25 @@ export default function FinanceItemCard({
             </p>
           )}
 
+          {item.notes && (
+            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 italic">
+              {item.notes}
+            </p>
+          )}
+
+          {item.tags && item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {item.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border border-[var(--color-border)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           {isPartial && (
             <p className="text-[11px] finance-info-text mt-1">
               <PrivacyValue>
@@ -423,6 +445,16 @@ export default function FinanceItemCard({
                   aria-label={t("editAria")}
                 >
                   <FiEdit2 size={16} />
+                </button>
+              )}
+              {onDuplicate && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDuplicate(item); }}
+                  disabled={toggling || deleting}
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)] transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label={t("duplicateAria")}
+                >
+                  <FiCopy size={16} />
                 </button>
               )}
               <button

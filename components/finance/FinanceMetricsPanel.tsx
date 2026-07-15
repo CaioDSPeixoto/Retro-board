@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import type { FinanceItem } from "@/types/finance";
+import { useMemo, useState } from "react";
+import type { FinanceBudget, FinanceItem } from "@/types/finance";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 import { getFinanceTotals, getForecastAmount, getPaidAmount } from "@/lib/finance/calculations";
+import { upsertBudget } from "@/app/[locale]/tools/finance/(protected)/budget-actions";
 import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
@@ -13,6 +14,10 @@ type Props = {
   currentMonth: string;
   rangeFrom?: string | null;
   rangeTo?: string | null;
+  budgets?: FinanceBudget[];
+  locale?: string;
+  boardId?: string;
+  previousMonthItems?: FinanceItem[];
 };
 
 export default function FinanceMetricsPanel({
@@ -20,6 +25,10 @@ export default function FinanceMetricsPanel({
   currentMonth,
   rangeFrom,
   rangeTo,
+  budgets = [],
+  locale = "pt",
+  boardId = "",
+  previousMonthItems = [],
 }: Props) {
   const t = useTranslations("FinanceMetrics");
 
@@ -148,6 +157,37 @@ export default function FinanceMetricsPanel({
 
     return result;
   }, [baseItems, totalExpense, othersLabel]);
+
+  // Tendência mês-a-mês (spending trend)
+  const spendingTrend = useMemo(() => {
+    if (previousMonthItems.length === 0 || baseItems.length === 0) return [];
+
+    const prevByCategory = new Map<string, number>();
+    for (const item of previousMonthItems) {
+      if (item.type !== "expense" || item.status === "moved" || item.isSynthetic) continue;
+      const key = item.category || othersLabel;
+      prevByCategory.set(key, (prevByCategory.get(key) ?? 0) + item.amount);
+    }
+
+    const currByCategory = new Map<string, number>();
+    for (const item of baseItems) {
+      if (item.type !== "expense" || item.status === "moved") continue;
+      const key = item.category || othersLabel;
+      currByCategory.set(key, (currByCategory.get(key) ?? 0) + item.amount);
+    }
+
+    const allCategories = new Set([...prevByCategory.keys(), ...currByCategory.keys()]);
+    const trends = Array.from(allCategories).map((category) => {
+      const prev = prevByCategory.get(category) ?? 0;
+      const curr = currByCategory.get(category) ?? 0;
+      const delta = prev > 0 ? ((curr - prev) / prev) * 100 : curr > 0 ? 100 : 0;
+      return { category, prev, curr, delta };
+    });
+
+    return trends
+      .filter((t) => t.prev > 0 || t.curr > 0)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }, [baseItems, previousMonthItems, othersLabel]);
 
   // Receitas por categoria (global)
   const incomeByCategory = useMemo(() => {
@@ -419,24 +459,92 @@ export default function FinanceMetricsPanel({
           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("noExpensesInPeriod")}</p>
         ) : (
           <div className="space-y-2">
-            {expenseByCategory.map((cat) => (
-              <div key={cat.category} className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{cat.category}</span>
+            {expenseByCategory.map((cat) => {
+              const budget = budgets.find((b) => b.category === cat.category);
+              const budgetPercent = budget ? Math.min((cat.total / budget.limit) * 100, 100) : 0;
+              const overBudget = budget ? cat.total > budget.limit : false;
+
+              return (
+                <div key={cat.category} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{cat.category}</span>
+                    <PrivacyValue>
+                      <span style={{ color: "var(--color-text-muted)" }}>
+                        {budget
+                          ? `${currency(cat.total)} / ${currency(budget.limit)}`
+                          : t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
+                      </span>
+                    </PrivacyValue>
+                  </div>
+                  {budget ? (
+                    <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
+                      <div
+                        className={`h-2 rounded-full ${overBudget ? "bg-[var(--color-danger-strong)]" : budgetPercent >= 80 ? "bg-[var(--color-warning-border)]" : "bg-[var(--color-success-strong)]"}`}
+                        style={{ width: `${Math.max(budgetPercent, 4)}%` }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
+                      <div className="h-2 rounded-full bg-[var(--color-danger-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
+                    </div>
+                  )}
+                  {overBudget && (
+                    <p className="text-[10px] finance-danger-text font-semibold">
+                      {t("budgetExceeded", { value: currency(cat.total - budget.limit) })}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Budget editor toggle */}
+        {boardId && !rangeFrom && (
+          <BudgetEditor
+            budgets={budgets}
+            categories={expenseByCategory.map((c) => c.category)}
+            boardId={boardId}
+            month={currentMonth}
+            locale={locale}
+            currency={currency}
+          />
+        )}
+      </div>
+
+      {/* Tendência mês-a-mês */}
+      {spendingTrend.length > 0 && !rangeFrom && (
+        <div
+          className="rounded-2xl border p-4 shadow-sm"
+          style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--color-text-muted)" }}>
+            {t("trendTitle")}
+          </p>
+          <div className="space-y-2">
+            {spendingTrend.slice(0, 8).map((entry) => (
+              <div key={entry.category} className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-medium truncate min-w-0 flex-1" style={{ color: "var(--color-text-primary)" }}>
+                  {entry.category}
+                </span>
+                <div className="flex items-center gap-3 shrink-0">
                   <PrivacyValue>
                     <span style={{ color: "var(--color-text-muted)" }}>
-                      {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
+                      {currency(entry.prev)} → {currency(entry.curr)}
                     </span>
                   </PrivacyValue>
-                </div>
-                <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
-                  <div className="h-2 rounded-full bg-[var(--color-danger-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
+                  <span className={`font-bold min-w-[50px] text-right ${entry.delta > 10 ? "finance-danger-text" : entry.delta < -10 ? "finance-success-text" : "text-[var(--color-text-muted)]"}`}>
+                    {entry.delta > 0 ? "+" : ""}{entry.delta.toFixed(0)}%
+                  </span>
                 </div>
               </div>
             ))}
           </div>
-        )}
-      </div>
+          <p className="mt-2 text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+            {t("trendHint")}
+          </p>
+        </div>
+      )}
 
       {/* Receitas por categoria */}
       {incomeByCategory.length > 0 && (
@@ -561,6 +669,81 @@ export default function FinanceMetricsPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function BudgetEditor({
+  budgets,
+  categories,
+  boardId,
+  month,
+  locale,
+  currency,
+}: {
+  budgets: FinanceBudget[];
+  categories: string[];
+  boardId: string;
+  month: string;
+  locale: string;
+  currency: (v: number) => string;
+}) {
+  const t = useTranslations("FinanceMetrics");
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const budgetMap = new Map(budgets.map((b) => [b.category, b.limit]));
+
+  const handleSave = async (category: string, value: string) => {
+    const limit = parseFloat(value.replace(",", "."));
+    if (Number.isNaN(limit) || limit < 0) return;
+
+    setSaving(category);
+    await upsertBudget(boardId, month, category, limit, locale);
+    setSaving(null);
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-3 text-[11px] font-semibold text-[var(--color-accent-text)] hover:underline"
+      >
+        {t("editBudgets")}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 border-t border-[var(--color-border)] pt-3 space-y-2">
+      <p className="text-[11px] font-semibold" style={{ color: "var(--color-text-secondary)" }}>
+        {t("budgetEditorTitle")}
+      </p>
+      {categories.map((category) => (
+        <div key={category} className="flex items-center gap-2">
+          <span className="text-xs flex-1 truncate" style={{ color: "var(--color-text-primary)" }}>
+            {category}
+          </span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={budgetMap.get(category) ?? ""}
+            placeholder="0"
+            onBlur={(e) => handleSave(category, e.target.value)}
+            disabled={saving === category}
+            className="w-24 p-1.5 text-xs text-right rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)] disabled:opacity-50"
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="text-[11px] font-semibold text-[var(--color-text-muted)] hover:underline"
+      >
+        {t("closeBudgetEditor")}
+      </button>
     </div>
   );
 }

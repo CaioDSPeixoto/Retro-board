@@ -1,6 +1,6 @@
 "use client";
 
-import type { FinanceBoard, FinanceCard, FinanceDebt, FinanceDebtPayment, FinanceItem, FinanceStatus } from "@/types/finance";
+import type { FinanceBudget, FinanceBoard, FinanceCard, FinanceDebt, FinanceDebtPayment, FinanceItem, FinanceSavingsGoal, FinanceStatus, FinanceTemplate } from "@/types/finance";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -14,6 +14,7 @@ import {
   FiShare2,
   FiEye,
   FiEyeOff,
+  FiDownload,
 } from "react-icons/fi";
 import { usePrivacy } from "@/components/finance/PrivacyProvider";
 import PrivacyValue from "@/components/finance/PrivacyValue";
@@ -25,6 +26,7 @@ import FinanceMetricsPanel from "@/components/finance/FinanceMetricsPanel";
 import FinanceCardsPanel from "@/components/finance/FinanceCardsPanel";
 import FinancePlanningPanel from "@/components/finance/FinancePlanningPanel";
 import FinanceDebtsPanel from "@/components/finance/FinanceDebtsPanel";
+import FinanceGoalsPanel from "@/components/finance/FinanceGoalsPanel";
 import {
   bulkFinanceItemsAction,
   ensureFixedItemsForCurrentMonth,
@@ -36,6 +38,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import Spinner from "@/components/ui/Spinner";
 import { getMonthRange, normalizeForSearch } from "@/lib/finance/utils";
+import { exportFinanceItemsCsv } from "@/lib/finance/export-csv";
 import {
   getBulkSelectionTotal,
   getFinanceTotals,
@@ -48,7 +51,7 @@ import { mapFinanceItem } from "@/lib/finance/schema";
 
 import { sendInviteByEmail } from "../../app/[locale]/tools/finance/(protected)/invite-actions";
 
-type FinanceView = "list" | "planning" | "debts" | "metrics" | "cards";
+type FinanceView = "list" | "planning" | "debts" | "metrics" | "cards" | "goals";
 type FinanceListDueFilter = "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled";
 type FinanceListSort = "dateAsc" | "dateDesc" | "amountDesc" | "amountAsc" | "status";
 
@@ -94,6 +97,10 @@ type Props = {
   initialDebts?: FinanceDebt[];
   initialDebtPayments?: FinanceDebtPayment[];
   initialProjectionItems?: FinanceItem[];
+  initialBudgets?: FinanceBudget[];
+  previousMonthItems?: FinanceItem[];
+  initialGoals?: FinanceSavingsGoal[];
+  initialTemplates?: FinanceTemplate[];
   initialView?: FinanceView;
   initialDueFilter?: FinanceListDueFilter;
   initialStatusFilter?: "all" | FinanceStatus;
@@ -113,6 +120,10 @@ export default function FinanceClientPage({
   initialDebts = [],
   initialDebtPayments = [],
   initialProjectionItems = [],
+  initialBudgets = [],
+  previousMonthItems = [],
+  initialGoals = [],
+  initialTemplates = [],
   initialView = "list",
   initialDueFilter = "all",
   initialStatusFilter = "all",
@@ -132,6 +143,7 @@ export default function FinanceClientPage({
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
   const [dueFilter, setDueFilter] = useState<FinanceListDueFilter>(initialDueFilter);
   const [sortOption, setSortOption] = useState<FinanceListSort>("dateAsc");
+  const [tagFilter, setTagFilter] = useState("");
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -152,6 +164,7 @@ export default function FinanceClientPage({
   const showCards = activeView === "cards";
   const showPlanning = activeView === "planning";
   const showDebts = activeView === "debts";
+  const showGoals = activeView === "goals";
 
   // range opcional (quando vier from/to na URL)
   const rangeFrom = searchParams?.get("from") || null;
@@ -358,6 +371,7 @@ export default function FinanceClientPage({
         const matchesStatus =
           statusFilter === "all" || item.status === statusFilter;
         const matchesType = typeFilter === "all" || item.type === typeFilter;
+        const matchesTag = !tagFilter || (item.tags && item.tags.some((t) => normalizeForSearch(t).includes(normalizeForSearch(tagFilter))));
         const matchesDue =
           dueFilter === "all" ||
           (dueFilter === "overdue" && item.date < todayStr && item.status !== "paid" && item.status !== "moved") ||
@@ -368,7 +382,7 @@ export default function FinanceClientPage({
           (dueFilter === "open" && item.status !== "paid" && item.status !== "moved") ||
           (dueFilter === "settled" && item.status === "paid");
 
-        return matchesName && matchesStatus && matchesType && matchesDue;
+        return matchesName && matchesStatus && matchesType && matchesTag && matchesDue;
       })
       .toSorted((left, right) => {
         if (sortOption === "dateDesc") return right.date.localeCompare(left.date);
@@ -387,11 +401,20 @@ export default function FinanceClientPage({
       });
   }, [items, nameFilter, statusFilter, typeFilter, dueFilter, sortOption, todayStr]);
 
+  const titleSuggestions = useMemo(() => {
+    const titles = new Set<string>();
+    for (const item of items) {
+      if (item.title && !item.isSynthetic) titles.add(item.title);
+    }
+    return Array.from(titles).sort((a, b) => a.localeCompare(b));
+  }, [items]);
+
   const activeFilterCount = useMemo(() => {
     return [
       nameFilter.trim(),
       statusFilter !== "all",
       typeFilter !== "all",
+      tagFilter.trim(),
       dueFilter !== "all",
       sortOption !== "dateAsc",
     ].filter(Boolean).length;
@@ -430,6 +453,7 @@ export default function FinanceClientPage({
     setNameFilter("");
     setStatusFilter("all");
     setTypeFilter("all");
+    setTagFilter("");
     setDueFilter("all");
     setSortOption("dateAsc");
   };
@@ -562,6 +586,29 @@ export default function FinanceClientPage({
     setIsModalOpen(true);
   };
 
+  const handleDuplicateItem = (item: FinanceItem) => {
+    const today = new Date().toISOString().split("T")[0];
+    const duplicated: FinanceItem = {
+      ...item,
+      id: "",
+      date: today,
+      status: "pending",
+      paidAmount: 0,
+      openAmount: item.amount,
+      createdAt: new Date().toISOString(),
+      carriedFromMonth: undefined,
+      carriedFromItemId: undefined,
+      carriedToMonth: undefined,
+      carriedRemainderAmount: undefined,
+      installmentGroupId: undefined,
+      installmentIndex: undefined,
+      installmentTotal: undefined,
+      originalAmount: undefined,
+    };
+    setEditingItem(duplicated);
+    setIsModalOpen(true);
+  };
+
   const handleInviteByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentBoard) return;
@@ -655,6 +702,7 @@ export default function FinanceClientPage({
               item={item}
               locale={locale}
               onEdit={handleEditItem}
+              onDuplicate={handleDuplicateItem}
               selectionMode={selectionMode}
               selected={selectedItems.has(item.id)}
               onToggleSelection={handleToggleItemSelection}
@@ -884,6 +932,7 @@ export default function FinanceClientPage({
                 ["debts", t("tabDebtsLabel")],
                 ["metrics", t("tabMetricsLabel")],
                 ["cards", t("tabCardsLabel")],
+                ["goals", t("tabGoalsLabel")],
               ].map(([view, label]) => (
                 <button
                   key={view}
@@ -898,9 +947,62 @@ export default function FinanceClientPage({
                 </button>
               ))}
             </div>
+
+            {activeView === "list" && (
+              <button
+                type="button"
+                onClick={() => exportFinanceItemsCsv(items, `financeiro-${currentMonth}`)}
+                className="p-2 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition"
+                title={t("exportCsvLabel")}
+                aria-label={t("exportCsvLabel")}
+              >
+                <FiDownload size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* TEMPLATES RÁPIDOS */}
+      {activeView === "list" && initialTemplates.length > 0 && !selectionMode && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {initialTemplates.map((tpl) => (
+            <button
+              key={tpl.id}
+              type="button"
+              onClick={() => {
+                const today = new Date().toISOString().split("T")[0];
+                const duplicated: FinanceItem = {
+                  id: "",
+                  userId: sessionUserId,
+                  boardId: currentBoardId ?? undefined,
+                  title: tpl.title,
+                  amount: tpl.amount,
+                  date: today,
+                  type: tpl.type,
+                  status: "pending",
+                  category: tpl.category,
+                  createdAt: new Date().toISOString(),
+                  paidAmount: 0,
+                  ...(tpl.cardId ? { cardId: tpl.cardId } : {}),
+                  ...(tpl.cardName ? { cardName: tpl.cardName } : {}),
+                  ...(tpl.tags && tpl.tags.length > 0 ? { tags: tpl.tags } : {}),
+                };
+                setEditingItem(duplicated);
+                setIsModalOpen(true);
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition hover:shadow-sm ${
+                tpl.type === "income"
+                  ? "finance-success-soft hover:brightness-95"
+                  : "finance-danger-soft hover:brightness-95"
+              }`}
+            >
+              <span>{tpl.type === "income" ? "+" : "-"}</span>
+              <span className="truncate max-w-[120px]">{tpl.title}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
       {activeView === "list" && (
@@ -912,6 +1014,14 @@ export default function FinanceClientPage({
               onChange={(e) => setNameFilter(e.target.value)}
               placeholder={t("searchByNamePlaceholder")}
               className="flex-1 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+
+            <input
+              type="text"
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
+              placeholder={t("filterByTagPlaceholder")}
+              className="w-28 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
 
             {overdueItems.length > 0 && (
@@ -1091,6 +1201,9 @@ export default function FinanceClientPage({
           debts={initialDebts}
           cards={cards}
           currentMonth={currentMonth}
+          previousCashBalance={previousCashBalance}
+          previousMonthItems={previousMonthItems}
+          budgets={initialBudgets}
         />
       ) : showDebts ? (
         <FinanceDebtsPanel
@@ -1105,6 +1218,10 @@ export default function FinanceClientPage({
           currentMonth={currentMonth}
           rangeFrom={rangeFrom}
           rangeTo={rangeTo}
+          budgets={initialBudgets}
+          locale={locale}
+          boardId={currentBoardId ?? ""}
+          previousMonthItems={previousMonthItems}
         />
       ) : showCards ? (
         <FinanceCardsPanel
@@ -1114,6 +1231,12 @@ export default function FinanceClientPage({
           locale={locale}
           currentMonth={currentMonth}
           sessionUserId={sessionUserId}
+        />
+      ) : showGoals ? (
+        <FinanceGoalsPanel
+          goals={initialGoals}
+          boardId={currentBoardId ?? ""}
+          locale={locale}
         />
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-10 bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)]">
@@ -1207,8 +1330,8 @@ export default function FinanceClientPage({
       )}
 
       {/* Botão flutuante - só na lista e se não estiver em seleção */}
-      {
-        activeView === "list" && !selectionMode && (
+      {/* FAB — Quick-add (visível em todas as abas, exceto modo seleção) */}
+      {!selectionMode && (
           <button
             onClick={handleOpenCreateModal}
             className="fixed bottom-6 right-6 w-14 h-14 bg-[var(--color-accent-primary)] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition z-40"
@@ -1216,8 +1339,7 @@ export default function FinanceClientPage({
           >
             <FiPlus size={28} />
           </button>
-        )
-      }
+      )}
 
       {/* MODAL */}
       <FinanceFormModal
@@ -1229,6 +1351,7 @@ export default function FinanceClientPage({
         initialItem={editingItem}
         boardId={currentBoardId ?? null}
         currentMonth={currentMonth}
+        titleSuggestions={titleSuggestions}
       />
     </div >
   );

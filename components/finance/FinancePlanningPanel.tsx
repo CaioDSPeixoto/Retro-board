@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FiAlertTriangle, FiCalendar, FiCreditCard, FiTarget, FiTrendingUp } from "react-icons/fi";
-import type { FinanceCard, FinanceDebt, FinanceItem } from "@/types/finance";
+import type { FinanceBudget, FinanceCard, FinanceDebt, FinanceItem } from "@/types/finance";
 import { getOpenAmount } from "@/lib/finance/calculations";
 import { calculateCardDashboard } from "@/lib/finance/card-dashboard";
 import {
@@ -12,6 +12,8 @@ import {
   type FinancePlanningRecommendation,
   type PlanningRiskLevel,
 } from "@/lib/finance/planning";
+import { calculateDailyCashFlow } from "@/lib/finance/cash-flow";
+import { calculateSmartAlerts } from "@/lib/finance/smart-alerts";
 import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
@@ -20,6 +22,9 @@ type Props = {
   debts?: FinanceDebt[];
   cards?: FinanceCard[];
   currentMonth: string;
+  previousCashBalance?: number;
+  previousMonthItems?: FinanceItem[];
+  budgets?: FinanceBudget[];
 };
 
 function riskClassName(riskLevel: PlanningRiskLevel) {
@@ -35,7 +40,7 @@ function recommendationClassName(priority: FinancePlanningRecommendation["priori
   return "finance-info-soft";
 }
 
-export default function FinancePlanningPanel({ items, projectionItems = [], debts = [], cards = [], currentMonth }: Props) {
+export default function FinancePlanningPanel({ items, projectionItems = [], debts = [], cards = [], currentMonth, previousCashBalance = 0, previousMonthItems = [], budgets = [] }: Props) {
   const t = useTranslations("FinancePage");
   const summary = useMemo(
     () => calculateFinancePlanning(items, currentMonth, undefined, debts),
@@ -75,6 +80,11 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
       },
     );
   }, [cards, currentMonth, items, projectionItems]);
+
+  const smartAlerts = useMemo(
+    () => calculateSmartAlerts(items, previousMonthItems, budgets),
+    [items, previousMonthItems, budgets],
+  );
 
   const currency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -185,6 +195,22 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
           </p>
         </div>
       </section>
+
+      {/* Smart Alerts */}
+      {smartAlerts.length > 0 && (
+        <section className="rounded-2xl border finance-warning-soft p-4">
+          <h2 className="mb-2 text-sm font-bold">{t("smartAlertsTitle")}</h2>
+          <div className="space-y-1">
+            {smartAlerts.map((alert, idx) => (
+              <p key={idx} className="text-xs font-semibold">
+                {alert.type === "unusual_spending"
+                  ? t("smartAlertUnusualSpending", { category: alert.category, value: currency(alert.value), average: currency(alert.average ?? 0) })
+                  : t("smartAlertBudgetWarning", { category: alert.category, percent: String(alert.percent ?? 0) })}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <h2 className="mb-3 text-sm font-bold text-[var(--color-text-primary)]">
@@ -434,6 +460,12 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
         </section>
       )}
 
+      {/* Daily Cash Flow */}
+      <DailyCashFlowSection items={items} currentMonth={currentMonth} startBalance={previousCashBalance} currency={currency} />
+
+      {/* What-if scenario */}
+      <WhatIfSection items={items} currentMonth={currentMonth} debts={debts} currency={currency} />
+
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <div className="mb-3">
           <h2 className="text-sm font-bold text-[var(--color-text-primary)]">
@@ -493,5 +525,255 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
         </div>
       </section>
     </div>
+  );
+}
+
+function WhatIfSection({
+  items,
+  currentMonth,
+  debts,
+  currency,
+}: {
+  items: FinanceItem[];
+  currentMonth: string;
+  debts: FinanceDebt[];
+  currency: (v: number) => string;
+}) {
+  const t = useTranslations("FinancePage");
+  const [open, setOpen] = useState(false);
+  const [cuts, setCuts] = useState<Map<string, number>>(new Map());
+
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const item of items) {
+      if (item.type !== "expense" || item.status === "moved" || item.isSynthetic) continue;
+      map.set(item.category, (map.get(item.category) ?? 0) + item.amount);
+    }
+    return Array.from(map.entries())
+      .map(([category, total]) => ({ category, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 8);
+  }, [items]);
+
+  const whatIfSummary = useMemo(() => {
+    if (cuts.size === 0) return null;
+
+    const adjustedItems = items.map((item) => {
+      if (item.type !== "expense" || item.status === "moved" || item.isSynthetic) return item;
+      const cutPercent = cuts.get(item.category);
+      if (!cutPercent || cutPercent <= 0) return item;
+      const factor = 1 - cutPercent / 100;
+      return { ...item, amount: item.amount * factor };
+    });
+
+    return calculateFinancePlanning(adjustedItems, currentMonth, undefined, debts);
+  }, [cuts, currentMonth, debts, items]);
+
+  const originalSummary = useMemo(
+    () => calculateFinancePlanning(items, currentMonth, undefined, debts),
+    [items, currentMonth, debts],
+  );
+
+  const handleCut = (category: string, percent: number) => {
+    setCuts((prev) => {
+      const next = new Map(prev);
+      if (percent <= 0) next.delete(category);
+      else next.set(category, percent);
+      return next;
+    });
+  };
+
+  if (!open) {
+    return (
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="w-full text-left"
+        >
+          <h2 className="text-sm font-bold text-[var(--color-accent-text)]">
+            {t("whatIfTitle")}
+          </h2>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">{t("whatIfHint")}</p>
+        </button>
+      </section>
+    );
+  }
+
+  const savings = whatIfSummary
+    ? whatIfSummary.forecastBalance - originalSummary.forecastBalance
+    : 0;
+
+  return (
+    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-bold text-[var(--color-text-primary)]">{t("whatIfTitle")}</h2>
+        <button
+          type="button"
+          onClick={() => { setOpen(false); setCuts(new Map()); }}
+          className="text-[11px] font-semibold text-[var(--color-text-muted)] hover:underline"
+        >
+          {t("whatIfClose")}
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {categories.map(({ category, total }) => {
+          const cutValue = cuts.get(category) ?? 0;
+          return (
+            <div key={category} className="space-y-1">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-medium truncate" style={{ color: "var(--color-text-primary)" }}>
+                  {category}
+                </span>
+                <span className="shrink-0 text-[var(--color-text-muted)]">
+                  {currency(total)} → {currency(total * (1 - cutValue / 100))}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={cutValue}
+                  onChange={(e) => handleCut(category, Number(e.target.value))}
+                  className="flex-1 h-1.5 rounded-full appearance-none bg-[var(--color-border)] accent-[var(--color-accent-primary)]"
+                />
+                <span className="text-[11px] font-bold w-10 text-right" style={{ color: cutValue > 0 ? "var(--color-accent-primary)" : "var(--color-text-muted)" }}>
+                  -{cutValue}%
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {whatIfSummary && savings !== 0 && (
+        <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-semibold text-[var(--color-text-primary)]">{t("whatIfResult")}</span>
+            <span className="font-bold finance-success-text">
+              <PrivacyValue>+{currency(savings)}</PrivacyValue>
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+            <span>{t("whatIfProjectedBalance")}</span>
+            <span className={`font-bold ${whatIfSummary.forecastBalance >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
+              <PrivacyValue>{currency(whatIfSummary.forecastBalance)}</PrivacyValue>
+            </span>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DailyCashFlowSection({
+  items,
+  currentMonth,
+  startBalance,
+  currency,
+}: {
+  items: FinanceItem[];
+  currentMonth: string;
+  startBalance: number;
+  currency: (v: number) => string;
+}) {
+  const t = useTranslations("FinancePage");
+  const [open, setOpen] = useState(false);
+
+  const cashFlow = useMemo(
+    () => calculateDailyCashFlow(items, currentMonth, startBalance),
+    [items, currentMonth, startBalance],
+  );
+
+  const minBalance = Math.min(...cashFlow.map((e) => e.balance));
+  const maxBalance = Math.max(...cashFlow.map((e) => e.balance));
+  const range = maxBalance - minBalance || 1;
+  const today = new Date().toISOString().split("T")[0];
+  const negativeDay = cashFlow.find((e) => e.balance < 0);
+
+  if (!open) {
+    return (
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <button type="button" onClick={() => setOpen(true)} className="w-full text-left">
+          <h2 className="text-sm font-bold text-[var(--color-accent-text)]">{t("cashFlowTitle")}</h2>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">{t("cashFlowHint")}</p>
+          {negativeDay && (
+            <p className="text-xs finance-danger-text font-semibold mt-1">
+              {t("cashFlowNegativeWarning", { date: negativeDay.date.slice(8) })}
+            </p>
+          )}
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-bold text-[var(--color-text-primary)]">{t("cashFlowTitle")}</h2>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="text-[11px] font-semibold text-[var(--color-text-muted)] hover:underline"
+        >
+          {t("cashFlowClose")}
+        </button>
+      </div>
+
+      {/* Bar chart */}
+      <div className="flex items-end gap-[2px] h-32 rounded-lg bg-[var(--color-surface-raised)] p-2 overflow-hidden">
+        {cashFlow.map((entry) => {
+          const height = Math.max(((entry.balance - minBalance) / range) * 100, 3);
+          const isToday = entry.date === today;
+          const isNeg = entry.balance < 0;
+
+          return (
+            <div
+              key={entry.date}
+              className={`flex-1 rounded-t transition-all ${isNeg ? "bg-[var(--color-danger-strong)]" : isToday ? "bg-[var(--color-accent-primary)]" : "bg-[var(--color-success-strong)] opacity-60"}`}
+              style={{ height: `${height}%` }}
+              title={`${entry.date.slice(8)}/${entry.date.slice(5, 7)}: ${currency(entry.balance)}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--color-text-muted)]">
+        <span>01</span>
+        <span>{String(cashFlow.length)}</span>
+      </div>
+
+      {/* Key stats */}
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div className="rounded-lg bg-[var(--color-surface-raised)] p-2 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("cashFlowMin")}</p>
+          <p className={`font-bold ${minBalance < 0 ? "finance-danger-text" : "text-[var(--color-text-primary)]"}`}>
+            <PrivacyValue>{currency(minBalance)}</PrivacyValue>
+          </p>
+        </div>
+        <div className="rounded-lg bg-[var(--color-surface-raised)] p-2 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("cashFlowMax")}</p>
+          <p className="font-bold finance-success-text">
+            <PrivacyValue>{currency(maxBalance)}</PrivacyValue>
+          </p>
+        </div>
+        <div className="rounded-lg bg-[var(--color-surface-raised)] p-2 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("cashFlowEnd")}</p>
+          <p className={`font-bold ${cashFlow[cashFlow.length - 1]?.balance < 0 ? "finance-danger-text" : "finance-success-text"}`}>
+            <PrivacyValue>{currency(cashFlow[cashFlow.length - 1]?.balance ?? 0)}</PrivacyValue>
+          </p>
+        </div>
+      </div>
+
+      {negativeDay && (
+        <p className="mt-2 text-[11px] finance-danger-text font-semibold">
+          {t("cashFlowNegativeWarning", { date: negativeDay.date.slice(8) })}
+        </p>
+      )}
+    </section>
   );
 }
