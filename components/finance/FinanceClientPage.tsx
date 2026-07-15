@@ -69,7 +69,7 @@ function PrivacyToggleButton() {
     <button
       type="button"
       onClick={togglePrivacy}
-      className={`p-2 rounded-lg border transition flex items-center justify-center ${
+      className={`min-w-[44px] min-h-[44px] rounded-xl border transition flex items-center justify-center ${
         privacyEnabled
           ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 border-blue-300 dark:border-blue-700"
           : "bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
@@ -78,7 +78,7 @@ function PrivacyToggleButton() {
       aria-pressed={privacyEnabled}
       aria-label={privacyEnabled ? t("privacyModeActiveAria") : t("privacyModeInactiveAria")}
     >
-      {privacyEnabled ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+      {privacyEnabled ? <FiEyeOff size={18} /> : <FiEye size={18} />}
     </button>
   );
 }
@@ -159,7 +159,9 @@ export default function FinanceClientPage({
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
+  const { privacyEnabled, togglePrivacy } = usePrivacy();
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
   const showPlanning = activeView === "planning";
@@ -734,28 +736,77 @@ export default function FinanceClientPage({
             <button
               type="button"
               onClick={() => setShowBoardPicker((prev) => !prev)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] text-xs font-semibold border border-[var(--color-border)] transition"
+              className="inline-flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] text-xs font-semibold border border-[var(--color-border)] transition"
               aria-expanded={showBoardPicker}
             >
-              <FiList size={14} />
-              <span className="truncate max-w-[180px]">
-                {t("boardLabel")}: {boardName}
+              <FiList size={16} />
+              <span className="truncate max-w-[160px]">
+                {boardName}
               </span>
             </button>
 
-            <PrivacyToggleButton />
+            {/* Desktop: ações secundárias visíveis */}
+            <div className="hidden md:flex items-center gap-2">
+              <PrivacyToggleButton />
+              <Link
+                href={
+                  currentBoardId
+                    ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
+                    : `/${locale}/tools/finance/categories`
+                }
+                className="min-w-[44px] min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition flex items-center justify-center"
+                title={t("manageCategoriesLabel")}
+              >
+                <FiSettings size={16} />
+              </Link>
+            </div>
 
-            <Link
-              href={
-                currentBoardId
-                  ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
-                  : `/${locale}/tools/finance/categories`
-              }
-              className="p-2 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition flex items-center justify-center"
-              title={t("manageCategoriesLabel")}
-            >
-              <FiSettings size={14} />
-            </Link>
+            {/* Mobile: menu overflow */}
+            <div className="relative flex md:hidden">
+              <button
+                type="button"
+                onClick={() => setShowSettingsMenu((prev) => !prev)}
+                className="min-w-[44px] min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition flex items-center justify-center"
+                aria-label={t("manageCategoriesLabel")}
+              >
+                <FiSettings size={18} />
+              </button>
+
+              {showSettingsMenu && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-lg p-2 z-50">
+                  <button
+                    type="button"
+                    onClick={() => { togglePrivacy(); setShowSettingsMenu(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] transition text-left"
+                  >
+                    {privacyEnabled ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    {privacyEnabled ? t("privacyModeDisable") : t("privacyModeEnable")}
+                  </button>
+                  <Link
+                    href={
+                      currentBoardId
+                        ? `/${locale}/tools/finance/categories?boardId=${currentBoardId}`
+                        : `/${locale}/tools/finance/categories`
+                    }
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] transition"
+                    onClick={() => setShowSettingsMenu(false)}
+                  >
+                    <FiSettings size={16} />
+                    {t("manageCategoriesLabel")}
+                  </Link>
+                  {activeView === "list" && (
+                    <button
+                      type="button"
+                      onClick={() => { exportFinanceItemsCsv(items, `financeiro-${currentMonth}`); setShowSettingsMenu(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] transition text-left"
+                    >
+                      <FiDownload size={16} />
+                      {t("exportCsvLabel")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {showBoardPicker && (
@@ -777,13 +828,6 @@ export default function FinanceClientPage({
               </select>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Privacy toggle quando não há boards */}
-      {boards.length === 0 && (
-        <div className="pt-3 pb-1 flex justify-end">
-          <PrivacyToggleButton />
         </div>
       )}
 
@@ -836,7 +880,22 @@ export default function FinanceClientPage({
 
         <div className="mb-4 flex flex-col items-center text-center">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
-          <h2 className="text-4xl font-extrabold"><PrivacyValue>{currency(balance)}</PrivacyValue></h2>
+          <div className="flex items-center justify-center gap-3">
+            <h2 className="text-4xl font-extrabold"><PrivacyValue>{currency(balance)}</PrivacyValue></h2>
+            <button
+              type="button"
+              onClick={togglePrivacy}
+              className={`min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition ${
+                privacyEnabled
+                  ? "bg-white/25 text-white"
+                  : "bg-white/10 hover:bg-white/15 text-blue-100"
+              }`}
+              aria-pressed={privacyEnabled}
+              aria-label={privacyEnabled ? t("privacyModeActiveAria") : t("privacyModeInactiveAria")}
+            >
+              {privacyEnabled ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => setShowAccumulatedBalance((prev) => !prev)}
@@ -899,68 +958,75 @@ export default function FinanceClientPage({
       </div>
 
       {/* LISTA / MÉTRICAS */}
-      <div className="mt-3">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {activeView === "list" && (
+      <div className="mt-3 mb-3 space-y-2">
+        {/* Tabs — scrollable on mobile */}
+        <div className="flex items-center gap-2">
+          <div
+            className="flex-1 flex overflow-x-auto scroll-smooth scrollbar-hide bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold"
+            role="tablist"
+          >
+            {[
+              ["list", t("tabListLabel")],
+              ["planning", t("tabPlanningLabel")],
+              ["debts", t("tabDebtsLabel")],
+              ["metrics", t("tabMetricsLabel")],
+              ["cards", t("tabCardsLabel")],
+              ["goals", t("tabGoalsLabel")],
+            ].map(([view, label]) => (
               <button
-                onClick={toggleSelectionMode}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectionMode
-                  ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border-[var(--color-accent-primary)]"
-                  : "bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
-                  }`}
+                key={view}
+                type="button"
+                role="tab"
+                aria-selected={activeView === view}
+                onClick={() => handleViewChange(view as FinanceView)}
+                className={`whitespace-nowrap min-h-[40px] px-4 py-2 rounded-lg transition-all flex-shrink-0 ${
+                  activeView === view
+                    ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm font-bold"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+                }`}
               >
-                {selectionMode ? t("cancelSelection") : t("selectButton")}
+                {label}
               </button>
-            )}
-            {activeView === "list" && selectionMode && selectableVisibleItems.length > 0 && (
+            ))}
+          </div>
+
+          {/* Export — desktop only (mobile: inside settings menu) */}
+          {activeView === "list" && (
+            <button
+              type="button"
+              onClick={() => exportFinanceItemsCsv(items, `financeiro-${currentMonth}`)}
+              className="hidden md:flex min-w-[44px] min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition items-center justify-center"
+              title={t("exportCsvLabel")}
+              aria-label={t("exportCsvLabel")}
+            >
+              <FiDownload size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Selection controls */}
+        {activeView === "list" && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={toggleSelectionMode}
+              className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${selectionMode
+                ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] border-[var(--color-accent-primary)]"
+                : "bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+                }`}
+            >
+              {selectionMode ? t("cancelSelection") : t("selectButton")}
+            </button>
+            {selectionMode && selectableVisibleItems.length > 0 && (
               <button
                 type="button"
                 onClick={allVisibleSelected ? handleClearSelectedItems : handleSelectVisibleItems}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
+                className="min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-semibold border bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]"
               >
                 {allVisibleSelected ? t("clearSelectionButton") : t("selectVisibleButton")}
               </button>
             )}
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="inline-flex bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold">
-              {[
-                ["list", t("tabListLabel")],
-                ["planning", t("tabPlanningLabel")],
-                ["debts", t("tabDebtsLabel")],
-                ["metrics", t("tabMetricsLabel")],
-                ["cards", t("tabCardsLabel")],
-                ["goals", t("tabGoalsLabel")],
-              ].map(([view, label]) => (
-                <button
-                  key={view}
-                  type="button"
-                  onClick={() => handleViewChange(view as FinanceView)}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${activeView === view
-                    ? "bg-[var(--color-surface)] text-[var(--color-accent-primary)] shadow-sm"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                    }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {activeView === "list" && (
-              <button
-                type="button"
-                onClick={() => exportFinanceItemsCsv(items, `financeiro-${currentMonth}`)}
-                className="p-2 rounded-lg bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border border-[var(--color-border)] transition"
-                title={t("exportCsvLabel")}
-                aria-label={t("exportCsvLabel")}
-              >
-                <FiDownload size={14} />
-              </button>
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* TEMPLATES RÁPIDOS */}
