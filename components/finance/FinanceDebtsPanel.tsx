@@ -23,6 +23,7 @@ import {
   renegotiateFinanceDebt,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import Spinner from "@/components/ui/Spinner";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
   debts: FinanceDebt[];
@@ -275,7 +276,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
             </h2>
           </div>
           <p className="text-2xl font-extrabold finance-danger-text">
-            {currency(summary.openBalance)}
+            <PrivacyValue>{currency(summary.openBalance)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("debtOpenBalanceHint", { count: summary.openCount })}
@@ -288,7 +289,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
             <h2 className="text-sm font-bold">{t("debtOverdueTitle")}</h2>
           </div>
           <p className="text-2xl font-extrabold">
-            {currency(summary.overdueBalance)}
+            <PrivacyValue>{currency(summary.overdueBalance)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs">
             {t("debtOverdueHint", { count: summary.overdueCount })}
@@ -318,7 +319,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
             </h2>
           </div>
           <p className="text-2xl font-extrabold text-[var(--color-text-primary)]">
-            {currency(summary.dueThisMonthBalance)}
+            <PrivacyValue>{currency(summary.dueThisMonthBalance)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("debtDueThisMonthHint", { count: summary.dueThisMonthCount })}
@@ -333,7 +334,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
             </h2>
           </div>
           <p className="text-2xl font-extrabold text-[var(--color-text-primary)]">
-            {currency(summary.installmentBalance)}
+            <PrivacyValue>{currency(summary.installmentBalance)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("debtInstallmentFutureHint", { count: summary.installmentCount })}
@@ -365,7 +366,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
                 </span>
               </div>
               <p className="mt-3 text-lg font-extrabold finance-danger-text">
-                {currency(urgentDebt.currentBalance)}
+                <PrivacyValue>{currency(urgentDebt.currentBalance)}</PrivacyValue>
               </p>
               <p className="mt-1 text-xs text-[var(--color-text-muted)]">
                 {urgentDebt.status === "overdue" || urgentDebt.dueDate < today
@@ -402,7 +403,7 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
                         {debtTypeLabels[entry.type]}
                       </span>
                       <span className="font-semibold finance-danger-text">
-                        {currency(entry.balance)}
+                        <PrivacyValue>{currency(entry.balance)}</PrivacyValue>
                       </span>
                     </div>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
@@ -450,11 +451,11 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
                     {monthShortLabel(entry.month)}
                   </p>
                   <p className="mt-1 text-center text-[11px] font-semibold finance-danger-text">
-                    {currency(entry.balance)}
+                    <PrivacyValue>{currency(entry.balance)}</PrivacyValue>
                   </p>
                   {entry.paid > 0 && (
                     <p className="mt-1 text-center text-[10px] text-[var(--color-text-muted)]">
-                      {t("debtEvolutionPaidLabel", { value: currency(entry.paid) })}
+                      <PrivacyValue>{t("debtEvolutionPaidLabel", { value: currency(entry.paid) })}</PrivacyValue>
                     </p>
                   )}
                 </div>
@@ -574,11 +575,11 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-lg bg-[var(--color-surface)] p-2">
                     <p className="text-[var(--color-text-muted)]">{t("debtCurrentBalanceLabel")}</p>
-                    <p className="font-bold finance-danger-text">{currency(debt.currentBalance)}</p>
+                    <p className="font-bold finance-danger-text"><PrivacyValue>{currency(debt.currentBalance)}</PrivacyValue></p>
                   </div>
                   <div className="rounded-lg bg-[var(--color-surface)] p-2">
                     <p className="text-[var(--color-text-muted)]">{t("debtOriginalAmountLabel")}</p>
-                    <p className="font-bold text-[var(--color-text-primary)]">{currency(debt.originalAmount)}</p>
+                    <p className="font-bold text-[var(--color-text-primary)]"><PrivacyValue>{currency(debt.originalAmount)}</PrivacyValue></p>
                   </div>
                 </div>
 

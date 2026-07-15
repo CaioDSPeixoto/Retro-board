@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+import PrivacyProvider from "@/components/finance/PrivacyProvider";
 
 export default async function FinanceLayout({
   children,
@@ -17,5 +18,9 @@ export default async function FinanceLayout({
     redirect(`/${locale}/tools/finance/login`);
   }
 
-  return <div className="min-h-screen">{children}</div>;
+  return (
+    <PrivacyProvider>
+      <div className="min-h-screen">{children}</div>
+    </PrivacyProvider>
+  );
 }

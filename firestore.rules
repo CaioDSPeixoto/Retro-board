@@ -52,6 +52,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /finance_debts/{debtId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    match /finance_debt_payments/{paymentId} {
+      allow read: if canReadFinanceResource(resource.data);
+      allow create, update, delete: if false;
+    }
+
     match /rooms/{roomId} {
       allow get: if true;
       allow list: if false;

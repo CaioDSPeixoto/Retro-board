@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 import { getFinanceTotals, getForecastAmount, getPaidAmount } from "@/lib/finance/calculations";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
   items: FinanceItem[];
@@ -343,7 +344,7 @@ export default function FinanceMetricsPanel({
           <div className="flex-1">
             <p className="text-xs mb-1" style={{ color: "var(--color-text-muted)" }}>{t("balanceLabel")}</p>
             <p className={`text-2xl font-extrabold ${balance >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-              {currency(balance)}
+              <PrivacyValue>{currency(balance)}</PrivacyValue>
             </p>
           </div>
 
@@ -353,10 +354,10 @@ export default function FinanceMetricsPanel({
                 {t("incomesTitle")} – {incomesLaunchesLabel}
               </p>
               <div className="mt-1 space-y-0.5 text-[11px]">
-                <p><span className="font-medium">{t("totalPaidAndPending")} </span><span className="font-semibold">{currency(totalIncome)}</span></p>
-                <p><span className="font-medium">{t("avgTicketLabel")} </span><span className="font-semibold">{incomeCount ? currency(avgIncome) : "—"}</span></p>
-                <p className="mt-1">{t("onlyFinished")} <span className="font-semibold">{currency(finishedIncomeTotal)}</span></p>
-                <p>{t("onlyPending")} <span className="font-semibold">{currency(pendingIncomeTotal)}</span></p>
+                <p><span className="font-medium">{t("totalPaidAndPending")} </span><PrivacyValue><span className="font-semibold">{currency(totalIncome)}</span></PrivacyValue></p>
+                <p><span className="font-medium">{t("avgTicketLabel")} </span><PrivacyValue><span className="font-semibold">{incomeCount ? currency(avgIncome) : "—"}</span></PrivacyValue></p>
+                <p className="mt-1">{t("onlyFinished")} <PrivacyValue><span className="font-semibold">{currency(finishedIncomeTotal)}</span></PrivacyValue></p>
+                <p>{t("onlyPending")} <PrivacyValue><span className="font-semibold">{currency(pendingIncomeTotal)}</span></PrivacyValue></p>
                 {overdueIncomeCount > 0 && (
                   <p className="mt-1"><span className="font-medium">{t("incomesOverdueLabel", { count: overdueIncomeCount })}</span></p>
                 )}
@@ -368,10 +369,10 @@ export default function FinanceMetricsPanel({
                 {t("expensesTitle")} – {expensesLaunchesLabel}
               </p>
               <div className="mt-1 space-y-0.5 text-[11px]">
-                <p><span className="font-medium">{t("totalPaidAndPending")} </span><span className="font-semibold">{currency(totalExpense)}</span></p>
-                <p><span className="font-medium">{t("avgTicketLabel")} </span><span className="font-semibold">{expenseCount ? currency(avgExpense) : "—"}</span></p>
-                <p className="mt-1">{t("onlyFinished")} <span className="font-semibold">{currency(finishedExpenseTotal)}</span></p>
-                <p>{t("onlyPending")} <span className="font-semibold">{currency(pendingExpenseTotal)}</span></p>
+                <p><span className="font-medium">{t("totalPaidAndPending")} </span><PrivacyValue><span className="font-semibold">{currency(totalExpense)}</span></PrivacyValue></p>
+                <p><span className="font-medium">{t("avgTicketLabel")} </span><PrivacyValue><span className="font-semibold">{expenseCount ? currency(avgExpense) : "—"}</span></PrivacyValue></p>
+                <p className="mt-1">{t("onlyFinished")} <PrivacyValue><span className="font-semibold">{currency(finishedExpenseTotal)}</span></PrivacyValue></p>
+                <p>{t("onlyPending")} <PrivacyValue><span className="font-semibold">{currency(pendingExpenseTotal)}</span></PrivacyValue></p>
                 {overdueExpenseCount > 0 && (
                   <p className="mt-1"><span className="font-medium">{t("expensesOverdueLabel", { count: overdueExpenseCount })}</span></p>
                 )}
@@ -389,13 +390,17 @@ export default function FinanceMetricsPanel({
               {t("movedTotalsTitle")}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="font-medium" style={{ color: "var(--color-accent-text)" }}>
-                {t("movedExpensesLine", { value: currency(movedExpenseTotal) })}
-              </div>
+              <PrivacyValue as="div" className="font-medium" >
+                <span style={{ color: "var(--color-accent-text)" }}>
+                  {t("movedExpensesLine", { value: currency(movedExpenseTotal) })}
+                </span>
+              </PrivacyValue>
               {movedIncomeTotal > 0 && (
-                <div className="font-medium" style={{ color: "var(--color-accent-text)" }}>
-                  {t("movedIncomesLine", { value: currency(movedIncomeTotal) })}
-                </div>
+                <PrivacyValue as="div" className="font-medium">
+                  <span style={{ color: "var(--color-accent-text)" }}>
+                    {t("movedIncomesLine", { value: currency(movedIncomeTotal) })}
+                  </span>
+                </PrivacyValue>
               )}
             </div>
           </div>
@@ -418,9 +423,11 @@ export default function FinanceMetricsPanel({
               <div key={cat.category} className="space-y-1">
                 <div className="flex justify-between text-xs">
                   <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{cat.category}</span>
-                  <span style={{ color: "var(--color-text-muted)" }}>
-                    {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
-                  </span>
+                  <PrivacyValue>
+                    <span style={{ color: "var(--color-text-muted)" }}>
+                      {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
+                    </span>
+                  </PrivacyValue>
                 </div>
                 <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
                   <div className="h-2 rounded-full bg-[var(--color-danger-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
@@ -445,9 +452,11 @@ export default function FinanceMetricsPanel({
               <div key={cat.category} className="space-y-1">
                 <div className="flex justify-between text-xs">
                   <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{cat.category}</span>
-                  <span style={{ color: "var(--color-text-muted)" }}>
-                    {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
-                  </span>
+                  <PrivacyValue>
+                    <span style={{ color: "var(--color-text-muted)" }}>
+                      {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
+                    </span>
+                  </PrivacyValue>
                 </div>
                 <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
                   <div className="h-2 rounded-full bg-[var(--color-success-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
@@ -472,7 +481,7 @@ export default function FinanceMetricsPanel({
               {format(parseISO(mostActiveDayData.top.date), t("mostActiveDateFormat"), { locale: ptBR })}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
-              {t("mostActiveDayLine", { count: mostActiveDayData.top.count, amount: currency(mostActiveDayData.top.totalAbs) })}
+              <PrivacyValue>{t("mostActiveDayLine", { count: mostActiveDayData.top.count, amount: currency(mostActiveDayData.top.totalAbs) })}</PrivacyValue>
             </p>
             <p className="text-[11px] mt-2" style={{ color: "var(--color-text-muted)" }}>
               {t("daysWithMovements", { count: mostActiveDayData.daysWithMovements })}
@@ -515,11 +524,11 @@ export default function FinanceMetricsPanel({
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="finance-danger-soft border rounded-lg px-2 py-1.5">
                     <p className="text-[10px] font-semibold mb-0.5">{t("userTotalExpenseLabel")}</p>
-                    <p className="font-bold text-xs">{currency(user.totalExpense)}</p>
+                    <PrivacyValue><p className="font-bold text-xs">{currency(user.totalExpense)}</p></PrivacyValue>
                   </div>
                   <div className="finance-success-soft border rounded-lg px-2 py-1.5">
                     <p className="text-[10px] font-semibold mb-0.5">{t("userTotalIncomeShort")}</p>
-                    <p className="font-bold text-xs">{currency(user.totalIncome)}</p>
+                    <PrivacyValue><p className="font-bold text-xs">{currency(user.totalIncome)}</p></PrivacyValue>
                   </div>
                 </div>
 
@@ -533,9 +542,11 @@ export default function FinanceMetricsPanel({
                         <div key={cat.category} className="space-y-1">
                           <div className="flex justify-between text-xs">
                             <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{cat.category}</span>
-                            <span style={{ color: "var(--color-text-muted)" }}>
-                              {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
-                            </span>
+                            <PrivacyValue>
+                              <span style={{ color: "var(--color-text-muted)" }}>
+                                {t("categoryLine", { total: currency(cat.total), percent: cat.percent.toFixed(1) })}
+                              </span>
+                            </PrivacyValue>
                           </div>
                           <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: "var(--color-border)" }}>
                             <div className="h-2 rounded-full bg-[var(--color-danger-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
