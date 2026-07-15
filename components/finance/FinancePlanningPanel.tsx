@@ -12,6 +12,7 @@ import {
   type FinancePlanningRecommendation,
   type PlanningRiskLevel,
 } from "@/lib/finance/planning";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
   items: FinanceItem[];
@@ -149,7 +150,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             </h2>
           </div>
           <p className={`text-2xl font-extrabold ${recommendationTone}`}>
-            {currency(summary.dailyRecommendation)}
+            <PrivacyValue>{currency(summary.dailyRecommendation)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("planningDailyHint", { days: summary.daysRemaining })}
@@ -164,7 +165,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             </h2>
           </div>
           <p className={`text-2xl font-extrabold ${recommendationTone}`}>
-            {currency(summary.weeklyRecommendation)}
+            <PrivacyValue>{currency(summary.weeklyRecommendation)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("planningWeeklyHint")}
@@ -180,7 +181,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             {riskLabel}
           </p>
           <p className="mt-1 text-xs">
-            {t("planningForecastBalance", { value: currency(summary.forecastBalance) })}
+            <PrivacyValue>{t("planningForecastBalance", { value: currency(summary.forecastBalance) })}</PrivacyValue>
           </p>
         </div>
       </section>
@@ -195,7 +196,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
               key={recommendation.code}
               className={`rounded-xl border px-3 py-2 text-xs font-semibold ${recommendationClassName(recommendation.priority)}`}
             >
-              {getRecommendationText(recommendation)}
+              <PrivacyValue>{getRecommendationText(recommendation)}</PrivacyValue>
             </p>
           ))}
         </div>
@@ -210,7 +211,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             </h2>
           </div>
           <p className="text-2xl font-extrabold finance-danger-text">
-            {currency(summary.debtOpenBalance)}
+            <PrivacyValue>{currency(summary.debtOpenBalance)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("planningDebtOpenHint")}
@@ -225,7 +226,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             </h2>
           </div>
           <p className="text-2xl font-extrabold text-[var(--color-text-primary)]">
-            {currency(summary.debtDueThisMonthAmount)}
+            <PrivacyValue>{currency(summary.debtDueThisMonthAmount)}</PrivacyValue>
           </p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {t("planningDebtDueHint", { count: summary.debtDueThisMonthCount })}
@@ -243,10 +244,12 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                 {summary.priorityDebt.name}
               </p>
               <p className="mt-1 text-xs">
-                {t("planningDebtPriorityHint", {
-                  value: currency(summary.priorityDebt.currentBalance),
-                  date: summary.priorityDebt.dueDate,
-                })}
+                <PrivacyValue>
+                  {t("planningDebtPriorityHint", {
+                    value: currency(summary.priorityDebt.currentBalance),
+                    date: summary.priorityDebt.dueDate,
+                  })}
+                </PrivacyValue>
               </p>
             </>
           ) : (
@@ -264,13 +267,13 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             <div className="flex items-center justify-between gap-3">
               <span className="text-[var(--color-text-muted)]">{t("planningRealizedDailyExpense")}</span>
               <span className="font-bold finance-danger-text">
-                {currency(summary.realizedDailyExpense)}
+                <PrivacyValue>{currency(summary.realizedDailyExpense)}</PrivacyValue>
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[var(--color-text-muted)]">{t("planningDailyAvailable")}</span>
               <span className={`font-bold ${recommendationTone}`}>
-                {currency(summary.dailyRecommendation)}
+                <PrivacyValue>{currency(summary.dailyRecommendation)}</PrivacyValue>
               </span>
             </div>
             <p className={`rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2 text-xs font-semibold ${paceTone}`}>
@@ -295,7 +298,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                     <span className="min-w-0 truncate font-semibold text-[var(--color-text-primary)]">
                       {entry.category}
                     </span>
-                    <span className="font-bold finance-danger-text">{currency(entry.amount)}</span>
+                    <span className="font-bold finance-danger-text"><PrivacyValue>{currency(entry.amount)}</PrivacyValue></span>
                   </div>
                   <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
                     {t("planningCategoryShare", { percent: entry.percentage.toFixed(0) })}
@@ -319,19 +322,19 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
             <div className="flex items-center justify-between gap-3">
               <span className="text-[var(--color-text-muted)]">{t("planningRealizedBalance")}</span>
               <span className="font-bold text-[var(--color-text-primary)]">
-                {currency(summary.realizedBalance)}
+                <PrivacyValue>{currency(summary.realizedBalance)}</PrivacyValue>
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[var(--color-text-muted)]">{t("planningPendingIncome")}</span>
               <span className="font-bold finance-success-text">
-                {currency(summary.pendingIncome)}
+                <PrivacyValue>{currency(summary.pendingIncome)}</PrivacyValue>
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[var(--color-text-muted)]">{t("planningPendingExpense")}</span>
               <span className="font-bold finance-danger-text">
-                {currency(summary.pendingExpense)}
+                <PrivacyValue>{currency(summary.pendingExpense)}</PrivacyValue>
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-2">
@@ -339,7 +342,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                 {t("planningProjectedBalance")}
               </span>
               <span className={`font-extrabold ${summary.forecastBalance >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-                {currency(summary.forecastBalance)}
+                <PrivacyValue>{currency(summary.forecastBalance)}</PrivacyValue>
               </span>
             </div>
           </div>
@@ -352,41 +355,49 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
           <div className="space-y-2">
             {summary.overdueCount > 0 && (
               <p className="rounded-xl border finance-warning-soft px-3 py-2 text-xs font-semibold">
-                {t("planningOverdueAlert", {
-                  count: summary.overdueCount,
-                  value: currency(summary.overdueAmount),
-                })}
+                <PrivacyValue>
+                  {t("planningOverdueAlert", {
+                    count: summary.overdueCount,
+                    value: currency(summary.overdueAmount),
+                  })}
+                </PrivacyValue>
               </p>
             )}
             {summary.dueSoonCount > 0 && (
               <p className="rounded-xl border finance-info-soft px-3 py-2 text-xs font-semibold">
-                {t("planningDueSoonAlert", {
-                  count: summary.dueSoonCount,
-                  value: currency(summary.dueSoonAmount),
-                })}
+                <PrivacyValue>
+                  {t("planningDueSoonAlert", {
+                    count: summary.dueSoonCount,
+                    value: currency(summary.dueSoonAmount),
+                  })}
+                </PrivacyValue>
               </p>
             )}
             {summary.forecastBalance < 0 && (
               <p className="rounded-xl border finance-danger-soft px-3 py-2 text-xs font-semibold">
-                {t("planningNegativeAlert", { value: currency(Math.abs(summary.forecastBalance)) })}
+                <PrivacyValue>{t("planningNegativeAlert", { value: currency(Math.abs(summary.forecastBalance)) })}</PrivacyValue>
               </p>
             )}
             {cardAlerts.overLimit.map((alert) => (
               <p key={`over-${alert.card.id}`} className="rounded-xl border finance-danger-soft px-3 py-2 text-xs font-semibold">
-                {t("planningCardOverLimitAlert", {
-                  card: alert.card.name,
-                  value: currency(alert.used - alert.limit),
-                  percent: alert.percent.toFixed(0),
-                })}
+                <PrivacyValue>
+                  {t("planningCardOverLimitAlert", {
+                    card: alert.card.name,
+                    value: currency(alert.used - alert.limit),
+                    percent: alert.percent.toFixed(0),
+                  })}
+                </PrivacyValue>
               </p>
             ))}
             {cardAlerts.highInvoice.map((alert) => (
               <p key={`high-${alert.card.id}`} className="rounded-xl border finance-warning-soft px-3 py-2 text-xs font-semibold">
-                {t("planningCardHighInvoiceAlert", {
-                  card: alert.card.name,
-                  value: currency(alert.used),
-                  percent: alert.limit > 0 ? alert.percent.toFixed(0) : "0",
-                })}
+                <PrivacyValue>
+                  {t("planningCardHighInvoiceAlert", {
+                    card: alert.card.name,
+                    value: currency(alert.used),
+                    percent: alert.limit > 0 ? alert.percent.toFixed(0) : "0",
+                  })}
+                </PrivacyValue>
               </p>
             ))}
             {summary.overdueCount === 0 &&
@@ -415,7 +426,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                   <p className="text-xs text-[var(--color-text-muted)]">{item.date}</p>
                 </div>
                 <span className="shrink-0 font-bold finance-danger-text">
-                  {currency(getOpenAmount(item))}
+                  <PrivacyValue>{currency(getOpenAmount(item))}</PrivacyValue>
                 </span>
               </div>
             ))}
@@ -458,13 +469,13 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[var(--color-text-muted)]">{t("planningPendingIncome")}</span>
                     <span className="font-semibold finance-success-text">
-                      {currency(entry.summary.pendingIncome)}
+                      <PrivacyValue>{currency(entry.summary.pendingIncome)}</PrivacyValue>
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[var(--color-text-muted)]">{t("planningPendingExpense")}</span>
                     <span className="font-semibold finance-danger-text">
-                      {currency(entry.summary.pendingExpense)}
+                      <PrivacyValue>{currency(entry.summary.pendingExpense)}</PrivacyValue>
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-2 border-t border-[var(--color-border)] pt-1">
@@ -472,7 +483,7 @@ export default function FinancePlanningPanel({ items, projectionItems = [], debt
                       {t("planningProjectedBalance")}
                     </span>
                     <span className={`font-bold ${entry.summary.forecastBalance >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-                      {currency(entry.summary.forecastBalance)}
+                      <PrivacyValue>{currency(entry.summary.forecastBalance)}</PrivacyValue>
                     </span>
                   </div>
                 </div>

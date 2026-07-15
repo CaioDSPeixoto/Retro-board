@@ -15,6 +15,7 @@ import { getMonthRange } from "@/lib/finance/utils";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Spinner from "@/components/ui/Spinner";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 import { mapFinanceItem } from "@/lib/finance/schema";
 
 type Props = {
@@ -229,7 +230,7 @@ export default function FinanceCardsPanel({
                 {t("cardsTotalLimitLabel")}
               </p>
               <p className="mt-1 text-lg font-bold text-[var(--color-text-primary)]">
-                {currency(cardsDashboard.totalLimit)}
+                <PrivacyValue>{currency(cardsDashboard.totalLimit)}</PrivacyValue>
               </p>
             </div>
             <div className="rounded-xl bg-[var(--color-surface-raised)] p-3">
@@ -237,7 +238,7 @@ export default function FinanceCardsPanel({
                 {t("cardsUsedLimitLabel")}
               </p>
               <p className="mt-1 text-lg font-bold finance-danger-text">
-                {currency(cardsDashboard.totalUsed)}
+                <PrivacyValue>{currency(cardsDashboard.totalUsed)}</PrivacyValue>
               </p>
               {cardsDashboard.totalLimit > 0 && (
                 <p className={`mt-0.5 text-[11px] font-semibold ${cardsDashboard.totalUsagePercent > 100 ? "finance-danger-text" : "text-[var(--color-text-muted)]"}`}>
@@ -252,7 +253,7 @@ export default function FinanceCardsPanel({
                   : t("cardsOverLimitLabel")}
               </p>
               <p className={`mt-1 text-lg font-bold ${cardsDashboard.totalAvailable >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-                {currency(Math.abs(cardsDashboard.totalAvailable))}
+                <PrivacyValue>{currency(Math.abs(cardsDashboard.totalAvailable))}</PrivacyValue>
               </p>
             </div>
           </div>
@@ -289,7 +290,7 @@ export default function FinanceCardsPanel({
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[var(--color-accent-primary)]">
-                    {currency(used)}
+                    <PrivacyValue>{currency(used)}</PrivacyValue>
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
@@ -306,7 +307,7 @@ export default function FinanceCardsPanel({
                 {limit > 0 && (
                   <div className="mt-3">
                     <div className="flex justify-between text-[11px] text-[var(--color-text-muted)] mb-1">
-                      <span>{t("cardLimitLabel")}: {currency(limit)}</span>
+                      <span>{t("cardLimitLabel")}: <PrivacyValue>{currency(limit)}</PrivacyValue></span>
                       <span className={usagePercent > 100 ? "finance-danger-text font-bold" : ""}>
                         {usagePercent.toFixed(0)}%
                       </span>
@@ -320,7 +321,7 @@ export default function FinanceCardsPanel({
                     <p className={`mt-1 text-[11px] font-semibold ${available >= 0 ? "text-[var(--color-text-secondary)]" : "finance-danger-text"}`}>
                       {available >= 0
                         ? t("cardAvailableLimitLabel")
-                        : t("cardOverLimitLabel")}: {currency(Math.abs(available))}
+                        : t("cardOverLimitLabel")}: <PrivacyValue>{currency(Math.abs(available))}</PrivacyValue>
                     </p>
                   </div>
                 )}

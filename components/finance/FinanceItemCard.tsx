@@ -24,6 +24,7 @@ import {
   getInstallmentGroupItems,
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import Spinner from "@/components/ui/Spinner";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 
 type Props = {
   item: FinanceItem;
@@ -333,26 +334,32 @@ export default function FinanceItemCard({
 
           {isPartial && (
             <p className="text-[11px] finance-info-text mt-1">
-              {t("partialPaid", {
-                paid: formatCurrency(paidAmount),
-                total: formatCurrency(item.amount),
-              })}
+              <PrivacyValue>
+                {t("partialPaid", {
+                  paid: formatCurrency(paidAmount),
+                  total: formatCurrency(item.amount),
+                })}
+              </PrivacyValue>
             </p>
           )}
 
           {openAmount > 0 && item.status !== "paid" && !isMoved && (
             <p className="text-[11px] finance-warning-text">
-              {t("openAmount", {
-                value: formatCurrency(openAmount),
-              })}
+              <PrivacyValue>
+                {t("openAmount", {
+                  value: formatCurrency(openAmount),
+                })}
+              </PrivacyValue>
             </p>
           )}
           {hasCarriedRemainder && (
             <p className="text-[11px] finance-warning-text">
-              {t("carriedRemainder", {
-                value: formatCurrency(carriedRemainderAmount),
-                month: item.carriedToMonth || "",
-              })}
+              <PrivacyValue>
+                {t("carriedRemainder", {
+                  value: formatCurrency(carriedRemainderAmount),
+                  month: item.carriedToMonth || "",
+                })}
+              </PrivacyValue>
             </p>
           )}
         </div>
@@ -363,7 +370,7 @@ export default function FinanceItemCard({
               }`}
           >
             {isIncome ? "+ " : "- "}
-            {formatCurrency(displayAmount)}
+            <PrivacyValue>{formatCurrency(displayAmount)}</PrivacyValue>
           </span>
 
           <div className="text-[11px] text-[var(--color-text-muted)]">
@@ -497,7 +504,7 @@ export default function FinanceItemCard({
             <p className="text-sm text-[var(--color-text-secondary)] mb-3">
               {item.title} —{" "}
               <span className={isIncome ? "finance-success-text" : "finance-danger-text"}>
-                {formatCurrency(paymentTargetAmount)}
+                <PrivacyValue>{formatCurrency(paymentTargetAmount)}</PrivacyValue>
               </span>
             </p>
 
@@ -512,7 +519,7 @@ export default function FinanceItemCard({
                 <span>
                   {t("paymentModalTotal")}{" "}
                   <span className="font-semibold">
-                    ({formatCurrency(paymentTargetAmount)})
+                    (<PrivacyValue>{formatCurrency(paymentTargetAmount)}</PrivacyValue>)
                   </span>
                 </span>
               </label>
@@ -634,7 +641,7 @@ export default function FinanceItemCard({
                         {installment.title}
                       </p>
                       <p className="text-[11px] text-[var(--color-text-muted)]">
-                        {format(parseISO(installment.date), "P", { locale: dateLocale })} · {formatCurrency(installment.amount)}
+                        {format(parseISO(installment.date), "P", { locale: dateLocale })} · <PrivacyValue>{formatCurrency(installment.amount)}</PrivacyValue>
                       </p>
                     </div>
 

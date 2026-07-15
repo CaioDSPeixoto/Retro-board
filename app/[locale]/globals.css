@@ -170,3 +170,30 @@ body {
 .finance-danger-text { color: var(--color-danger-strong); }
 .finance-warning-text { color: var(--color-warning-text); }
 .finance-info-text { color: var(--color-info-text); }
+
+/* ─── Privacy Mode ─────────────────────────────────────────────── */
+.privacy-value {
+  display: inline-block;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.privacy-blurred {
+  filter: blur(8px);
+  opacity: 0.7;
+  user-select: none;
+}
+
+/* Desktop: hover para revelar */
+@media (hover: hover) and (pointer: fine) {
+  .privacy-blurred:hover {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.privacy-revealed {
+  filter: blur(0);
+  opacity: 1;
+}

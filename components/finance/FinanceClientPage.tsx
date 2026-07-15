@@ -13,7 +13,10 @@ import {
   FiAlertCircle,
   FiShare2,
   FiEye,
+  FiEyeOff,
 } from "react-icons/fi";
+import { usePrivacy } from "@/components/finance/PrivacyProvider";
+import PrivacyValue from "@/components/finance/PrivacyValue";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import FinanceItemCard from "@/components/finance/FinanceItemCard";
@@ -54,6 +57,27 @@ function addDaysKey(dateKey: string, days: number) {
   const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + days);
   return date.toISOString().split("T")[0];
+}
+
+function PrivacyToggleButton() {
+  const { privacyEnabled, togglePrivacy } = usePrivacy();
+  const t = useTranslations("FinancePage");
+  return (
+    <button
+      type="button"
+      onClick={togglePrivacy}
+      className={`p-2 rounded-lg border transition flex items-center justify-center ${
+        privacyEnabled
+          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+          : "bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
+      }`}
+      title={privacyEnabled ? t("privacyModeDisable") : t("privacyModeEnable")}
+      aria-pressed={privacyEnabled}
+      aria-label={privacyEnabled ? t("privacyModeActiveAria") : t("privacyModeInactiveAria")}
+    >
+      {privacyEnabled ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+    </button>
+  );
 }
 
 type Props = {
@@ -615,7 +639,7 @@ export default function FinanceClientPage({
           }`}
         >
           {tone === "income" ? "+ " : "- "}
-          {currency(total)}
+          <PrivacyValue>{currency(total)}</PrivacyValue>
         </span>
       </div>
 
@@ -671,6 +695,8 @@ export default function FinanceClientPage({
               </span>
             </button>
 
+            <PrivacyToggleButton />
+
             <Link
               href={
                 currentBoardId
@@ -703,6 +729,13 @@ export default function FinanceClientPage({
               </select>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Privacy toggle quando não há boards */}
+      {boards.length === 0 && (
+        <div className="pt-3 pb-1 flex justify-end">
+          <PrivacyToggleButton />
         </div>
       )}
 
@@ -755,7 +788,7 @@ export default function FinanceClientPage({
 
         <div className="mb-4 flex flex-col items-center text-center">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
-          <h2 className="text-4xl font-extrabold">{currency(balance)}</h2>
+          <h2 className="text-4xl font-extrabold"><PrivacyValue>{currency(balance)}</PrivacyValue></h2>
           <button
             type="button"
             onClick={() => setShowAccumulatedBalance((prev) => !prev)}
@@ -769,15 +802,15 @@ export default function FinanceClientPage({
             <div className="mt-2 flex w-full max-w-sm flex-col items-stretch rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-blue-100">{t("previousMonthBalanceLabel")}</span>
-                <span className="font-semibold">{currency(previousMonthCashBalance)}</span>
+                <PrivacyValue><span className="font-semibold">{currency(previousMonthCashBalance)}</span></PrivacyValue>
               </div>
               <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
                 <span className="text-blue-100">{t("previousBalanceLabel")}</span>
-                <span className="font-semibold">{currency(previousCashBalance)}</span>
+                <PrivacyValue><span className="font-semibold">{currency(previousCashBalance)}</span></PrivacyValue>
               </div>
               <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
                 <span className="text-blue-100">{t("accumulatedBalanceLabel")}</span>
-                <span className="font-bold">{currency(accumulatedBalance)}</span>
+                <PrivacyValue><span className="font-bold">{currency(accumulatedBalance)}</span></PrivacyValue>
               </div>
               <span className="mt-1 text-left text-[10px] text-blue-100">
                 {t("accumulatedBalanceHint")}
@@ -790,28 +823,28 @@ export default function FinanceClientPage({
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("entriesLabel")}</p>
             <p className="text-lg font-bold text-green-300">
-              + {currency(totals.incomes)}
+              + <PrivacyValue>{currency(totals.incomes)}</PrivacyValue>
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("entriesForecastLabel")}
             </p>
             <p className="text-lg font-bold text-green-300">
-              + {currency(totals.incomesForecast)}
+              + <PrivacyValue>{currency(totals.incomesForecast)}</PrivacyValue>
             </p>
           </div>
 
           <div className="flex-1 bg-white/10 backdrop-blur-sm p-3 rounded-2xl">
             <p className="text-xs text-blue-100 mb-1">{t("exitsLabel")}</p>
             <p className="text-lg font-bold text-red-300">
-              - {currency(totals.expenses)}
+              - <PrivacyValue>{currency(totals.expenses)}</PrivacyValue>
             </p>
 
             <p className="text-xs text-blue-100 mb-1">
               {t("exitsForecastLabel")}
             </p>
             <p className="text-lg font-bold text-red-300">
-              - {currency(totals.expensesForecast)}
+              - <PrivacyValue>{currency(totals.expensesForecast)}</PrivacyValue>
             </p>
           </div>
         </div>
@@ -904,7 +937,7 @@ export default function FinanceClientPage({
                     <p className="text-[11px] text-[var(--color-text-secondary)] mt-1">
                       {t("overdueSummaryLabel")}:{" "}
                       <span className="font-semibold text-amber-600">
-                        {currency(overdueTotal)}
+                        <PrivacyValue>{currency(overdueTotal)}</PrivacyValue>
                       </span>
                     </p>
                   </div>
@@ -1119,7 +1152,7 @@ export default function FinanceClientPage({
             <div className="flex flex-col">
               <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
               <span className={`text-lg font-bold ${selectedTotal >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-                {currency(selectedTotal)}
+                <PrivacyValue>{currency(selectedTotal)}</PrivacyValue>
               </span>
             </div>
             <div className="h-8 w-px bg-[var(--color-border)] mx-1" />
