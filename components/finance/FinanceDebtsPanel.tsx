@@ -750,7 +750,10 @@ function DebtStrategySection({ debts }: { debts: FinanceDebt[] }) {
   const [monthlyExtra, setMonthlyExtra] = useState(500);
   const [strategy, setStrategy] = useState<DebtStrategyType>("avalanche");
 
-  const openDebts = debts.filter((d) => d.status !== "paid" && d.currentBalance > 0);
+  const openDebts = useMemo(
+    () => debts.filter((d) => d.status !== "paid" && d.currentBalance > 0),
+    [debts],
+  );
 
   const result = useMemo(
     () => calculateDebtPayoff(openDebts, monthlyExtra, strategy),

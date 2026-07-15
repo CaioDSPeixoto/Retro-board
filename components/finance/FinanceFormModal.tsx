@@ -547,21 +547,23 @@ export default function FinanceFormModal({
                   </div>
                 </>
               ) : (
-                <input
-                  name="title"
-                  required
-                  list="title-suggestions"
-                  placeholder={t("descriptionPlaceholder")}
-                  defaultValue={initialItem?.title ?? ""}
-                  autoComplete="off"
-                  className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
-                  style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
-                />
-                <datalist id="title-suggestions">
-                  {titleSuggestions.map((title) => (
-                    <option key={title} value={title} />
-                  ))}
-                </datalist>
+                <>
+                  <input
+                    name="title"
+                    required
+                    list="title-suggestions"
+                    placeholder={t("descriptionPlaceholder")}
+                    defaultValue={initialItem?.title ?? ""}
+                    autoComplete="off"
+                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
+                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                  />
+                  <datalist id="title-suggestions">
+                    {titleSuggestions.map((title) => (
+                      <option key={title} value={title} />
+                    ))}
+                  </datalist>
+                </>
               )}
             </div>
 

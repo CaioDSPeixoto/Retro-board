@@ -399,7 +399,7 @@ export default function FinanceClientPage({
         }
         return left.date.localeCompare(right.date);
       });
-  }, [items, nameFilter, statusFilter, typeFilter, dueFilter, sortOption, todayStr]);
+  }, [items, nameFilter, statusFilter, typeFilter, tagFilter, dueFilter, sortOption, todayStr]);
 
   const titleSuggestions = useMemo(() => {
     const titles = new Set<string>();
@@ -418,7 +418,7 @@ export default function FinanceClientPage({
       dueFilter !== "all",
       sortOption !== "dateAsc",
     ].filter(Boolean).length;
-  }, [dueFilter, nameFilter, sortOption, statusFilter, typeFilter]);
+  }, [dueFilter, nameFilter, sortOption, statusFilter, tagFilter, typeFilter]);
 
   const selectableVisibleItems = useMemo(
     () => visibleItems.filter((item) => !item.isSynthetic && item.status !== "moved"),
@@ -1343,6 +1343,7 @@ export default function FinanceClientPage({
 
       {/* MODAL */}
       <FinanceFormModal
+        key={editingItem?.id || editingItem?.title || (isModalOpen ? "new" : "closed")}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         locale={locale}
