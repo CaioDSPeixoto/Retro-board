@@ -26,6 +26,7 @@ type Props = {
   initialItem?: FinanceItem | null;
   boardId?: string | null;
   currentMonth?: string;
+  titleSuggestions?: string[];
 };
 
 function getDefaultDateForMonth(currentMonth?: string): string {
@@ -60,13 +61,14 @@ export default function FinanceFormModal({
   initialItem,
   boardId,
   currentMonth,
+  titleSuggestions = [],
 }: Props) {
   const t = useTranslations("FinanceForm");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const newCatInputRef = useRef<HTMLInputElement>(null);
 
-  const isEditMode = !!initialItem;
+  const isEditMode = !!initialItem && !!initialItem.id;
 
   const fixedCategoryName = t("fixedCategoryName");
 
@@ -548,11 +550,18 @@ export default function FinanceFormModal({
                 <input
                   name="title"
                   required
+                  list="title-suggestions"
                   placeholder={t("descriptionPlaceholder")}
                   defaultValue={initialItem?.title ?? ""}
+                  autoComplete="off"
                   className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all"
                   style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
                 />
+                <datalist id="title-suggestions">
+                  {titleSuggestions.map((title) => (
+                    <option key={title} value={title} />
+                  ))}
+                </datalist>
               )}
             </div>
 
@@ -608,6 +617,39 @@ export default function FinanceFormModal({
 
             {showAdvanced && (
               <>
+                {/* Notas */}
+                <div className="mt-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("notesLabel")}
+                  </label>
+                  <textarea
+                    name="notes"
+                    rows={2}
+                    maxLength={500}
+                    placeholder={t("notesPlaceholder")}
+                    defaultValue={initialItem?.notes ?? ""}
+                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all resize-none text-sm"
+                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="mt-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("tagsLabel")}
+                  </label>
+                  <input
+                    name="tags"
+                    placeholder={t("tagsPlaceholder")}
+                    defaultValue={initialItem?.tags?.join(", ") ?? ""}
+                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all text-sm"
+                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                  />
+                  <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("tagsHint")}
+                  </p>
+                </div>
+
                 {/* Parcelamento (somente na criação, discreto) */}
                 {!isEditMode && (
                   <div className="mt-1 space-y-2">
@@ -705,6 +747,41 @@ export default function FinanceFormModal({
                 )}
               </>
             )}
+              </>
+            )}
+
+            {/* Notas e Tags (edit mode) */}
+            {isEditMode && (
+              <>
+                <div className="mt-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("notesLabel")}
+                  </label>
+                  <textarea
+                    name="notes"
+                    rows={2}
+                    maxLength={500}
+                    placeholder={t("notesPlaceholder")}
+                    defaultValue={initialItem?.notes ?? ""}
+                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all resize-none text-sm"
+                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                  />
+                </div>
+                <div className="mt-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("tagsLabel")}
+                  </label>
+                  <input
+                    name="tags"
+                    placeholder={t("tagsPlaceholder")}
+                    defaultValue={initialItem?.tags?.join(", ") ?? ""}
+                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all text-sm"
+                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                  />
+                  <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
+                    {t("tagsHint")}
+                  </p>
+                </div>
               </>
             )}
 

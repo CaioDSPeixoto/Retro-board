@@ -4,6 +4,22 @@ import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
 
 const releases = [
+  { version: "0.10.0", date: "15/07/2026", changes: [
+    "FEAT: duplicar lançamento (botão clone com data de hoje)",
+    "FEAT: auto-complete de título baseado no histórico",
+    "FEAT: orçamento mensal por categoria com barras de progresso",
+    "FEAT: tendência de gastos mês-a-mês (comparação com mês anterior)",
+    "FEAT: simulador \"E se eu cortasse...?\" com sliders por categoria",
+    "FEAT: fluxo de caixa diário (gráfico de barras com alerta de saldo negativo)",
+    "FEAT: metas de economia com progresso visual e aba dedicada",
+    "FEAT: simulador de quitação de dívidas (bola de neve vs avalanche)",
+    "FEAT: filtro por tags na listagem de lançamentos",
+    "FEAT: alertas inteligentes (gasto incomum + aviso de orçamento)",
+    "FEAT: templates de lançamento rápido (chips para lançar com 1 clique)",
+    "FEAT: notas e tags por lançamento",
+    "FEAT: exportar lista como CSV",
+    "FEAT: botão FAB disponível em todas as abas",
+  ]},
   { version: "0.9.1", date: "15/07/2026", changes: [
     "SECURITY: rate limit em ações sem proteção (toggle, revert, update, delete, payment)",
     "SECURITY: sanitização de inputs com limite de caracteres em campos de texto",

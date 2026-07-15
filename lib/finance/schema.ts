@@ -24,6 +24,9 @@ import type {
   FinanceDebtType,
   FinanceItem,
   FinanceStatus,
+  FinanceBudget,
+  FinanceSavingsGoal,
+  FinanceTemplate,
 } from "@/types/finance";
 
 const FINANCE_ITEM_TYPES = ["income", "expense"] as const;
@@ -105,6 +108,8 @@ export function mapFinanceItem(doc: FirestoreDocumentLike): FinanceItem {
     cardName: readOptionalString(data, "cardName"),
     cardMode: readOptionalEnum(data, "cardMode", FINANCE_CARD_MODES),
     cardLastDigits: readOptionalString(data, "cardLastDigits"),
+    notes: readOptionalString(data, "notes"),
+    tags: readStringArray(data, "tags"),
   });
 }
 
@@ -268,5 +273,53 @@ export function createMovedFinanceItemPayload(
     cardName: existing.cardName,
     cardMode: existing.cardMode,
     cardLastDigits: existing.cardLastDigits,
+  });
+}
+
+export function mapFinanceBudget(doc: FirestoreDocumentLike): FinanceBudget {
+  const data = getDocumentData(doc);
+
+  return removeUndefinedValues({
+    id: doc.id,
+    boardId: readString(data, "boardId"),
+    month: readString(data, "month"),
+    category: readString(data, "category"),
+    limit: readNumber(data, "limit"),
+    createdBy: readOptionalString(data, "createdBy"),
+    createdAt: readDateString(data, "createdAt"),
+  });
+}
+
+export function mapFinanceSavingsGoal(doc: FirestoreDocumentLike): FinanceSavingsGoal {
+  const data = getDocumentData(doc);
+
+  return removeUndefinedValues({
+    id: doc.id,
+    boardId: readString(data, "boardId"),
+    title: readString(data, "title", "Meta"),
+    targetAmount: readNumber(data, "targetAmount"),
+    currentAmount: readNumber(data, "currentAmount"),
+    deadline: readOptionalString(data, "deadline"),
+    icon: readOptionalString(data, "icon"),
+    createdBy: readOptionalString(data, "createdBy"),
+    createdAt: readDateString(data, "createdAt"),
+  });
+}
+
+export function mapFinanceTemplate(doc: FirestoreDocumentLike): FinanceTemplate {
+  const data = getDocumentData(doc);
+
+  return removeUndefinedValues({
+    id: doc.id,
+    boardId: readString(data, "boardId"),
+    title: readString(data, "title"),
+    amount: readNumber(data, "amount"),
+    type: readEnum(data, "type", ["income", "expense"] as const, "expense"),
+    category: readString(data, "category", "Outros"),
+    cardId: readOptionalString(data, "cardId"),
+    cardName: readOptionalString(data, "cardName"),
+    tags: readStringArray(data, "tags"),
+    createdBy: readOptionalString(data, "createdBy"),
+    createdAt: readDateString(data, "createdAt"),
   });
 }

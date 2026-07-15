@@ -24,6 +24,7 @@ import {
 } from "@/app/[locale]/tools/finance/(protected)/actions";
 import Spinner from "@/components/ui/Spinner";
 import PrivacyValue from "@/components/finance/PrivacyValue";
+import { calculateDebtPayoff, type DebtStrategyType } from "@/lib/finance/debt-strategy";
 
 type Props = {
   debts: FinanceDebt[];
@@ -736,6 +737,120 @@ export default function FinanceDebtsPanel({ debts, payments = [], boardId, local
           </div>
         )}
       </section>
+
+      {/* Debt Strategy Calculator */}
+      <DebtStrategySection debts={debts} />
     </div>
+  );
+}
+
+function DebtStrategySection({ debts }: { debts: FinanceDebt[] }) {
+  const t = useTranslations("FinancePage");
+  const [open, setOpen] = useState(false);
+  const [monthlyExtra, setMonthlyExtra] = useState(500);
+  const [strategy, setStrategy] = useState<DebtStrategyType>("avalanche");
+
+  const openDebts = debts.filter((d) => d.status !== "paid" && d.currentBalance > 0);
+
+  const result = useMemo(
+    () => calculateDebtPayoff(openDebts, monthlyExtra, strategy),
+    [openDebts, monthlyExtra, strategy],
+  );
+
+  const altResult = useMemo(
+    () => calculateDebtPayoff(openDebts, monthlyExtra, strategy === "avalanche" ? "snowball" : "avalanche"),
+    [openDebts, monthlyExtra, strategy],
+  );
+
+  const currency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+  if (openDebts.length < 2) return null;
+
+  if (!open) {
+    return (
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <button type="button" onClick={() => setOpen(true)} className="w-full text-left">
+          <h2 className="text-sm font-bold text-[var(--color-accent-text)]">{t("debtStrategyTitle")}</h2>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">{t("debtStrategyHint")}</p>
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-bold text-[var(--color-text-primary)]">{t("debtStrategyTitle")}</h2>
+        <button type="button" onClick={() => setOpen(false)} className="text-[11px] font-semibold text-[var(--color-text-muted)] hover:underline">
+          {t("debtStrategyClose")}
+        </button>
+      </div>
+
+      {/* Strategy selector */}
+      <div className="flex gap-2 mb-3">
+        <button
+          type="button"
+          onClick={() => setStrategy("avalanche")}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition ${strategy === "avalanche" ? "border-[var(--color-accent-primary)] text-[var(--color-accent-text)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] text-[var(--color-text-secondary)]"}`}
+        >
+          {t("debtStrategyAvalanche")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setStrategy("snowball")}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition ${strategy === "snowball" ? "border-[var(--color-accent-primary)] text-[var(--color-accent-text)] bg-[var(--color-accent-subtle)]" : "border-[var(--color-border)] text-[var(--color-text-secondary)]"}`}
+        >
+          {t("debtStrategySnowball")}
+        </button>
+      </div>
+
+      {/* Monthly budget input */}
+      <div className="mb-4">
+        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] block mb-1">
+          {t("debtStrategyMonthlyBudget")}
+        </label>
+        <input
+          type="number"
+          min={100}
+          step={50}
+          value={monthlyExtra}
+          onChange={(e) => setMonthlyExtra(Math.max(100, Number(e.target.value)))}
+          className="w-full p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)]"
+        />
+        <p className="text-[10px] text-[var(--color-text-muted)] mt-1">{t("debtStrategyMonthlyHint")}</p>
+      </div>
+
+      {/* Results */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 mb-3">
+        <div className="rounded-xl bg-[var(--color-surface-raised)] p-3 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("debtStrategyMonths")}</p>
+          <p className="text-xl font-extrabold text-[var(--color-text-primary)]">{result.months}</p>
+        </div>
+        <div className="rounded-xl bg-[var(--color-surface-raised)] p-3 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("debtStrategyTotalPaid")}</p>
+          <p className="text-sm font-bold finance-danger-text">
+            <PrivacyValue>{currency(result.totalPaid)}</PrivacyValue>
+          </p>
+        </div>
+        <div className="rounded-xl bg-[var(--color-surface-raised)] p-3 text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)]">{t("debtStrategyInterest")}</p>
+          <p className="text-sm font-bold text-[var(--color-text-primary)]">
+            <PrivacyValue>{currency(result.totalInterest)}</PrivacyValue>
+          </p>
+        </div>
+      </div>
+
+      {/* Comparison */}
+      {altResult.months !== result.months && (
+        <p className="text-[11px] text-[var(--color-text-muted)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2">
+          {t("debtStrategyComparison", {
+            alt: strategy === "avalanche" ? t("debtStrategySnowball") : t("debtStrategyAvalanche"),
+            months: String(altResult.months),
+            interest: currency(altResult.totalInterest),
+          })}
+        </p>
+      )}
+    </section>
   );
 }

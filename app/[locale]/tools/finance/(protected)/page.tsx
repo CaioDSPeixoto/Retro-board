@@ -15,10 +15,14 @@ import {
   getFinanceDebtPaymentsData,
   getFinanceFixedTemplatesData,
 } from "./data";
+import { getBudgetsForMonth } from "./budget-actions";
+import { getSavingsGoals } from "./goals-actions";
+import { getTemplates } from "./template-actions";
 import type { FinanceBoard, FinanceItem, FinanceCard, FinanceDebt, FinanceDebtPayment } from "@/types/finance";
 import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { createProjectedFixedItems } from "@/lib/finance/fixed-projection";
+import { getPreviousMonthKey } from "@/lib/finance/utils";
 import { redirect } from "next/navigation";
 
 type SearchParams = {
@@ -33,7 +37,7 @@ type SearchParams = {
   accountsStatus?: string;
 };
 
-const FINANCE_VIEWS = new Set(["list", "planning", "debts", "metrics", "cards"]);
+const FINANCE_VIEWS = new Set(["list", "planning", "debts", "metrics", "cards", "goals"]);
 const LIST_DUE_FILTERS = new Set(["all", "overdue", "today", "tomorrow", "next7", "next30", "open", "settled"]);
 const LIST_STATUS_FILTERS = new Set(["all", "paid", "pending", "partial", "moved"]);
 
@@ -140,7 +144,8 @@ export default async function FinancePage({
   }
 
   // Paralleliza queries independentes
-  const [categories, previousCashBalance, previousMonthCashBalance, cards, debts, debtPayments, fixedTemplates] = await Promise.all([
+  const previousMonth = getPreviousMonthKey(currentMonth);
+  const [categories, previousCashBalance, previousMonthCashBalance, cards, debts, debtPayments, fixedTemplates, budgets, previousMonthItems, savingsGoals, quickTemplates] = await Promise.all([
     getCategoriesData(boardId, safeSessionUserId),
     getCashBalanceBeforeMonth(currentMonth, boardId, safeSessionUserId),
     getPreviousMonthCashBalance(currentMonth, boardId, safeSessionUserId),
@@ -148,6 +153,10 @@ export default async function FinancePage({
     getFinanceDebtsData(boardId, safeSessionUserId),
     getFinanceDebtPaymentsData(boardId, safeSessionUserId),
     getFinanceFixedTemplatesData(boardId, safeSessionUserId),
+    getBudgetsForMonth(boardId, currentMonth, safeSessionUserId),
+    getFinanceItemsData(previousMonth, boardId, safeSessionUserId),
+    getSavingsGoals(boardId, safeSessionUserId),
+    getTemplates(boardId, safeSessionUserId),
   ]);
 
   const projectionMonths = getProjectionMonthList(currentMonth, 6);
@@ -183,7 +192,11 @@ export default async function FinancePage({
         initialDebts={debts}
         initialDebtPayments={debtPayments}
         initialProjectionItems={projectionItems}
-        initialView={initialView as "list" | "planning" | "debts" | "metrics" | "cards"}
+        initialBudgets={budgets}
+        previousMonthItems={previousMonthItems}
+        initialGoals={savingsGoals}
+        initialTemplates={quickTemplates}
+        initialView={initialView as "list" | "planning" | "debts" | "metrics" | "cards" | "goals"}
         initialDueFilter={initialDueFilter as "all" | "overdue" | "today" | "tomorrow" | "next7" | "next30" | "open" | "settled"}
         initialStatusFilter={initialStatusFilter as "all" | FinanceStatus}
       />

@@ -1,8 +1,8 @@
 // lib/firebase-admin.ts
 import "server-only";
 
-import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
-import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 function parseServiceAccount() {
   const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64;
@@ -13,9 +13,7 @@ function parseServiceAccount() {
 
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!raw) {
-    throw new Error(
-      "FIREBASE_SERVICE_ACCOUNT_KEY missing in .env.local (or use FIREBASE_SERVICE_ACCOUNT_KEY_BASE64)"
-    );
+    return null;
   }
 
   // remove aspas externas se existirem
@@ -32,39 +30,14 @@ function parseServiceAccount() {
   return JSON.parse(normalized);
 }
 
-let _app: App | undefined;
-let _db: Firestore | undefined;
+const serviceAccount = parseServiceAccount();
 
-function getAdminApp(): App {
-  if (_app) return _app;
+const app =
+  getApps().length > 0
+    ? getApps()[0]
+    : serviceAccount
+      ? initializeApp({ credential: cert(serviceAccount) })
+      : initializeApp();
 
-  _app =
-    getApps().length > 0
-      ? getApps()[0]
-      : initializeApp({
-          credential: cert(parseServiceAccount()),
-        });
-
-  return _app;
-}
-
-function getAdminDb(): Firestore {
-  if (_db) return _db;
-  _db = getFirestore(getAdminApp());
-  return _db;
-}
-
-export const adminApp = new Proxy({} as App, {
-  get(_, prop) {
-    return (getAdminApp() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const adminDb = new Proxy({} as Firestore, {
-  get(_, prop) {
-    const db = getAdminDb();
-    const value = (db as unknown as Record<string | symbol, unknown>)[prop];
-    if (typeof value === "function") return value.bind(db);
-    return value;
-  },
-});
+export const adminDb = getFirestore(app);
+export { app as adminApp };

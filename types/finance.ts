@@ -54,6 +54,10 @@ export type FinanceItem = {
   cardName?: string; // "Nubank", "Santander", etc.
   cardMode?: "credit" | "debit"; // crédito / débito
   cardLastDigits?: string;
+
+  // notas e tags
+  notes?: string;
+  tags?: string[];
 };
 
 export type FinanceCard = {
@@ -148,4 +152,46 @@ export type FinanceBoardInvite = {
   createdBy: string; // quem criou (owner no email invite, user no code request)
   createdAt: string;
   respondedAt?: string;
+};
+
+// ====== BUDGETS ======
+
+export type FinanceBudget = {
+  id: string;
+  boardId: string;
+  month: string; // "YYYY-MM"
+  category: string;
+  limit: number;
+  createdBy?: string;
+  createdAt: string;
+};
+
+// ====== SAVINGS GOALS ======
+
+export type FinanceSavingsGoal = {
+  id: string;
+  boardId: string;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: string; // "YYYY-MM-DD"
+  icon?: string;
+  createdBy?: string;
+  createdAt: string;
+};
+
+// ====== TEMPLATES ======
+
+export type FinanceTemplate = {
+  id: string;
+  boardId: string;
+  title: string;
+  amount: number;
+  type: "income" | "expense";
+  category: string;
+  cardId?: string;
+  cardName?: string;
+  tags?: string[];
+  createdBy?: string;
+  createdAt: string;
 };

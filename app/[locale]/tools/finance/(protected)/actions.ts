@@ -880,6 +880,15 @@ export async function addFinanceItem(formData: FormData) {
   const title = sanitizeText(titleRaw, 200);
   const category = sanitizeText(categoryRaw, 100);
 
+  const notesRaw = String(formData.get("notes") || "");
+  const tagsRaw = String(formData.get("tags") || "");
+  const notes = sanitizeText(notesRaw, 500);
+  const tags = tagsRaw
+    .split(",")
+    .map((tag) => tag.trim().slice(0, 50))
+    .filter(Boolean)
+    .slice(0, 10);
+
   if (!title || Number.isNaN(amount) || !date || !type) {
     return { error: t("errors.incompleteData") };
   }
@@ -913,6 +922,8 @@ export async function addFinanceItem(formData: FormData) {
     ...(cardName ? { cardName } : {}),
     ...(cardMode ? { cardMode } : {}),
     ...(cardLastDigits ? { cardLastDigits } : {}),
+    ...(notes ? { notes } : {}),
+    ...(tags.length > 0 ? { tags } : {}),
   };
 
   // ========== CASO SIMPLES (sem parcelamento) ==========
@@ -1061,6 +1072,15 @@ export async function updateFinanceItem(formData: FormData) {
   const amount = parseFloat(amountStr);
   const paidAmountRaw = paidAmountStr ? parseFloat(paidAmountStr) : 0;
 
+  const notesRaw = String(formData.get("notes") || "");
+  const tagsRaw = String(formData.get("tags") || "");
+  const notes = sanitizeText(notesRaw, 500);
+  const tags = tagsRaw
+    .split(",")
+    .map((tag) => tag.trim().slice(0, 50))
+    .filter(Boolean)
+    .slice(0, 10);
+
   if (
     !id ||
     !title ||
@@ -1106,6 +1126,8 @@ export async function updateFinanceItem(formData: FormData) {
   if (cardName) updateData.cardName = cardName;
   if (cardMode) updateData.cardMode = cardMode;
   if (cardLastDigits) updateData.cardLastDigits = cardLastDigits;
+  updateData.notes = notes || FieldValue.delete();
+  updateData.tags = tags.length > 0 ? tags : FieldValue.delete();
 
   await ref.update(updateData);
 
