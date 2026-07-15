@@ -488,7 +488,7 @@ export default function FinanceMetricsPanel({
                       <div className="h-2 rounded-full bg-[var(--color-danger-strong)]" style={{ width: `${Math.max(cat.percent, 4)}%` }} />
                     </div>
                   )}
-                  {overBudget && (
+                  {overBudget && budget && (
                     <p className="text-[10px] finance-danger-text font-semibold">
                       {t("budgetExceeded", { value: currency(cat.total - budget.limit) })}
                     </p>
