@@ -4,6 +4,59 @@ import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
 
 const releases = [
+  { version: "0.9.1", date: "15/07/2026", changes: [
+    "SECURITY: rate limit em ações sem proteção (toggle, revert, update, delete, payment)",
+    "SECURITY: sanitização de inputs com limite de caracteres em campos de texto",
+    "SECURITY: regras do Firestore atualizadas (finance_debts, finance_debt_payments)",
+    "PERF: paralelização de queries na página principal (Promise.all)",
+    "PERF: otimização de chamadas getSession (eliminação de verificações redundantes)",
+    "FIX: deleteBoard agora remove dívidas e pagamentos associados",
+    "FIX: criação de parcelas agora é atômica (batch write)",
+    "REFACT: mensagens de erro padronizadas com internacionalização (pt/en/es)",
+  ]},
+  { version: "0.9.0", date: "15/07/2026", changes: [
+    "FEAT: modo privacidade no módulo financeiro (blur de valores monetários)",
+    "FEAT: toggle de ativação com ícone de olho na toolbar",
+    "FEAT: desktop — hover para revelar valores",
+    "FEAT: mobile — toque para revelar/ocultar valores",
+    "FEAT: preferência salva no localStorage (persiste entre sessões)",
+  ]},
+  { version: "0.8.14", date: "14/07/2026", changes: [
+    "FIX: correção no fluxo de pagamento parcial com repasse de saldo",
+  ]},
+  { version: "0.8.13", date: "07/07/2026", changes: [
+    "FEAT: módulo de dívidas (criação, pagamento, renegociação, parcelamento)",
+    "FEAT: painel de insights de dívidas (evolução, por tipo, prioridade)",
+    "FEAT: recomendações de planejamento considerando dívidas",
+  ]},
+  { version: "0.8.12", date: "06/07/2026", changes: [
+    "FEAT: dashboard de planejamento financeiro (meta diária/semanal, risco, ritmo de gastos)",
+    "FEAT: projeção de 6 meses com análise de risco",
+    "FEAT: alertas de vencimento e categoria dominante",
+  ]},
+  { version: "0.8.11", date: "05/07/2026", changes: [
+    "FEAT: cartões de crédito com ciclo de fatura e limite",
+    "FEAT: ações em lote (pagar, mover, excluir múltiplos lançamentos)",
+    "FEAT: notificações de contas próximas do vencimento",
+    "REFACT: merge de contas e receitas em lista unificada",
+  ]},
+  { version: "0.8.10", date: "01/07/2026", changes: [
+    "FIX: esclarecimento do saldo acumulado (mês anterior vs total anterior)",
+    "REFACT: melhorias de qualidade e segurança no módulo financeiro",
+  ]},
+  { version: "0.8.9", date: "30/06/2026", changes: [
+    "FEAT: schemas Firestore centralizados e notificações financeiras",
+    "FEAT: leitura de categorias via schema tipado",
+    "FIX: ajuste de layout e notificações do finance",
+    "FIX: correção de regras e estabilidade geral",
+    "FIX: correção no carregamento do Firebase Admin Auth",
+    "FIX: correção da navbar em páginas públicas",
+    "FIX: evita limpar cookie durante renderização",
+  ]},
+  { version: "0.8.5", date: "29/06/2026", changes: [
+    "FEAT: tipo FinanceCard e vinculação de cartão nos lançamentos",
+    "FEAT: ajustes iniciais do módulo financeiro expandido",
+  ]},
   { version: "0.8.4", date: "20/03/2026", changes: ["REFACT: centralização de temas e padronização de codigo"] },
   { version: "0.8.3", date: "19/03/2026", changes: ["FEAT: adicionado botão de modo claro/escuro"] },
   { version: "0.8.2", date: "25/02/2026", changes: ["REFACT: ajustando alguns textos para melhor compreensão"] },
