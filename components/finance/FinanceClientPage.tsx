@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale";
 import {
   FiChevronLeft,
   FiChevronRight,
+  FiChevronDown,
   FiPlus,
   FiList,
   FiSettings,
@@ -15,6 +16,8 @@ import {
   FiEye,
   FiEyeOff,
   FiDownload,
+  FiFilter,
+  FiSearch,
 } from "react-icons/fi";
 import { usePrivacy } from "@/components/finance/PrivacyProvider";
 import PrivacyValue from "@/components/finance/PrivacyValue";
@@ -157,10 +160,12 @@ export default function FinanceClientPage({
   const [bulkLoading, setBulkLoading] = useState<BulkFinanceAction | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+  const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
   const [overdueInfoOpen, setOverdueInfoOpen] = useState(false);
   const [showBoardPicker, setShowBoardPicker] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showAccumulatedBalance, setShowAccumulatedBalance] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const { privacyEnabled, togglePrivacy } = usePrivacy();
   const showMetrics = activeView === "metrics";
   const showCards = activeView === "cards";
@@ -473,9 +478,16 @@ export default function FinanceClientPage({
       setShareOpen(false);
       setSelectionMode(false);
       setSelectedItems(new Set());
+      setBulkActionsOpen(false);
     }
     setOverdueInfoOpen(false);
   }, [activeView]);
+
+  useEffect(() => {
+    if (selectedItems.size === 0) {
+      setBulkActionsOpen(false);
+    }
+  }, [selectedItems.size]);
 
   useEffect(() => {
     if (overdueItems.length === 0) setOverdueInfoOpen(false);
@@ -490,6 +502,7 @@ export default function FinanceClientPage({
   const toggleSelectionMode = () => {
     setSelectionMode((prev) => !prev);
     setSelectedItems(new Set());
+    setBulkActionsOpen(false);
     setBulkError(null);
     setBulkMessage(null);
   };
@@ -499,18 +512,21 @@ export default function FinanceClientPage({
     if (next.has(itemId)) next.delete(itemId);
     else next.add(itemId);
     setSelectedItems(next);
+    setBulkActionsOpen(false);
     setBulkError(null);
     setBulkMessage(null);
   };
 
   const handleSelectVisibleItems = () => {
     setSelectedItems(new Set(selectableVisibleItems.map((item) => item.id)));
+    setBulkActionsOpen(false);
     setBulkError(null);
     setBulkMessage(null);
   };
 
   const handleClearSelectedItems = () => {
     setSelectedItems(new Set());
+    setBulkActionsOpen(false);
     setBulkError(null);
     setBulkMessage(null);
   };
@@ -732,17 +748,28 @@ export default function FinanceClientPage({
       {/* SELECT DE QUADRO */}
       {boards.length > 0 && (
         <div className="pt-3 pb-1">
-          <div className="flex items-center justify-between gap-2">
+          <div className="finance-surface flex items-center justify-between gap-2 rounded-2xl border p-2 shadow-sm">
             <button
               type="button"
               onClick={() => setShowBoardPicker((prev) => !prev)}
-              className="inline-flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] text-xs font-semibold border border-[var(--color-border)] transition"
+              className="min-w-0 flex-1 inline-flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px] rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] text-xs font-semibold transition"
               aria-expanded={showBoardPicker}
             >
-              <FiList size={16} />
-              <span className="truncate max-w-[160px]">
-                {boardName}
+              <span className="min-w-0 inline-flex items-center gap-2">
+                <FiList size={16} className="shrink-0" />
+                <span className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">
+                    {t("boardLabel")}
+                  </span>
+                  <span className="block truncate text-sm text-[var(--color-text-primary)]">
+                    {boardName}
+                  </span>
+                </span>
               </span>
+              <FiChevronDown
+                size={16}
+                className={`shrink-0 transition-transform ${showBoardPicker ? "rotate-180" : ""}`}
+              />
             </button>
 
             {/* Desktop: ações secundárias visíveis */}
@@ -810,10 +837,7 @@ export default function FinanceClientPage({
           </div>
 
           {showBoardPicker && (
-            <div className="mt-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl px-3 py-3 shadow-sm">
-              <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] mb-2">
-                {t("boardLabel")}
-              </label>
+            <div className="mt-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-3 shadow-sm">
               <select
                 value={currentBoardId ?? ""}
                 onChange={(e) => handleBoardChange(e.target.value)}
@@ -880,48 +904,33 @@ export default function FinanceClientPage({
 
         <div className="mb-4 flex flex-col items-center text-center">
           <p className="text-blue-100 text-sm mb-1">{t("balanceTitle")}</p>
-          <div className="flex items-center justify-center gap-3">
-            <h2 className="text-4xl font-extrabold"><PrivacyValue>{currency(balance)}</PrivacyValue></h2>
-            <button
-              type="button"
-              onClick={togglePrivacy}
-              className={`min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition ${
-                privacyEnabled
-                  ? "bg-white/25 text-white"
-                  : "bg-white/10 hover:bg-white/15 text-blue-100"
-              }`}
-              aria-pressed={privacyEnabled}
-              aria-label={privacyEnabled ? t("privacyModeActiveAria") : t("privacyModeInactiveAria")}
-            >
-              {privacyEnabled ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-            </button>
-          </div>
+          <h2 className="text-4xl font-extrabold"><PrivacyValue>{currency(balance)}</PrivacyValue></h2>
           <button
             type="button"
             onClick={() => setShowAccumulatedBalance((prev) => !prev)}
-            className="mt-2 inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-blue-50 transition"
+            className="mt-2 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-blue-50 transition"
             aria-expanded={showAccumulatedBalance}
           >
-            <FiEye size={13} />
+            <FiChevronDown
+              size={13}
+              className={`transition-transform ${showAccumulatedBalance ? "rotate-180" : ""}`}
+            />
             {t("accumulatedBalanceToggle")}
           </button>
           {showAccumulatedBalance && (
-            <div className="mt-2 flex w-full max-w-sm flex-col items-stretch rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
+            <div className="mt-2 grid w-full max-w-sm gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-xs text-blue-50">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-blue-100">{t("previousMonthBalanceLabel")}</span>
                 <PrivacyValue><span className="font-semibold">{currency(previousMonthCashBalance)}</span></PrivacyValue>
               </div>
-              <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
+              <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-1">
                 <span className="text-blue-100">{t("previousBalanceLabel")}</span>
                 <PrivacyValue><span className="font-semibold">{currency(previousCashBalance)}</span></PrivacyValue>
               </div>
-              <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-1">
+              <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-1">
                 <span className="text-blue-100">{t("accumulatedBalanceLabel")}</span>
                 <PrivacyValue><span className="font-bold">{currency(accumulatedBalance)}</span></PrivacyValue>
               </div>
-              <span className="mt-1 text-left text-[10px] text-blue-100">
-                {t("accumulatedBalanceHint")}
-              </span>
             </div>
           )}
         </div>
@@ -961,8 +970,30 @@ export default function FinanceClientPage({
       <div className="mt-3 mb-3 space-y-2">
         {/* Tabs — scrollable on mobile */}
         <div className="flex items-center gap-2">
+          <label className="sr-only" htmlFor="finance-view-select">
+            {t("sectionSelectLabel")}
+          </label>
+          <select
+            id="finance-view-select"
+            value={activeView}
+            onChange={(e) => handleViewChange(e.target.value as FinanceView)}
+            className="md:hidden w-full min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {[
+              ["list", t("tabListLabel")],
+              ["planning", t("tabPlanningLabel")],
+              ["debts", t("tabDebtsLabel")],
+              ["metrics", t("tabMetricsLabel")],
+              ["cards", t("tabCardsLabel")],
+              ["goals", t("tabGoalsLabel")],
+            ].map(([view, label]) => (
+              <option key={view} value={view}>
+                {label}
+              </option>
+            ))}
+          </select>
           <div
-            className="flex-1 flex overflow-x-auto scroll-smooth scrollbar-hide bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold"
+            className="hidden md:flex flex-1 overflow-x-auto scroll-smooth scrollbar-hide bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-xl p-1 text-xs font-semibold"
             role="tablist"
           >
             {[
@@ -1072,23 +1103,41 @@ export default function FinanceClientPage({
 
       {/* ALERTA DE ATRASO – só na aba Lista, em colapse */}
       {activeView === "list" && (
-        <div className="mb-3">
+        <div className="mb-3 rounded-2xl border bg-[var(--color-surface)] p-2.5 shadow-sm" style={{ borderColor: "var(--color-border)" }}>
           <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
-              placeholder={t("searchByNamePlaceholder")}
-              className="flex-1 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+            <div className="relative min-w-0 flex-1">
+              <FiSearch
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+              />
+              <input
+                type="text"
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                placeholder={t("searchByNamePlaceholder")}
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-2.5 pl-9 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
 
-            <input
-              type="text"
-              value={tagFilter}
-              onChange={(e) => setTagFilter(e.target.value)}
-              placeholder={t("filterByTagPlaceholder")}
-              className="w-28 p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((prev) => !prev)}
+              className={`relative inline-flex min-h-[42px] min-w-[42px] items-center justify-center rounded-xl border transition md:min-w-0 md:px-3 md:gap-2 ${
+                filtersOpen || activeFilterCount > 0
+                  ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              }`}
+              aria-expanded={filtersOpen}
+              aria-label={t("filtersButton")}
+            >
+              <FiFilter size={17} />
+              <span className="hidden text-xs font-semibold md:inline">{t("filtersButton")}</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-accent-primary)] px-1 text-[10px] font-bold text-white md:static md:ml-1">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
 
             {overdueItems.length > 0 && (
               <div className="relative">
@@ -1134,11 +1183,18 @@ export default function FinanceClientPage({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className={`${filtersOpen || activeFilterCount > 0 ? "grid" : "hidden"} mt-2 gap-2 md:grid md:grid-cols-5`}>
+            <input
+              type="text"
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
+              placeholder={t("filterByTagPlaceholder")}
+              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="all">{t("filterTypeAll")}</option>
               <option value="income">{t("filterTypeIncome")}</option>
@@ -1148,7 +1204,7 @@ export default function FinanceClientPage({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="all">{t("filterStatusAll")}</option>
               <option value="paid">{t("filterStatusPaid")}</option>
@@ -1156,13 +1212,10 @@ export default function FinanceClientPage({
               <option value="pending">{t("filterStatusPending")}</option>
               <option value="moved">{t("filterStatusMoved")}</option>
             </select>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
             <select
               value={dueFilter}
               onChange={(e) => setDueFilter(e.target.value as typeof dueFilter)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="all">{t("filterDueAll")}</option>
               <option value="overdue">{t("filterDueOverdue")}</option>
@@ -1176,7 +1229,7 @@ export default function FinanceClientPage({
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as FinanceListSort)}
-              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-primary)] shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="dateAsc">{t("sortDateAsc")}</option>
               <option value="dateDesc">{t("sortDateDesc")}</option>
@@ -1337,45 +1390,60 @@ export default function FinanceClientPage({
 
       {
         activeView === "list" && selectionMode && selectedItems.size > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 finance-surface border shadow-xl rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3 z-50 animate-in fade-in slide-in-from-bottom-4 max-w-[calc(100vw-2rem)]">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
-              <span className={`text-lg font-bold ${selectedTotal >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
-                <PrivacyValue>{currency(selectedTotal)}</PrivacyValue>
-              </span>
-            </div>
-            <div className="h-8 w-px bg-[var(--color-border)] mx-1" />
-            <span className="text-xs text-[var(--color-text-muted)] font-medium">
-              {selectedActionableItems.length} {selectedActionableItems.length === 1 ? t("itemSingular") : t("itemPlural")}
-            </span>
-            <div className="flex items-center gap-2">
+          <div className="fixed bottom-6 left-1/2 z-50 grid w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 gap-3 rounded-2xl border finance-surface px-4 py-3 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">{t("selectedTotalLabel")}</span>
+                <span className={`text-lg font-bold ${selectedTotal >= 0 ? "finance-success-text" : "finance-danger-text"}`}>
+                  <PrivacyValue>{currency(selectedTotal)}</PrivacyValue>
+                </span>
+                <span className="text-xs text-[var(--color-text-muted)] font-medium">
+                  {selectedActionableItems.length} {selectedActionableItems.length === 1 ? t("itemSingular") : t("itemPlural")}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => handleBulkAction("pay")}
-                disabled={!!bulkLoading || selectedPayableItems.length === 0}
-                className="px-3 py-2 rounded-xl bg-[var(--color-success-strong)] text-white text-xs font-bold disabled:opacity-60"
+                onClick={() => setBulkActionsOpen((prev) => !prev)}
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 text-xs font-bold text-[var(--color-text-primary)]"
+                aria-expanded={bulkActionsOpen}
               >
-                {bulkLoading === "pay" ? t("bulkLoading") : t("bulkPay")}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleBulkAction("move")}
-                disabled={!!bulkLoading || selectedMovableItems.length === 0}
-                className="px-3 py-2 rounded-xl bg-[var(--color-accent-primary)] text-white text-xs font-bold disabled:opacity-60"
-              >
-                {bulkLoading === "move" ? t("bulkLoading") : t("bulkMove")}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleBulkAction("delete")}
-                disabled={!!bulkLoading || selectedDeletableItems.length === 0}
-                className="px-3 py-2 rounded-xl bg-[var(--color-danger-strong)] text-white text-xs font-bold disabled:opacity-60"
-              >
-                {bulkLoading === "delete" ? t("bulkLoading") : t("bulkDelete")}
+                {t("bulkActionsButton")}
+                <FiChevronDown
+                  size={14}
+                  className={`transition-transform ${bulkActionsOpen ? "rotate-180" : ""}`}
+                />
               </button>
             </div>
+            {bulkActionsOpen && (
+              <div className="grid grid-cols-3 gap-2 border-t border-[var(--color-border)] pt-3">
+                <button
+                  type="button"
+                  onClick={() => handleBulkAction("pay")}
+                  disabled={!!bulkLoading || selectedPayableItems.length === 0}
+                  className="px-3 py-2 rounded-xl bg-[var(--color-success-strong)] text-white text-xs font-bold disabled:opacity-60"
+                >
+                  {bulkLoading === "pay" ? t("bulkLoading") : t("bulkPay")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkAction("move")}
+                  disabled={!!bulkLoading || selectedMovableItems.length === 0}
+                  className="px-3 py-2 rounded-xl bg-[var(--color-accent-primary)] text-white text-xs font-bold disabled:opacity-60"
+                >
+                  {bulkLoading === "move" ? t("bulkLoading") : t("bulkMove")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkAction("delete")}
+                  disabled={!!bulkLoading || selectedDeletableItems.length === 0}
+                  className="px-3 py-2 rounded-xl bg-[var(--color-danger-strong)] text-white text-xs font-bold disabled:opacity-60"
+                >
+                  {bulkLoading === "delete" ? t("bulkLoading") : t("bulkDelete")}
+                </button>
+              </div>
+            )}
             {bulkError && (
-              <p className="basis-full text-xs finance-danger-text">{bulkError}</p>
+              <p className="text-xs finance-danger-text">{bulkError}</p>
             )}
           </div>
         )

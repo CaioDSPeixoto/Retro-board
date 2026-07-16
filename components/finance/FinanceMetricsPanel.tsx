@@ -507,7 +507,6 @@ export default function FinanceMetricsPanel({
             boardId={boardId}
             month={currentMonth}
             locale={locale}
-            currency={currency}
           />
         )}
       </div>
@@ -679,14 +678,12 @@ function BudgetEditor({
   boardId,
   month,
   locale,
-  currency,
 }: {
   budgets: FinanceBudget[];
   categories: string[];
   boardId: string;
   month: string;
   locale: string;
-  currency: (v: number) => string;
 }) {
   const t = useTranslations("FinanceMetrics");
   const [open, setOpen] = useState(false);

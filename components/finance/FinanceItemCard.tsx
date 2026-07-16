@@ -91,6 +91,7 @@ export default function FinanceItemCard({
 
   const isRolled = !!item.carriedFromMonth;
   const isInstallment = !!item.installmentGroupId;
+  const currentMonthKey = new Date().toISOString().slice(0, 7);
 
   const monthParam = item.date.slice(0, 7);
   const boardParam = item.boardId
@@ -654,62 +655,120 @@ export default function FinanceItemCard({
               <p className="text-xs finance-danger-text mb-3">{actionError}</p>
             )}
 
-            <div className="space-y-2">
-              {installmentItems.map((installment) => {
-                const installmentPaid = installment.status === "paid";
-                const installmentPartial = installment.status === "partial";
-                const installmentCanDelete =
-                  !installment.isSynthetic && !installmentPaid && !installmentPartial;
-                const installmentCanEdit =
-                  !!onEdit && !installment.isSynthetic && !installmentPaid && !installmentPartial;
+            <div className="space-y-4">
+              {(["past", "current", "future"] as const).map((period) => {
+                const periodRows = installmentItems
+                  .filter((installment) => {
+                    const installmentMonth = installment.date.slice(0, 7);
+                    if (period === "past") return installmentMonth < currentMonthKey;
+                    if (period === "current") return installmentMonth === currentMonthKey;
+                    return installmentMonth > currentMonthKey;
+                  })
+                  .toSorted((left, right) => {
+                    const leftIndex = left.installmentIndex ?? 0;
+                    const rightIndex = right.installmentIndex ?? 0;
+                    return left.date.localeCompare(right.date) || leftIndex - rightIndex;
+                  });
+
+                if (periodRows.length === 0) return null;
+
+                const periodLabel =
+                  period === "past"
+                    ? t("installmentsPast")
+                    : period === "current"
+                      ? t("installmentsCurrent")
+                      : t("installmentsFuture");
 
                 return (
-                  <div
-                    key={installment.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
-                        {installment.title}
-                      </p>
-                      <p className="text-[11px] text-[var(--color-text-muted)]">
-                        {format(parseISO(installment.date), "P", { locale: dateLocale })} · <PrivacyValue>{formatCurrency(installment.amount)}</PrivacyValue>
-                      </p>
+                  <div key={period} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="h-px flex-1 bg-[var(--color-border)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+                        {periodLabel}
+                      </span>
+                      <span className="h-px flex-1 bg-[var(--color-border)]" />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">
-                        {installment.status === "paid"
-                          ? installment.type === "income" ? t("statusReceived") : t("statusPaid")
-                          : installment.status === "partial"
-                            ? t("statusPartial")
-                            : installment.status === "moved"
-                              ? t("statusMoved")
-                              : t("statusPending")}
-                      </span>
-                      {installmentCanEdit && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setInstallmentsOpen(false);
-                            onEdit?.(installment);
-                          }}
-                          className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)]"
-                          aria-label={t("editAria")}
+                    {periodRows.map((installment) => {
+                      const installmentPaid = installment.status === "paid";
+                      const installmentPartial = installment.status === "partial";
+                      const installmentCanDelete =
+                        !installment.isSynthetic && !installmentPaid && !installmentPartial;
+                      const installmentCanEdit =
+                        !!onEdit && !installment.isSynthetic && !installmentPaid && !installmentPartial;
+                      const statusLabel = installment.status === "paid"
+                        ? installment.type === "income" ? t("statusReceived") : t("statusPaid")
+                        : installment.status === "partial"
+                          ? t("statusPartial")
+                          : installment.status === "moved"
+                            ? t("statusMoved")
+                            : t("statusPending");
+
+                      return (
+                        <div
+                          key={installment.id}
+                          className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${
+                            installmentPaid
+                              ? "finance-success-soft"
+                              : installmentPartial
+                                ? "finance-warning-soft"
+                                : period === "past"
+                                  ? "finance-danger-soft"
+                                  : "border-[var(--color-border)] bg-[var(--color-surface)]"
+                          }`}
                         >
-                          <FiEdit2 size={16} />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteInstallment(installment.id)}
-                        disabled={!installmentCanDelete || deleting}
-                        className="text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)] disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label={t("deleteAria")}
-                      >
-                        {deleting ? <Spinner size="sm" color="gray" /> : <FiTrash2 size={16} />}
-                      </button>
-                    </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+                                {installment.title}
+                              </p>
+                              {installment.installmentIndex && installment.installmentTotal && (
+                                <span className="shrink-0 rounded-full bg-[var(--color-surface)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-text-muted)]">
+                                  {installment.installmentIndex}/{installment.installmentTotal}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[var(--color-text-muted)]">
+                              {format(parseISO(installment.date), "P", { locale: dateLocale })} · <PrivacyValue>{formatCurrency(installment.amount)}</PrivacyValue>
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${
+                              installmentPaid
+                                ? "finance-success-text"
+                                : installmentPartial
+                                  ? "finance-warning-text"
+                                  : "text-[var(--color-text-muted)]"
+                            }`}>
+                              {statusLabel}
+                            </span>
+                            {installmentCanEdit && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setInstallmentsOpen(false);
+                                  onEdit?.(installment);
+                                }}
+                                className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-primary)]"
+                                aria-label={t("editAria")}
+                              >
+                                <FiEdit2 size={16} />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteInstallment(installment.id)}
+                              disabled={!installmentCanDelete || deleting}
+                              className="text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)] disabled:opacity-40 disabled:cursor-not-allowed"
+                              aria-label={t("deleteAria")}
+                            >
+                              {deleting ? <Spinner size="sm" color="gray" /> : <FiTrash2 size={16} />}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}

@@ -11,14 +11,19 @@ import {
   query,
   where,
   type DocumentData,
-  type QueryDocumentSnapshot,
   type QuerySnapshot,
 } from "firebase/firestore";
 import { useTranslations } from "next-intl";
 import { auth, db } from "@/lib/firebase";
-import type { FinanceItem } from "@/types/finance";
+import type { FinanceBoard, FinanceBoardInvite, FinanceCard, FinanceItem, FinanceSavingsGoal } from "@/types/finance";
 import { getOpenAmount } from "@/lib/finance/calculations";
-import { mapFinanceItem } from "@/lib/finance/schema";
+import {
+  mapFinanceBoard,
+  mapFinanceBoardInvite,
+  mapFinanceCard,
+  mapFinanceItem,
+  mapFinanceSavingsGoal,
+} from "@/lib/finance/schema";
 
 function isOpenItem(item: FinanceItem) {
   return !item.isSynthetic && item.status !== "paid" && item.status !== "moved" && getOpenAmount(item) > 0;
@@ -29,6 +34,13 @@ type Props = {
 };
 
 const NOTIFICATION_PREVIEW_LIMIT = 3;
+
+type NotificationRow = {
+  id: string;
+  title: string;
+  date: string;
+  href: string;
+};
 
 function getFinanceNotificationHref(
   item: FinanceItem,
@@ -48,6 +60,9 @@ function getFinanceNotificationHref(
 export default function FinanceNotificationBell({ locale }: Props) {
   const t = useTranslations("FinancePage");
   const [items, setItems] = useState<FinanceItem[]>([]);
+  const [cards, setCards] = useState<FinanceCard[]>([]);
+  const [invites, setInvites] = useState<FinanceBoardInvite[]>([]);
+  const [goals, setGoals] = useState<FinanceSavingsGoal[]>([]);
   const [open, setOpen] = useState(false);
   const [available, setAvailable] = useState(false);
 
@@ -57,15 +72,29 @@ export default function FinanceNotificationBell({ locale }: Props) {
 
   useEffect(() => {
     let unsubscribePersonalItems: (() => void) | null = null;
-    let unsubscribeBoards: (() => void) | null = null;
+    let unsubscribeMemberBoards: (() => void) | null = null;
+    let unsubscribeOwnedBoards: (() => void) | null = null;
+    let unsubscribeCards: (() => void) | null = null;
+    let unsubscribeEmailInvites: (() => void) | null = null;
+    let unsubscribeOwnerInvites: (() => void) | null = null;
     let unsubscribeBoardItems: Array<() => void> = [];
+    let unsubscribeBoardGoals: Array<() => void> = [];
 
     const itemMap = new Map<string, FinanceItem>();
+    const boardMap = new Map<string, FinanceBoard>();
+    const goalMap = new Map<string, FinanceSavingsGoal>();
+    const inviteMap = new Map<string, FinanceBoardInvite>();
     const publishItems = () => setItems(Array.from(itemMap.values()));
+    const publishGoals = () => setGoals(Array.from(goalMap.values()));
+    const publishInvites = () => setInvites(Array.from(inviteMap.values()));
 
     const clearBoardItemListeners = () => {
       unsubscribeBoardItems.forEach((unsubscribe) => unsubscribe());
       unsubscribeBoardItems = [];
+    };
+    const clearBoardGoalListeners = () => {
+      unsubscribeBoardGoals.forEach((unsubscribe) => unsubscribe());
+      unsubscribeBoardGoals = [];
     };
 
     const applySnapshot = (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
@@ -80,17 +109,99 @@ export default function FinanceNotificationBell({ locale }: Props) {
       publishItems();
     };
 
+    const rebuildBoardListeners = () => {
+      clearBoardItemListeners();
+      clearBoardGoalListeners();
+      Array.from(itemMap.entries()).forEach(([id, item]) => {
+        if (item.boardId) itemMap.delete(id);
+      });
+      goalMap.clear();
+      publishItems();
+      publishGoals();
+
+      boardMap.forEach((board) => {
+        const unsubscribeBoardItemsListener = onSnapshot(
+          query(
+            collection(db, "finance_items"),
+            where("boardId", "==", board.id),
+            where("date", "<=", dueSoonLimit),
+          ),
+          applySnapshot,
+          () => undefined,
+        );
+        unsubscribeBoardItems.push(unsubscribeBoardItemsListener);
+
+        const unsubscribeBoardGoalsListener = onSnapshot(
+          query(collection(db, "finance_goals"), where("boardId", "==", board.id)),
+          (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+              if (change.type === "removed") {
+                goalMap.delete(change.doc.id);
+                return;
+              }
+              goalMap.set(change.doc.id, mapFinanceSavingsGoal(change.doc));
+            });
+            publishGoals();
+          },
+          () => undefined,
+        );
+        unsubscribeBoardGoals.push(unsubscribeBoardGoalsListener);
+      });
+    };
+
+    const applyBoardSnapshot = (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "removed") {
+          boardMap.delete(change.doc.id);
+          return;
+        }
+        boardMap.set(change.doc.id, mapFinanceBoard(change.doc));
+      });
+      rebuildBoardListeners();
+    };
+
+    const applyInviteSnapshot = (snapshot: QuerySnapshot<DocumentData, DocumentData>) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "removed") {
+          inviteMap.delete(change.doc.id);
+          return;
+        }
+        const invite = mapFinanceBoardInvite(change.doc);
+        if (invite.status === "pending") {
+          inviteMap.set(invite.id, invite);
+        } else {
+          inviteMap.delete(invite.id);
+        }
+      });
+      publishInvites();
+    };
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       unsubscribePersonalItems?.();
       unsubscribePersonalItems = null;
-      unsubscribeBoards?.();
-      unsubscribeBoards = null;
+      unsubscribeMemberBoards?.();
+      unsubscribeMemberBoards = null;
+      unsubscribeOwnedBoards?.();
+      unsubscribeOwnedBoards = null;
+      unsubscribeCards?.();
+      unsubscribeCards = null;
+      unsubscribeEmailInvites?.();
+      unsubscribeEmailInvites = null;
+      unsubscribeOwnerInvites?.();
+      unsubscribeOwnerInvites = null;
       clearBoardItemListeners();
+      clearBoardGoalListeners();
       itemMap.clear();
+      boardMap.clear();
+      goalMap.clear();
+      inviteMap.clear();
 
       if (!user) {
         setAvailable(false);
         setItems([]);
+        setCards([]);
+        setGoals([]);
+        setInvites([]);
         return;
       }
 
@@ -109,38 +220,66 @@ export default function FinanceNotificationBell({ locale }: Props) {
         },
       );
 
-      unsubscribeBoards = onSnapshot(
+      unsubscribeCards = onSnapshot(
+        query(collection(db, "finance_cards"), where("userId", "==", user.uid)),
+        (snapshot) => {
+          const nextCards: FinanceCard[] = [];
+          snapshot.forEach((cardDoc) => nextCards.push(mapFinanceCard(cardDoc)));
+          setCards(nextCards);
+        },
+        () => setCards([]),
+      );
+
+      if (user.email) {
+        unsubscribeEmailInvites = onSnapshot(
+          query(
+            collection(db, "finance_board_invites"),
+            where("status", "==", "pending"),
+            where("email", "==", user.email.toLowerCase()),
+          ),
+          applyInviteSnapshot,
+          () => undefined,
+        );
+      }
+
+      unsubscribeOwnerInvites = onSnapshot(
+        query(
+          collection(db, "finance_board_invites"),
+          where("status", "==", "pending"),
+          where("ownerId", "==", user.uid),
+        ),
+        applyInviteSnapshot,
+        () => undefined,
+      );
+
+      unsubscribeMemberBoards = onSnapshot(
         query(
           collection(db, "finance_boards"),
           where("memberIds", "array-contains", user.uid),
         ),
-        (snapshot) => {
-          clearBoardItemListeners();
-          Array.from(itemMap.entries()).forEach(([id, item]) => {
-            if (item.boardId) itemMap.delete(id);
-          });
-          publishItems();
+        applyBoardSnapshot,
+        () => undefined,
+      );
 
-          snapshot.forEach((boardDoc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
-            const unsubscribeBoardListener = onSnapshot(
-              query(
-                collection(db, "finance_items"),
-                where("boardId", "==", boardDoc.id),
-                where("date", "<=", dueSoonLimit),
-              ),
-              applySnapshot,
-              () => undefined,
-            );
-            unsubscribeBoardItems.push(unsubscribeBoardListener);
-          });
-        },
+      unsubscribeOwnedBoards = onSnapshot(
+        query(
+          collection(db, "finance_boards"),
+          where("ownerId", "==", user.uid),
+        ),
+        applyBoardSnapshot,
+        () => undefined,
       );
     });
 
     return () => {
       unsubscribePersonalItems?.();
-      unsubscribeBoards?.();
+      unsubscribeMemberBoards?.();
+      unsubscribeOwnedBoards?.();
+      unsubscribeCards?.();
+      unsubscribeEmailInvites?.();
+      unsubscribeOwnerInvites?.();
       clearBoardItemListeners();
+      clearBoardGoalListeners();
       unsubscribeAuth();
     };
   }, [dueSoonLimit]);
@@ -161,8 +300,51 @@ export default function FinanceNotificationBell({ locale }: Props) {
   const partialItems = items.filter(
     (item) => !item.isSynthetic && item.status === "partial" && getOpenAmount(item) > 0,
   );
+
+  const pendingInvites = invites.filter((invite) => invite.status === "pending");
+  const completedGoals = goals.filter((goal) => goal.targetAmount > 0 && goal.currentAmount >= goal.targetAmount);
+  const cardDueRows = cards
+    .filter((card) => card.mode === "credit" && !!card.dueDay)
+    .map((card) => {
+      const todayDate = new Date();
+      const dueDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), Number(card.dueDay));
+      const dateKey = format(dueDate, "yyyy-MM-dd");
+      return {
+        id: card.id,
+        title: card.lastDigits ? `${card.name} final ${card.lastDigits}` : card.name,
+        date: dateKey,
+        href: `/${locale}/tools/finance?view=cards`,
+      };
+    })
+    .filter((card) => card.date <= dueSoonLimit);
+
+  const overdueCardRows = cardDueRows.filter((card) => card.date < today);
+  const dueSoonCardRows = cardDueRows.filter((card) => card.date >= today);
+
+  const inviteRows: NotificationRow[] = pendingInvites.map((invite) => ({
+    id: invite.id,
+    title: invite.boardName,
+    date: invite.createdAt.slice(0, 10),
+    href: `/${locale}/tools/finance`,
+  }));
+  const completedGoalRows: NotificationRow[] = completedGoals.map((goal) => ({
+    id: goal.id,
+    title: goal.title,
+    date: goal.deadline || goal.createdAt.slice(0, 10),
+    href: `/${locale}/tools/finance?boardId=${encodeURIComponent(goal.boardId)}&view=goals`,
+  }));
+
   const notificationCount = new Set(
-    [...overdueItems, ...dueTomorrowItems, ...dueSoonItems, ...partialItems].map((item) => item.id),
+    [
+      ...overdueItems.map((item) => `item:${item.id}`),
+      ...dueTomorrowItems.map((item) => `item:${item.id}`),
+      ...dueSoonItems.map((item) => `item:${item.id}`),
+      ...partialItems.map((item) => `item:${item.id}`),
+      ...pendingInvites.map((invite) => `invite:${invite.id}`),
+      ...overdueCardRows.map((card) => `card:${card.id}:overdue`),
+      ...dueSoonCardRows.map((card) => `card:${card.id}:soon`),
+      ...completedGoals.map((goal) => `goal:${goal.id}`),
+    ],
   ).size;
 
   if (!available) return null;
@@ -192,6 +374,41 @@ export default function FinanceNotificationBell({ locale }: Props) {
             >
               <span className="min-w-0 truncate">{item.title}</span>
               <span className="shrink-0 text-[var(--color-text-muted)]">{item.date}</span>
+            </Link>
+          ))}
+        </div>
+        {hiddenCount > 0 && (
+          <p className="mt-1 px-2 text-[11px] text-[var(--color-text-muted)]">
+            {t("notificationMoreItems", { count: hiddenCount })}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const renderRowNotificationGroup = (
+    rows: NotificationRow[],
+    label: string,
+    className: string,
+  ) => {
+    const previewRows = rows
+      .toSorted((left, right) => left.date.localeCompare(right.date) || left.title.localeCompare(right.title))
+      .slice(0, NOTIFICATION_PREVIEW_LIMIT);
+    const hiddenCount = Math.max(rows.length - previewRows.length, 0);
+
+    return (
+      <div className="rounded-lg border border-[var(--color-border)] p-2">
+        <p className={`font-semibold ${className}`}>{label}</p>
+        <div className="mt-1 space-y-1">
+          {previewRows.map((row) => (
+            <Link
+              key={row.id}
+              href={row.href}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2 rounded-md px-2 py-1 text-[11px] text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]"
+            >
+              <span className="min-w-0 truncate">{row.title}</span>
+              <span className="shrink-0 text-[var(--color-text-muted)]">{row.date}</span>
             </Link>
           ))}
         </div>
@@ -266,6 +483,34 @@ export default function FinanceNotificationBell({ locale }: Props) {
                   t("notificationPartial", { count: partialItems.length }),
                   "text-[var(--color-text-secondary)]",
                   { status: "partial" },
+                )
+              )}
+              {pendingInvites.length > 0 && (
+                renderRowNotificationGroup(
+                  inviteRows,
+                  t("notificationInvites", { count: pendingInvites.length }),
+                  "text-[var(--color-accent-text)]",
+                )
+              )}
+              {overdueCardRows.length > 0 && (
+                renderRowNotificationGroup(
+                  overdueCardRows,
+                  t("notificationCardOverdue", { count: overdueCardRows.length }),
+                  "finance-warning-text",
+                )
+              )}
+              {dueSoonCardRows.length > 0 && (
+                renderRowNotificationGroup(
+                  dueSoonCardRows,
+                  t("notificationCardDueSoon", { count: dueSoonCardRows.length }),
+                  "text-[var(--color-accent-text)]",
+                )
+              )}
+              {completedGoals.length > 0 && (
+                renderRowNotificationGroup(
+                  completedGoalRows,
+                  t("notificationGoalsReached", { count: completedGoals.length }),
+                  "finance-success-text",
                 )
               )}
             </div>

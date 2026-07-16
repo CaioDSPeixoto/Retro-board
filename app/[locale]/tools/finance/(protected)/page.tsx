@@ -18,7 +18,7 @@ import {
 import { getBudgetsForMonth } from "./budget-actions";
 import { getSavingsGoals } from "./goals-actions";
 import { getTemplates } from "./template-actions";
-import type { FinanceBoard, FinanceItem, FinanceCard, FinanceDebt, FinanceDebtPayment } from "@/types/finance";
+import type { FinanceBoard, FinanceItem } from "@/types/finance";
 import type { FinanceStatus } from "@/types/finance";
 import { getSession } from "@/lib/auth/session";
 import { createProjectedFixedItems } from "@/lib/finance/fixed-projection";

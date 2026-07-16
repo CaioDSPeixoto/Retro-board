@@ -3,7 +3,6 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 import { mapFinanceSavingsGoal } from "@/lib/finance/schema";
 import { checkActionRateLimit } from "@/lib/security/action-guard";
 import type { FinanceSavingsGoal } from "@/types/finance";

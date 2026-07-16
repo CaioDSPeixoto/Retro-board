@@ -206,9 +206,9 @@ export default function FinanceFormModal({
       : "";
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div
-        className="relative w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto border"
+        className="relative w-full sm:w-[440px] rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 animate-slide-up sm:animate-fade-in shadow-2xl max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto border"
         style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
         {isPending && (
@@ -227,8 +227,10 @@ export default function FinanceFormModal({
             </div>
           </div>
         )}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+        <div className="sticky -top-4 sm:-top-6 z-[1] -mx-4 sm:-mx-6 mb-3 flex justify-between items-center border-b px-4 py-3 sm:px-6"
+          style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        >
+          <h2 className="text-lg sm:text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             {isEditMode ? t("editTransactionTitle") : t("newTransactionTitle")}
           </h2>
           <button
@@ -279,7 +281,7 @@ export default function FinanceFormModal({
             startTransition(() => router.refresh());
             onClose();
           }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3 sm:gap-4"
         >
           {isEditMode && initialItem && (
             <>
@@ -568,7 +570,7 @@ export default function FinanceFormModal({
             </div>
 
             {/* Valor + Data */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
               <div className="flex-1">
                 <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
                   {t("amountLabel")}
@@ -618,9 +620,9 @@ export default function FinanceFormModal({
             </div>
 
             {showAdvanced && (
-              <>
+              <div className="mt-1 rounded-2xl border p-3 space-y-3" style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}>
                 {/* Notas */}
-                <div className="mt-2">
+                <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
                     {t("notesLabel")}
                   </label>
@@ -630,13 +632,13 @@ export default function FinanceFormModal({
                     maxLength={500}
                     placeholder={t("notesPlaceholder")}
                     defaultValue={initialItem?.notes ?? ""}
-                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all resize-none text-sm"
-                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                    className="w-full p-3 rounded-xl border focus:border-blue-500 outline-none transition-all resize-none text-sm"
+                    style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
                   />
                 </div>
 
                 {/* Tags */}
-                <div className="mt-2">
+                <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--color-text-muted)" }}>
                     {t("tagsLabel")}
                   </label>
@@ -644,8 +646,8 @@ export default function FinanceFormModal({
                     name="tags"
                     placeholder={t("tagsPlaceholder")}
                     defaultValue={initialItem?.tags?.join(", ") ?? ""}
-                    className="w-full p-3 rounded-xl border-2 border-transparent focus:border-blue-500 outline-none transition-all text-sm"
-                    style={{ background: "var(--color-surface-raised)", color: "var(--color-text-primary)" }}
+                    className="w-full p-3 rounded-xl border focus:border-blue-500 outline-none transition-all text-sm"
+                    style={{ background: "var(--color-surface)", borderColor: "var(--color-border)", color: "var(--color-text-primary)" }}
                   />
                   <p className="text-[11px] mt-1 px-1" style={{ color: "var(--color-text-muted)" }}>
                     {t("tagsHint")}
@@ -654,14 +656,14 @@ export default function FinanceFormModal({
 
                 {/* Parcelamento (somente na criação, discreto) */}
                 {!isEditMode && (
-                  <div className="mt-1 space-y-2">
-                    <div className="flex items-center gap-3 p-1">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         id="useInstallments"
                         checked={useInstallments}
                         onChange={(e) => setUseInstallments(e.target.checked)}
-                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
                       />
                       <label
                         htmlFor="useInstallments"
@@ -703,7 +705,7 @@ export default function FinanceFormModal({
                         name="status"
                         value="paid"
                         id="paid"
-                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer"
                       />
                       <label
                         htmlFor="paid"
@@ -730,7 +732,7 @@ export default function FinanceFormModal({
                         id="isFixed"
                         defaultChecked={false}
                         disabled={!canUseFixed}
-                        className="w-5 h-5 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-accent-primary)] focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       <label
                         htmlFor="isFixed"
@@ -747,7 +749,7 @@ export default function FinanceFormModal({
                     )}
                   </div>
                 )}
-              </>
+              </div>
             )}
               </>
             )}
@@ -790,7 +792,7 @@ export default function FinanceFormModal({
             <button
               type="submit"
               disabled={isPending}
-              className={`mt-4 w-full py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${type === "income"
+              className={`sticky bottom-0 mt-2 w-full py-3.5 sm:py-4 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] ${type === "income"
                   ? "bg-[var(--color-success-strong)] hover:brightness-110 shadow-green-100/30"
                   : "bg-[var(--color-danger-strong)] hover:brightness-110 shadow-red-100/30"
                 } disabled:opacity-70`}
