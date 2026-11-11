@@ -22,6 +22,12 @@ type Objective = {
   body: string;
 };
 
+type Summary = {
+  title: string;
+  body: string;
+  results?: string[];
+};
+
 function ContactRow({ label, value, href }: { label: string; value?: string; href?: string }) {
   if (!value) return null;
   const content = href ? (
@@ -48,6 +54,7 @@ export default async function ResumePage({
   const t = await getTranslations("Resume");
 
   const header = t.raw("header") as Header;
+  const summary = t.raw("summary") as Summary | undefined;
   const objective = t.raw("objective") as Objective;
   const experience = (t.raw("experience") as ResumeItem[]) ?? [];
   const education = (t.raw("education") as ResumeItem[]) ?? [];
@@ -97,6 +104,28 @@ export default async function ResumePage({
             </div>
           )}
         </div>
+
+        {/* Resumo */}
+        {summary?.title && summary?.body && (
+          <div
+            className="mt-6 rounded-2xl border p-5"
+            style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+          >
+            <h2 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {summary.title}
+            </h2>
+            <p className="mt-2 leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+              {summary.body}
+            </p>
+            {summary.results && summary.results.length > 0 && (
+              <ul className="mt-3 list-disc list-inside text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
+                {summary.results.map((result, index) => (
+                  <li key={`${result}-${index}`}>{result}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Objetivo */}
         {objective?.title && objective?.body && (

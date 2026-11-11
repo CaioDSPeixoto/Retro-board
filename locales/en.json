@@ -53,7 +53,7 @@
     "description": "This site is my personal lab for everyday tools.",
     "ctaTools": "Open tools inventory",
     "aboutTitle": "About me",
-    "aboutBody": "Senior Fullstack Developer with 8+ years of experience, specializing in Back-End and R&D. Building high-performance platforms with .NET, Python, and Generative AI.",
+    "aboutBody": "Senior Fullstack Developer with 8+ years of experience, specializing in Back-End and R&D. Building high-performance platforms with .NET, Python, and Generative AI. Internal go-to person for AI applied to development: MCPs, RAG, vector search, and Kiro adoption across the team.",
     "highlightsTitle": "Superpowers (unconfirmed)",
     "highlights": [
       {
@@ -71,6 +71,10 @@
       {
         "title": "The Last Man Standing",
         "desc": "Available 24/7 (almost), always ready to help with SQL, Infra, planning, or just making coffee."
+      },
+      {
+        "title": "Kiro-man",
+        "desc": "Nickname earned by using and teaching Kiro, AWS's agentic development environment. If AI is involved, I'm probably around."
       }
     ],
     "historyTitle": "Professional Journey",
@@ -114,13 +118,23 @@
       },
       {
         "year": "2025",
-        "text": "Currently a Full Stack Programmer at Havan S.A. (Back to my roots)"
+        "text": "Currently a Back-End Software Engineer at Havan S.A. (Back to my roots)"
+      },
+      {
+        "year": "2026",
+        "text": "On June 3rd I earned the nickname \"Kiro-man\" at Havan, after driving Kiro adoption and starting to run internal AI courses"
+      },
+      {
+        "year": "2026",
+        "text": "Completed the Communication & Public Speaking, Negotiation & Persuasion, and Beyond Generations PDAs at Havan"
       }
     ],
     "stacksTitle": "Stacks & Technologies",
     "stacks": [
       "C#",
       ".NET",
+      "ASP.NET Core",
+      "Entity Framework Core",
       "PostgreSQL",
       "MongoDB",
       "Redis",
@@ -147,6 +161,12 @@
       "Generative AI",
       "LLMs",
       "MCP Server",
+      "Kiro",
+      "RAG",
+      "Embeddings",
+      "pgvector",
+      "LLM Observability",
+      "Prompt Engineering",
       "ChatGPT",
       "CI/CD",
       "Clean Code",
@@ -837,12 +857,20 @@
     },
     "header": {
       "name": "Caio dos Santos Peixoto",
-      "role": "Back-End Developer | Tech Leader",
+      "role": "Senior .NET Fullstack Developer | Generative AI, LLMs & MCP | Python",
       "location": "Brusque, Santa Catarina - Brazil",
       "phone": "",
       "recado": "",
       "email": "caiospeixoto23@gmail.com",
       "linkedin": "caiodspeixoto"
+    },
+    "summary": {
+      "title": "Professional Summary",
+      "body": "Senior Software Engineer (Back-End and Fullstack) with 8+ years building APIs, microservices, and high-performance platforms in .NET (C#, ASP.NET Core) and Python, now focused on applied Generative AI: LLMs, RAG, MCP Servers, and vector search with pgvector. Tech Leader at Havan and Questor, driving architecture decisions, code reviews, standardization, and squad mentoring.",
+      "results": [
+        "Led the Anti-Fraud Analysis Desk for Havan's e-commerce, reducing fraud cases by 90%.",
+        "Reduced operational costs by modernizing flows and eliminating rework."
+      ]
     },
     "objective": {
       "title": "Professional Objective",
@@ -862,26 +890,37 @@
           "Back-End Software Engineer in the R&D team, building scalable and intelligent solutions with .NET, Python, and Generative AI.",
           "Participating in the architectural evolution of internal platforms, applying modern engineering principles to deliver faster, more stable, and efficient systems.",
           "Developing high-performance APIs, services, and integrations using DDD, Clean Architecture, SOLID, automated testing, and decoupling patterns.",
-          "Directly involved in creating intelligent workflows with LLMs, OpenAI API, MCP Server, and pgvector, using AI to automate corporate processes and reduce operational costs."
+          "Building intelligent workflows with LLMs and the OpenAI API, and creating MCP Servers and RAGs with vector search over embeddings (pgvector), plus prompt optimization, using AI to automate corporate processes and reduce operational costs.",
+          "Internal go-to person for Kiro (AWS's agentic development environment), running adoption courses for AI tooling, such as \"From First Steps to Hands-On with Kiro\", covering steerings, skills, MCPs, and practical demos of workspaces and workflows.",
+          "Standardizing and centralizing AI access costs and permissions.",
+          "Standardizing the team's Python architecture: logging, requests, agents, and resource control (CPU and memory).",
+          "Monitoring with Datadog, especially the LLM Observability module, for traceability of AI solutions.",
+          "Refactoring of critical systems, improving performance, traceability, and resilience.",
+          "Building enterprise integrations with RabbitMQ, Redis, WebSockets, Blob Storage, and Docker.",
+          "Technical documentation (ADRs, C4 diagrams, and guidelines), mentoring, and code reviews."
         ]
       },
       {
         "title": "Questor Sistemas — Tech Leader",
         "period": "Nov/2023 — Sep/2025",
         "bullets": [
-          "Continuous system development with a focus on performance and optimization.",
-          "Strategic technology planning and technical support for the development team.",
-          "Agile-based routine, delivering quality while optimizing time and cost."
+          "Technical leadership of development squads, supporting architecture decisions, code reviews, and mentoring.",
+          "Definition and adoption of standards such as DDD, SOLID, Clean Code, and Clean Architecture.",
+          "Development and evolution of back-end APIs and services with .NET, C#, ASP.NET Core, and Entity Framework Core.",
+          "Optimization of existing systems, improving performance and reducing failures.",
+          "Analysis, planning, and adoption of new technologies, taking part in strategic decisions.",
+          "Removing blockers and agile routine (Scrum/Kanban), delivering with quality, less time, and lower cost."
         ]
       },
       {
         "title": "Havan S.A. — Software Developer",
         "period": "Jan/2021 — Sep/2023",
         "bullets": [
-          "Back-end development with .NET Core, DDD, microservices, and RabbitMQ integrations.",
+          "Led the rollout of the Anti-Fraud Analysis Desk, a strategic e-commerce project, reducing fraud cases by 90% with better traceability and validation automation.",
+          "Back-end development with .NET Core, DDD, microservices, and distributed pipelines with RabbitMQ.",
           "Front-end support (AngularJS) and migration to ReactJS.",
-          "SQL Server and MongoDB management, creating queries, views, functions, and procedures.",
-          "Technical leadership: establishing patterns, code review, and production deployments."
+          "SQL Server and MongoDB, creating and optimizing queries, views, functions, and procedures.",
+          "Tech Leader: technical leadership of squads, standards, mentoring, architecture reviews, code review, and production deployments."
         ]
       },
       {
@@ -894,7 +933,7 @@
         ]
       },
       {
-        "title": "FK-Tech Telecomunicações — IT Intern",
+        "title": "FK-Tech Telecomunicações — Web Programmer",
         "period": "2017 — 2019",
         "bullets": [
           "User support and hardware maintenance.",
@@ -930,6 +969,9 @@
       }
     ],
     "courses": [
+      "Beyond Generations: People, Connections & Collaboration, Havan PDA (Nov/2026, 4h)",
+      "Negotiation & Persuasion, Havan PDA / Skribas Educacional (Sep/2026, 8h)",
+      "Communication & Public Speaking, Havan PDA / Skribas Educacional (Sep/2026, 12h)",
       "DevOps Ninja: Docker, Kubernetes & Rancher (2021)",
       "Complete C# — Object-Oriented Programming (2021)",
       "C# OOP + Logic (2020)",
@@ -937,7 +979,7 @@
       "English at Microlins Book2 (Intermediate, 2015–2017)"
     ],
     "extra": [
-      "English: Intermediate (Reading & Writing)",
+      "English: intermediate (reading and writing)",
       "Marital Status: Married",
       "Driver's License: Category A/B"
     ],

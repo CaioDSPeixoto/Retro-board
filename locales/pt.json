@@ -53,7 +53,7 @@
     "description": "Este site é meu laboratório de ferramentas para meu dia a dia.",
     "ctaTools": "Abrir o inventário de ferramentas",
     "aboutTitle": "Sobre mim",
-    "aboutBody": "Desenvolvedor Fullstack Sênior com +8 anos de experiência, especializado em Back-End e P&D, construindo plataformas de alta performance com .NET, Python e IA Generativa. ",
+    "aboutBody": "Desenvolvedor Fullstack Sênior com +8 anos de experiência, especializado em Back-End e P&D, construindo plataformas de alta performance com .NET, Python e IA Generativa. Referência interna em IA aplicada ao desenvolvimento: MCPs, RAG, busca vetorial e adoção do Kiro pelo time.",
     "highlightsTitle": "Superpoderes (não confirmados)",
     "highlights": [
       {
@@ -71,6 +71,10 @@
       {
         "title": "Último a apagar a luz",
         "desc": "Quase um 24/7, sempre pronto pra ajudar com SQL, Infra, mudança, planning, passar café, etc."
+      },
+      {
+        "title": "Kiro-man",
+        "desc": "Apelido que ganhei de tanto usar e ensinar o Kiro, o ambiente de desenvolvimento agêntico da AWS. Se tem IA no meio, provavelmente tem eu junto."
       }
     ],
     "historyTitle": "Minha trajetória profissional",
@@ -114,13 +118,23 @@
       },
       {
         "year": "2025",
-        "text": "Atualmente atuo como Programador Full Stack na Havan S.A. (um bom filho a casa torna)"
+        "text": "Atualmente atuo como Software Engineer Back-End na Havan S.A. (um bom filho a casa torna)"
+      },
+      {
+        "year": "2026",
+        "text": "Em 3 de junho ganhei o apelido de \"Kiro-man\" na Havan, depois de puxar a adoção do Kiro e passar a conduzir cursos internos de IA"
+      },
+      {
+        "year": "2026",
+        "text": "Concluí os PDAs de Comunicação e Oratória, Negociação e Persuasão e Além das Gerações na Havan"
       }
     ],
     "stacksTitle": "Stacks e tecnologias",
     "stacks": [
       "C#",
       ".NET",
+      "ASP.NET Core",
+      "Entity Framework Core",
       "PostgreSQL",
       "MongoDB",
       "Redis",
@@ -147,6 +161,12 @@
       "IA Generativa",
       "LLMs",
       "MCP Server",
+      "Kiro",
+      "RAG",
+      "Embeddings",
+      "pgvector",
+      "LLM Observability",
+      "Engenharia de Prompts",
       "ChatGPT",
       "CI/CD",
       "Clean Code",
@@ -837,12 +857,20 @@
     },
     "header": {
       "name": "Caio dos Santos Peixoto",
-      "role": "Dev Back-End | Tech Leader",
+      "role": "Desenvolvedor .NET Fullstack Sênior | IA Generativa, LLMs e MCP | Python",
       "location": "Brusque, Santa Catarina - Brasil",
       "phone": "",
       "recado": "",
       "email": "caiospeixoto23@gmail.com",
       "linkedin": "caiodspeixoto"
+    },
+    "summary": {
+      "title": "Resumo profissional",
+      "body": "Engenheiro de Software Sênior (Back-End e Fullstack) com mais de 8 anos construindo APIs, microsserviços e plataformas de alta performance em .NET (C#, ASP.NET Core) e Python, hoje com foco em IA Generativa aplicada: LLMs, RAG, MCP Servers e busca vetorial com pgvector. Fui Tech Leader na Havan e na Questor, conduzindo decisões de arquitetura, code reviews, padronizações e mentoria de squads.",
+      "results": [
+        "Liderei a Mesa de Análise Antifraude do e-commerce da Havan, com redução de 90% dos casos de fraude.",
+        "Reduzi custos operacionais ao modernizar fluxos e eliminar retrabalho."
+      ]
     },
     "objective": {
       "title": "Objetivo profissional",
@@ -862,26 +890,37 @@
           "Software Engineer Back-End no time de Pesquisa e Desenvolvimento (P&D), construindo soluções escaláveis e inteligentes com .NET, Python e IA Generativa.",
           "Participo da evolução arquitetural das plataformas internas, aplicando princípios modernos de engenharia para entregar sistemas mais rápidos, estáveis e eficientes.",
           "Desenvolvo APIs, serviços e integrações de alto desempenho, aplicando DDD, Clean Architecture, SOLID, testes automatizados e padrões de desacoplamento.",
-          "Também atuo diretamente na criação de fluxos inteligentes com LLMs, OpenAI API, MCP Server e pgvector, utilizando IA para automatizar processos corporativos e reduzir custos operacionais."
+          "Atuo na criação de fluxos inteligentes com LLMs e OpenAI API, e crio MCP Servers e RAGs com busca vetorial por embeddings (pgvector), além de otimizar prompts, usando IA para automatizar processos corporativos e reduzir custos operacionais.",
+          "Sou referência interna no uso do Kiro (ambiente de desenvolvimento agêntico da AWS) e conduzo cursos de incentivo ao uso de IA, como \"Dos primeiros passos à mão na massa com Kiro\", com steerings, skills, MCPs e demonstrações práticas de workspace e workflows.",
+          "Padronizo e centralizo custos e permissões de acesso à IA.",
+          "Padronizo a arquitetura Python do time: logs, requisições, agentes e controle de recursos (CPU e memória).",
+          "Acompanho as soluções com Datadog, em especial o LLM Observability, para garantir rastreabilidade.",
+          "Refatorei sistemas críticos, com ganho de performance, rastreabilidade e resiliência.",
+          "Construo integrações corporativas com RabbitMQ, Redis, WebSockets, Blob Storage e Docker.",
+          "Produzo documentação técnica (ADRs, diagramas C4 e guidelines), além de mentorias e revisões de código."
         ]
       },
       {
         "title": "Questor Sistemas — Tech Leader",
         "period": "Nov/2023 — Set/2025",
         "bullets": [
-          "Desenvolvimento contínuo de sistemas com foco em performance e otimização.",
-          "Participação no planejamento das tecnologias e apoio técnico ao time.",
-          "Rotina baseada em métodos ágeis, entregando qualidade com menos tempo e custo."
+          "Liderança técnica de squads de desenvolvimento, com apoio a decisões de arquitetura, revisões de código e mentoria.",
+          "Definição e aplicação de padrões como DDD, SOLID, Clean Code e Clean Architecture.",
+          "Desenvolvimento e evolução de APIs e serviços back-end com .NET, C#, ASP.NET Core e Entity Framework Core.",
+          "Otimização de sistemas existentes, com melhorias de desempenho e redução de falhas.",
+          "Análise, planejamento e adoção de novas tecnologias, com participação em decisões estratégicas.",
+          "Remoção de impedimentos e rotina ágil (Scrum/Kanban), entregando com qualidade, menor tempo e menor custo."
         ]
       },
       {
         "title": "Havan S.A. — Programador de Computador",
         "period": "Jan/2021 — Set/2023",
         "bullets": [
-          "Back-end com .NET Core, DDD, microsserviços e integrações com RabbitMQ.",
+          "Liderei a implantação da Mesa de Análise Antifraude, projeto estratégico do e-commerce, com redução de 90% dos casos de fraude, mais rastreabilidade e automação na validação.",
+          "Back-end com .NET Core, DDD, microsserviços e pipelines distribuídos com RabbitMQ.",
           "Apoio em front-end (AngularJS) e migração para ReactJS.",
-          "SQL Server e MongoDB, com criação de queries, views, funções e procedures.",
-          "Tech lead técnico: padrões, code review e deploys em produção."
+          "SQL Server e MongoDB, com criação e otimização de queries, views, funções e procedures.",
+          "Tech Leader: liderança técnica de squads, padrões, mentoria, revisões arquiteturais, code review e deploys em produção."
         ]
       },
       {
@@ -894,7 +933,7 @@
         ]
       },
       {
-        "title": "FK-Tech Telecomunicações — Estagiário de Informática",
+        "title": "FK-Tech Telecomunicações — Programador Web",
         "period": "2017 — 2019",
         "bullets": [
           "Suporte ao usuário e manutenção de hardware.",
@@ -930,6 +969,9 @@
       }
     ],
     "courses": [
+      "Além das Gerações: Pessoas, Conexões e Colaboração, PDA Havan (Nov/2026, 4h)",
+      "Negociação e Persuasão, PDA Havan / Skribas Educacional (Set/2026, 8h)",
+      "Comunicação e Oratória, PDA Havan / Skribas Educacional (Set/2026, 12h)",
       "DevOps Ninja: Docker, Kubernetes e Rancher (2021)",
       "C# COMPLETO — Programação Orientada a Objetos (2021)",
       "C# POO + Lógica de Programação (2020)",
@@ -937,7 +979,7 @@
       "Inglês na Microlins Book2 (Intermediário, 2015–2017)"
     ],
     "extra": [
-      "Leitura e escrita (Inglês): Intermediária",
+      "Inglês: intermediário (leitura e escrita)",
       "Estado civil: Casado",
       "Carteira de habilitação: AB"
     ],
