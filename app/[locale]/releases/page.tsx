@@ -4,6 +4,12 @@ import { useTranslations } from "next-intl";
 import { FiTag, FiCalendar } from "react-icons/fi";
 
 const releases = [
+  { version: "0.11.0", date: "11/11/2026", changes: [
+    "FEAT: seção de projetos do GitHub na home, com cards de descrição, tecnologias e links",
+    "FEAT: link do GitHub no currículo",
+    "FEAT: currículo com resumo profissional, experiência em IA/Kiro e cursos PDA (Comunicação e Oratória, Negociação e Persuasão, Além das Gerações)",
+    "REFACT: textos da home e do currículo revisados (Questor, antifraude, cargos e idioma)",
+  ]},
   { version: "0.10.0", date: "15/07/2026", changes: [
     "FEAT: duplicar lançamento (botão clone com data de hoje)",
     "FEAT: auto-complete de título baseado no histórico",

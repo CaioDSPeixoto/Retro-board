@@ -172,6 +172,17 @@
       "Clean Code",
       "Refactorización"
     ],
+    "projectsTitle": "Proyectos en GitHub",
+    "projectsSubtitle": "Algunos de mis proyectos públicos en GitHub.",
+    "projectsViewRepo": "Ver en GitHub",
+    "projectsViewDemo": "Demo",
+    "projectsAllCta": "Ver todos los repositorios",
+    "projectDescriptions": {
+      "cspixel": "Editor RAW para Windows: revela, compara, ajusta y exporta fotos RAW (CR2, NEF, ARW, DNG y más) sin modificar los archivos originales, con presets por ISO y capas locales con pincel.",
+      "encurtador-url": "Acortador de URLs con ASP.NET Core Razor Pages, con expiración configurable, plan premium con pago simulado y eliminación automática de enlaces vencidos mediante un índice TTL en MongoDB.",
+      "projeto-mvc": "Aplicación ASP.NET MVC en .NET 8 para gestionar tareas y organizar el día a día, con autenticación y autorización mediante ASP.NET Identity (usuarios, permisos y sesiones por cookie).",
+      "pokemon": "Pokédex en Next.js con lista paginada, página de detalle de cada Pokémon, colección personal y comparación entre Pokémon."
+    },
     "ctaResume": "Ver currículum",
     "funStatsTitle": "Estadísticas no oficiales",
     "lastProdBugAt": "abc",
@@ -853,7 +864,8 @@
       "phone": "Teléfono",
       "recado": "Mensaje",
       "email": "Email",
-      "linkedin": "LinkedIn"
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
     },
     "header": {
       "name": "Caio dos Santos Peixoto",

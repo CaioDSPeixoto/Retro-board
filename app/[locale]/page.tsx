@@ -1,4 +1,7 @@
 import { getMessages } from "next-intl/server";
+import { FiGithub } from "react-icons/fi";
+import ProjetoCard from "@/components/ProjetoCard";
+import { projetosGithub, URL_PERFIL_GITHUB } from "@/lib/projetos-github";
 
 type Highlight = {
   title: string;
@@ -38,6 +41,12 @@ type HomeMessages = {
   highlights: Highlight[];
   stacksTitle: string;
   stacks: string[];
+  projectsTitle: string;
+  projectsSubtitle: string;
+  projectsViewRepo: string;
+  projectsViewDemo: string;
+  projectsAllCta: string;
+  projectDescriptions: Record<string, string>;
   historyTitle: string;
   historyBody: string;
   timeline: TimelineEvent[];
@@ -161,6 +170,44 @@ export default async function HomePage({
             </span>
           ))}
         </div>
+      </section>
+
+      {/* PROJETOS */}
+      <section
+        id="projetos"
+        aria-labelledby="titulo-projetos"
+        className="rounded-2xl border shadow-sm p-6"
+        style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="titulo-projetos" className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>{t.projectsTitle}</h2>
+            <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>{t.projectsSubtitle}</p>
+          </div>
+          <a
+            href={URL_PERFIL_GITHUB}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-semibold hover:underline"
+            style={{ color: "var(--color-accent-text)" }}
+          >
+            <FiGithub size={16} aria-hidden="true" />
+            {t.projectsAllCta}
+          </a>
+        </div>
+
+        <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+          {projetosGithub.map((projeto) => (
+            <li key={projeto.id} className="flex">
+              <ProjetoCard
+                projeto={projeto}
+                descricao={t.projectDescriptions[projeto.id] ?? ""}
+                textoVerRepositorio={t.projectsViewRepo}
+                textoVerDemo={t.projectsViewDemo}
+              />
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* TIMELINE */}

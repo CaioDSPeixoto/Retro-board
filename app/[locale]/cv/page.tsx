@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { URL_PERFIL_GITHUB, USUARIO_GITHUB } from "@/lib/projetos-github";
 
 type ResumeItem = {
   title: string;
@@ -31,7 +32,7 @@ type Summary = {
 function ContactRow({ label, value, href }: { label: string; value?: string; href?: string }) {
   if (!value) return null;
   const content = href ? (
-    <a href={href} className="text-blue-500 hover:underline break-words" target="_blank">
+    <a href={href} className="text-blue-500 hover:underline break-words" target="_blank" rel="noopener noreferrer">
       {value}
     </a>
   ) : (
@@ -61,7 +62,6 @@ export default async function ResumePage({
   const courses = (t.raw("courses") as string[]) ?? [];
   const extra = (t.raw("extra") as string[]) ?? [];
 
-  const hasContactInfo = !!header.phone || !!header.recado || !!header.email || !!header.linkedin;
   const linkedinHref =
     header.linkedin &&
     (header.linkedin.startsWith("http")
@@ -92,17 +92,16 @@ export default async function ResumePage({
             )}
           </div>
 
-          {hasContactInfo && (
-            <div
-              className="rounded-2xl border px-4 py-3 space-y-1 min-w-[220px]"
-              style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
-            >
-              <ContactRow label={t("labels.phone")} value={header.phone} href={header.phone ? `tel:${header.phone}` : undefined} />
-              <ContactRow label={t("labels.recado")} value={header.recado} />
-              <ContactRow label={t("labels.email")} value={header.email} href={header.email ? `mailto:${header.email}` : undefined} />
-              <ContactRow label={t("labels.linkedin")} value={header.linkedin} href={linkedinHref} />
-            </div>
-          )}
+          <div
+            className="rounded-2xl border px-4 py-3 space-y-1 min-w-[220px]"
+            style={{ background: "var(--color-surface-raised)", borderColor: "var(--color-border)" }}
+          >
+            <ContactRow label={t("labels.phone")} value={header.phone} href={header.phone ? `tel:${header.phone}` : undefined} />
+            <ContactRow label={t("labels.recado")} value={header.recado} />
+            <ContactRow label={t("labels.email")} value={header.email} href={header.email ? `mailto:${header.email}` : undefined} />
+            <ContactRow label={t("labels.linkedin")} value={header.linkedin} href={linkedinHref} />
+            <ContactRow label={t("labels.github")} value={USUARIO_GITHUB} href={URL_PERFIL_GITHUB} />
+          </div>
         </div>
 
         {/* Resumo */}
